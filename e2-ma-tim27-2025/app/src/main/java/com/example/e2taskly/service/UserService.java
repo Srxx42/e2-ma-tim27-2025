@@ -6,18 +6,24 @@ import android.util.Patterns;
 
 import com.example.e2taskly.data.repository.UserRepository;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.util.SharedPreferencesUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Date;
 
 public class UserService {
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final SharedPreferencesUtil sharedPreferences;
     public UserService(Context context){
+
         userRepository = new UserRepository(context);
+        sharedPreferences = new SharedPreferencesUtil(context);
     }
     public void registerUser(String email, String username,String password, String confirmPassword, String selectedAvatar, OnCompleteListener<AuthResult> listener){
         String validationError = validateInput(email, username, password, confirmPassword, selectedAvatar);
@@ -29,7 +35,8 @@ public class UserService {
         userRepository.checkUsernameExists(username,isUniqueTask->{
             if(isUniqueTask.isSuccessful()){
                 if(!isUniqueTask.getResult().isEmpty()){
-
+                    Task<AuthResult> failedTask = Tasks.forException(new Exception("Username already exists."));
+                    listener.onComplete(failedTask);
                 }else{
                     User newUser = new User();
                     newUser.setEmail(email);
@@ -53,6 +60,66 @@ public class UserService {
             }
         });
     }
+    public void loginUser(String email, String password, OnCompleteListener<AuthResult> listener){
+        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
+            Task<AuthResult> failedTask = Tasks.forException(new Exception("Please enter your email and password."));
+            listener.onComplete(failedTask);
+            return;
+        }
+        userRepository.loginUser(email, password, loginTask -> {
+            if (loginTask.isSuccessful()) {
+                FirebaseUser firebaseUser = userRepository.getCurrentUser();
+
+                if (firebaseUser == null) {
+                    listener.onComplete(Tasks.forException(new Exception("User not found after login.")));
+                    return;
+                }
+
+                if (firebaseUser.isEmailVerified()) {
+
+                    userRepository.updateUserActivationStatus(firebaseUser.getUid(), true);
+
+                    sharedPreferences.saveUserSession(firebaseUser.getUid());
+
+                    listener.onComplete(loginTask);
+
+                } else {
+                    long creationTimestamp = firebaseUser.getMetadata().getCreationTimestamp();
+                    long twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+                    boolean isExpired = (System.currentTimeMillis() - creationTimestamp) > twentyFourHoursInMs;
+
+                    if (isExpired) {
+                        // 4. Nalog je istekao! Moramo ga obrisati.
+                        // Prvo odjavljujemo korisnika da bi stanje bilo čisto.
+                        userRepository.logoutUser();
+
+                        // Zatim pokrećemo proces re-autentifikacije i brisanja.
+                        userRepository.reauthenticateAndDeleteUser(email, password)
+                                .addOnCompleteListener(deleteTask -> {
+                                    if (deleteTask.isSuccessful()) {
+                                        // Nalog je uspešno obrisan. Obaveštavamo korisnika.
+                                        Exception userDeletedException = new Exception("Your activation link has expired. The account has been deleted, please register again.");
+                                        listener.onComplete(Tasks.forException(userDeletedException));
+                                    } else {
+                                        // Došlo je do greške pri brisanju.
+                                        Exception deleteFailedException = new Exception("Error deleting the old account. Please contact support.");
+                                        listener.onComplete(Tasks.forException(deleteFailedException));
+                                    }
+                                });
+                    } else {
+                        // 5. Nalog još nije istekao. Samo obavesti korisnika.
+                        userRepository.logoutUser(); // Obavezno ga odjavi
+                        Exception notVerifiedException = new Exception("Account not activated. Please check your email for the verification link.");
+                        listener.onComplete(Tasks.forException(notVerifiedException));
+                    }
+                }
+            } else {
+                // Prijava u Firebase Authentication NIJE uspela (pogrešan email/lozinka)
+                Exception loginFailedException = new Exception("Incorrect email or password.");
+                listener.onComplete(Tasks.forException(loginFailedException));
+            }
+        });
+    }
     private String validateInput(String email, String username, String password, String confirmPassword, String selectedAvatar) {
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
             return "All fields are required.";
@@ -72,5 +139,8 @@ public class UserService {
         }
         return null;
     }
-
+    public void logoutUser() {
+        userRepository.logoutUser();
+        sharedPreferences.clearUserSession();
+    }
 }

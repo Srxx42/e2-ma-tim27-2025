@@ -2,7 +2,11 @@ package com.example.e2taskly.data.remote;
 
 import com.example.e2taskly.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -20,6 +24,9 @@ public class UserRemoteDataSource {
     }
     public void createUserInAuth(String email, String password, OnCompleteListener<AuthResult> listener) {
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(listener);
+    }
+    public void signInWithEmailAndPassword(String email, String password,OnCompleteListener<AuthResult> listener){
+        mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(listener);
     }
     public void sendVerificationEmail() {
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
@@ -47,5 +54,30 @@ public class UserRemoteDataSource {
                 .limit(1)
                 .get()
                 .addOnCompleteListener(listener);
+    }
+    public FirebaseUser getCurrentUser() {
+        return mAuth.getCurrentUser();
+    }
+
+    public Task<Void> reauthenticateUser(String email, String password) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            return Tasks.forException(new Exception("User not logged in for re-authentication."));
+        }
+        AuthCredential credential = EmailAuthProvider.getCredential(email, password);
+        return user.reauthenticate(credential);
+    }
+    public Task<Void> deleteUserFromAuth() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            return Tasks.forException(new Exception("User not logged in for deletion."));
+        }
+        return user.delete();
+    }
+    public Task<Void> deleteUserDetails(String uid) {
+        return db.collection("users").document(uid).delete();
+    }
+    public void logoutUser() {
+        mAuth.signOut();
     }
 }
