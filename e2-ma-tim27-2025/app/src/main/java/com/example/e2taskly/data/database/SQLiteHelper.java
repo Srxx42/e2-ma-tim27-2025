@@ -1,4 +1,4 @@
-package com.example.e2taskly.data.repository.database;
+package com.example.e2taskly.data.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

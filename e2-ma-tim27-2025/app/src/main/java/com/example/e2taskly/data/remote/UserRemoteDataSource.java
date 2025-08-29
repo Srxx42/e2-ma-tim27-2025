@@ -1,4 +1,4 @@
-package com.example.e2taskly.data.repository.remote;
+package com.example.e2taskly.data.remote;
 
 import com.example.e2taskly.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;

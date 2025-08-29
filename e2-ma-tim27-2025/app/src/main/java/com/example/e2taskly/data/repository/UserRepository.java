@@ -2,8 +2,8 @@ package com.example.e2taskly.data.repository;
 
 import android.content.Context;
 
-import com.example.e2taskly.data.repository.database.UserLocalDataSource;
-import com.example.e2taskly.data.repository.remote.UserRemoteDataSource;
+import com.example.e2taskly.data.database.UserLocalDataSource;
+import com.example.e2taskly.data.remote.UserRemoteDataSource;
 import com.example.e2taskly.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.AuthResult;
