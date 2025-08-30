@@ -19,25 +19,27 @@ public class UserRepository {
         localDataSource = new UserLocalDataSource(context);
         remoteDataSource = new UserRemoteDataSource();
     }
-    public void registerUser(String email, String password, User user, OnCompleteListener<AuthResult> listener){
-        remoteDataSource.createUserInAuth(email,password,taskAuth -> {
-            if(taskAuth.isSuccessful()){
-                FirebaseUser firebaseUser = taskAuth.getResult().getUser();
-                String uid = firebaseUser.getUid();
-                user.setUid(uid);
-                remoteDataSource.sendVerificationEmail();
-                remoteDataSource.saveUserDetails(user);
-                localDataSource.addUser(user);
+    public Task<AuthResult> registerUser(String email, String password, User user){
+        return remoteDataSource.createUserInAuth(email, password)
+                .onSuccessTask(authResult -> {
+                    FirebaseUser firebaseUser = authResult.getUser();
+                    if (firebaseUser != null) {
+                        String uid = firebaseUser.getUid();
+                        user.setUid(uid);
 
-            }
-            listener.onComplete(taskAuth);
-        });
+                        remoteDataSource.sendVerificationEmail();
+                        localDataSource.addUser(user);
+
+                        return remoteDataSource.saveUserDetails(user).continueWith(task -> authResult);
+                    }
+                    return Tasks.forException(new Exception("FirebaseUser is null after creation."));
+                });
     }
-    public void checkUsernameExists(String username,OnCompleteListener<QuerySnapshot> listener){
-        remoteDataSource.checkUsernameExists(username,listener);
+    public Task<QuerySnapshot> checkUsernameExists(String username){
+        return remoteDataSource.checkUsernameExists(username);
     }
-    public void loginUser(String email, String password,OnCompleteListener<AuthResult> listener) {
-        remoteDataSource.signInWithEmailAndPassword(email, password,listener);
+    public Task<AuthResult> loginUser(String email, String password) {
+        return remoteDataSource.signInWithEmailAndPassword(email, password);
     }
     public Task<Void> reauthenticateAndDeleteUser(String email, String password) {
         FirebaseUser user = remoteDataSource.getCurrentUser();
@@ -52,7 +54,12 @@ public class UserRepository {
                 .continueWithTask(reauthTask -> {
                     if (!reauthTask.isSuccessful()) {
 
-                        throw reauthTask.getException();
+                        Exception exception = reauthTask.getException();
+                        if (exception != null) {
+                            throw exception;
+                        } else {
+                            throw new Exception("Reauthentication failed with no exception provided.");
+                        }
                     }
 
 
@@ -62,9 +69,9 @@ public class UserRepository {
                     Task<Void> deleteFirestoreTask = remoteDataSource.deleteUserDetails(uidToDelete);
 
 
-                    localDataSource.deleteUser(uidToDelete); // Pretpostavljam da imate ovakvu metodu
+                    localDataSource.deleteUser(uidToDelete);
 
-                    // Koristimo Tasks.whenAll da sačekamo da se završe obe remote operacije
+
                     return Tasks.whenAll(deleteAuthTask, deleteFirestoreTask);
                 });
     }
@@ -76,7 +83,7 @@ public class UserRepository {
     public FirebaseUser getCurrentUser() {
         return remoteDataSource.getCurrentUser();
     }
-    public void logoutUser(){
+    public void logout(){
         remoteDataSource.logoutUser();
     }
 

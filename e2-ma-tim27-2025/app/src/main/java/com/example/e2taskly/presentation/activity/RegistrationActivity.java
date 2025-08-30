@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RegistrationActivity extends AppCompatActivity {
-    private List<ImageView> avatarImageViews = new ArrayList<>();
+    private final List<ImageView> avatarImageViews = new ArrayList<>();
     private String selectedAvatarId = null;
     private TextInputLayout textInputLayoutEmail, textInputLayoutUsername, textInputLayoutPassword, textInputLayoutConfirmPassword;
     private TextInputEditText editTextEmail, editTextUsername, editTextPassword, editTextConfirmPassword;
@@ -37,7 +37,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView textViewLogin;
 
-    // Deklaracija servisnog sloja
+
     private UserService userService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,10 +74,10 @@ public class RegistrationActivity extends AppCompatActivity {
             return;
         }
 
-        String email = editTextEmail.getText().toString().trim();
-        String username = editTextUsername.getText().toString().trim();
-        String password = editTextPassword.getText().toString().trim();
-        String confirmPassword = editTextConfirmPassword.getText().toString().trim();
+        String email = editTextEmail.getText() != null ? editTextEmail.getText().toString().trim() : "";
+        String username = editTextUsername.getText() != null ? editTextUsername.getText().toString().trim() : "";
+        String password = editTextPassword.getText() != null ? editTextPassword.getText().toString().trim() : "";
+        String confirmPassword = editTextConfirmPassword.getText() != null ? editTextConfirmPassword.getText().toString().trim() : "";
 
         progressBar.setVisibility(View.VISIBLE);
         buttonRegister.setEnabled(false);
@@ -132,7 +132,7 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     private boolean validateEmail() {
-        String email = editTextEmail.getText().toString().trim();
+        String email = editTextEmail.getText() != null ? editTextEmail.getText().toString().trim() : "";
         if (TextUtils.isEmpty(email)) {
             textInputLayoutEmail.setError("Email is required.");
             return false;
@@ -146,7 +146,7 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     private boolean validateUsername() {
-        String username = editTextUsername.getText().toString().trim();
+        String username = editTextUsername.getText() != null ? editTextUsername.getText().toString().trim() : "";
         String usernamePattern = "^[a-zA-Z0-9_]{3,20}$";
         if (TextUtils.isEmpty(username)) {
             textInputLayoutUsername.setError("Username is required.");
@@ -161,7 +161,7 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     private boolean validatePassword() {
-        String password = editTextPassword.getText().toString().trim();
+        String password = editTextPassword.getText() != null ? editTextPassword.getText().toString().trim() : "";
         if (TextUtils.isEmpty(password)) {
             textInputLayoutPassword.setError("Password is required.");
             return false;
@@ -175,8 +175,8 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     private boolean validateConfirmPassword() {
-        String password = editTextPassword.getText().toString().trim();
-        String confirmPassword = editTextConfirmPassword.getText().toString().trim();
+        String password = editTextPassword.getText() != null ? editTextPassword.getText().toString().trim() : "";
+        String confirmPassword = editTextConfirmPassword.getText() != null ? editTextConfirmPassword.getText().toString().trim() : "";
         if (!password.equals(confirmPassword)) {
             textInputLayoutConfirmPassword.setError("Passwords do not match.");
             return false;

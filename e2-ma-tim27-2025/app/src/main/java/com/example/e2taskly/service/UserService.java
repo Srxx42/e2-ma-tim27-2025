@@ -28,16 +28,17 @@ public class UserService {
     public void registerUser(String email, String username,String password, String confirmPassword, String selectedAvatar, OnCompleteListener<AuthResult> listener){
         String validationError = validateInput(email, username, password, confirmPassword, selectedAvatar);
         if(validationError!=null){
-            Task<AuthResult> failedTask = Tasks.forException(new Exception(validationError));
-            listener.onComplete(failedTask);
+            listener.onComplete(Tasks.forException(new Exception(validationError)));
             return;
         }
-        userRepository.checkUsernameExists(username,isUniqueTask->{
-            if(isUniqueTask.isSuccessful()){
-                if(!isUniqueTask.getResult().isEmpty()){
-                    Task<AuthResult> failedTask = Tasks.forException(new Exception("Username already exists."));
-                    listener.onComplete(failedTask);
-                }else{
+
+        userRepository.checkUsernameExists(username)
+                .continueWithTask(isUniqueTask -> {
+                    if (!isUniqueTask.isSuccessful()) { throw isUniqueTask.getException(); }
+                    if (!isUniqueTask.getResult().isEmpty()) {
+                        throw new Exception("Username already exists.");
+                    }
+
                     User newUser = new User();
                     newUser.setEmail(email);
                     newUser.setUsername(username);
@@ -46,19 +47,17 @@ public class UserService {
                     newUser.setXp(0);
                     newUser.setActivated(false);
                     newUser.setRegistrationTime(new Date());
-                    userRepository.registerUser(email, password, newUser, authTask -> {
-                        if (!authTask.isSuccessful() && authTask.getException() instanceof FirebaseAuthUserCollisionException) {
-                            Task<AuthResult> failedTask = Tasks.forException(new Exception("The provided email address is already in use."));
-                            listener.onComplete(failedTask);
-                        } else {
-                            listener.onComplete(authTask);
-                        }
-                    });
-                }
-            }else {
-                listener.onComplete(Tasks.forException(isUniqueTask.getException()));
-            }
-        });
+
+                    return userRepository.registerUser(email, password, newUser);
+                })
+                .addOnCompleteListener(authTask -> {
+                    if (!authTask.isSuccessful() && authTask.getException() != null && authTask.getException().getCause() instanceof FirebaseAuthUserCollisionException) {
+                        Exception emailExistsException = new Exception("The provided email address is already in use.");
+                        listener.onComplete(Tasks.forException(emailExistsException));
+                    } else {
+                        listener.onComplete(authTask);
+                    }
+                });
     }
     public void loginUser(String email, String password, OnCompleteListener<AuthResult> listener){
         if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
@@ -66,7 +65,7 @@ public class UserService {
             listener.onComplete(failedTask);
             return;
         }
-        userRepository.loginUser(email, password, loginTask -> {
+        userRepository.loginUser(email, password).addOnCompleteListener(loginTask -> {
             if (loginTask.isSuccessful()) {
                 FirebaseUser firebaseUser = userRepository.getCurrentUser();
 
@@ -89,32 +88,23 @@ public class UserService {
                     boolean isExpired = (System.currentTimeMillis() - creationTimestamp) > twentyFourHoursInMs;
 
                     if (isExpired) {
-                        // 4. Nalog je istekao! Moramo ga obrisati.
-                        // Prvo odjavljujemo korisnika da bi stanje bilo čisto.
-                        userRepository.logoutUser();
-
-                        // Zatim pokrećemo proces re-autentifikacije i brisanja.
                         userRepository.reauthenticateAndDeleteUser(email, password)
                                 .addOnCompleteListener(deleteTask -> {
                                     if (deleteTask.isSuccessful()) {
-                                        // Nalog je uspešno obrisan. Obaveštavamo korisnika.
                                         Exception userDeletedException = new Exception("Your activation link has expired. The account has been deleted, please register again.");
                                         listener.onComplete(Tasks.forException(userDeletedException));
                                     } else {
-                                        // Došlo je do greške pri brisanju.
                                         Exception deleteFailedException = new Exception("Error deleting the old account. Please contact support.");
                                         listener.onComplete(Tasks.forException(deleteFailedException));
                                     }
                                 });
                     } else {
-                        // 5. Nalog još nije istekao. Samo obavesti korisnika.
-                        userRepository.logoutUser(); // Obavezno ga odjavi
+                        userRepository.logout();
                         Exception notVerifiedException = new Exception("Account not activated. Please check your email for the verification link.");
                         listener.onComplete(Tasks.forException(notVerifiedException));
                     }
                 }
             } else {
-                // Prijava u Firebase Authentication NIJE uspela (pogrešan email/lozinka)
                 Exception loginFailedException = new Exception("Incorrect email or password.");
                 listener.onComplete(Tasks.forException(loginFailedException));
             }
@@ -140,7 +130,7 @@ public class UserService {
         return null;
     }
     public void logoutUser() {
-        userRepository.logoutUser();
+        userRepository.logout();
         sharedPreferences.clearUserSession();
     }
 }
