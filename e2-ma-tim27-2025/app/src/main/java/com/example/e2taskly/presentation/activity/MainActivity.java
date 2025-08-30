@@ -15,6 +15,8 @@ import com.example.e2taskly.service.UserService;
 
 public class MainActivity extends AppCompatActivity {
     private Button buttonLogout;
+    private Button buttonProfile;
+    private Button buttonViewAllUsers;
     private UserService userService;
 
     @Override
@@ -24,8 +26,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         userService = new UserService(this);
         buttonLogout = findViewById(R.id.buttonLogout);
-
+        buttonProfile = findViewById(R.id.buttonProfile);
+        buttonViewAllUsers = findViewById(R.id.buttonViewAllUsers);
         buttonLogout.setOnClickListener(v->handleLogout());
+        buttonProfile.setOnClickListener(v->{
+            Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
+            startActivity(intent);
+        });
+        buttonViewAllUsers.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, UsersListActivity.class);
+            startActivity(intent);
+        });
     }
     private void handleLogout() {
         userService.logoutUser();

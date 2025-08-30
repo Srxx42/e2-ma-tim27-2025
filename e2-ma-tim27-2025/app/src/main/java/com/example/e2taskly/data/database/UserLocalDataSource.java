@@ -3,6 +3,7 @@ package com.example.e2taskly.data.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import com.example.e2taskly.model.User;
 
@@ -19,9 +20,19 @@ public class UserLocalDataSource {
         values.put("email", user.getEmail());
         values.put("username", user.getUsername());
         values.put("avatar", user.getAvatar());
+        values.put("level", user.getLevel());
+        values.put("xp", user.getXp());
         values.put("is_activated", user.isActivated() ? 1 : 0);
         values.put("registration_time", user.getRegistrationTime().getTime());
-
+        values.put("title", user.getTitle());
+        values.put("power_points", user.getPowerPoints());
+        values.put("coins", user.getCoins());
+        if (user.getBadges() != null) {
+            values.put("badges", TextUtils.join(",", user.getBadges()));
+        }
+        if (user.getEquipment() != null) {
+            values.put("equipment", TextUtils.join(",", user.getEquipment()));
+        }
         long newRowId = db.insert(SQLiteHelper.T_USERS, null, values);
         db.close();
         return newRowId;

@@ -10,7 +10,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserRepository {
     private UserLocalDataSource localDataSource;
@@ -75,13 +79,48 @@ public class UserRepository {
                     return Tasks.whenAll(deleteAuthTask, deleteFirestoreTask);
                 });
     }
-    public void updateUserActivationStatus(String uid, boolean isActivated) {
-
+    public Task<Void> updateUserActivationStatus(String uid, boolean isActivated) {
         localDataSource.updateUserActivationStatus(uid, isActivated);
+        return remoteDataSource.updateUserActivationStatus(uid, isActivated);
     }
 
     public FirebaseUser getCurrentUser() {
         return remoteDataSource.getCurrentUser();
+    }
+    public Task<User> getUserProfile(String uid) {
+        return remoteDataSource.getUserDetails(uid).onSuccessTask(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                User user = documentSnapshot.toObject(User.class);
+                if (user != null) {
+                    return Tasks.forResult(user);
+                }
+            }
+            return Tasks.forException(new Exception("User data not found in Firestore."));
+        });
+    }
+    public Task<Void> changePassword(String oldPassword, String newPassword) {
+        FirebaseUser firebaseUser = remoteDataSource.getCurrentUser();
+        if (firebaseUser == null || firebaseUser.getEmail() == null) {
+            return Tasks.forException(new Exception("User not logged in or email is missing."));
+        }
+
+        return remoteDataSource.reauthenticateUser(firebaseUser.getEmail(), oldPassword)
+                .onSuccessTask(aVoid -> remoteDataSource.updatePassword(newPassword));
+    }
+    public Task<List<User>> getAllUsers(){
+        return remoteDataSource.getAllUsers().onSuccessTask(queryDocumentSnapshots -> {
+            if(queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()){
+                List<User> userList = new ArrayList<>();
+                for(DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()){
+                    User user = doc.toObject(User.class);
+                    if(user != null){
+                        userList.add(user);
+                    }
+                }
+                return Tasks.forResult(userList);
+            }
+            return Tasks.forResult(new ArrayList<>());
+        });
     }
     public void logout(){
         remoteDataSource.logoutUser();

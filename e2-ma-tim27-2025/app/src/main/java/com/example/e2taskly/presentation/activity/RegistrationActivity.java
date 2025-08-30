@@ -90,6 +90,8 @@ public class RegistrationActivity extends AppCompatActivity {
                 Toast.makeText(RegistrationActivity.this,
                         "Registration successful! A verification link has been sent to your email.",
                         Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
+                startActivity(intent);
                 finish();
             } else {
                 String errorMessage = "An unknown error has occurred.";
