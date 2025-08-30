@@ -42,6 +42,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Username Input -->
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutUsername"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -55,9 +56,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName" />
+
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Password Input -->
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutPassword"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -190,4 +193,5 @@
             android:focusable="true"/>
 
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

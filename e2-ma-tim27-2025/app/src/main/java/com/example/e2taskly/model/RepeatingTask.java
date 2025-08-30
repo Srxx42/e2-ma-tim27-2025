@@ -1,17 +1,12 @@
-package com.example.e2taskly.Model;
+package com.example.e2taskly.model;
 
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
-
-import com.example.e2taskly.Model.enums.Difficulty;
-import com.example.e2taskly.Model.enums.Importance;
-import com.example.e2taskly.Model.enums.RepeatingType;
-import com.example.e2taskly.Model.enums.TaskStatus;
-import com.example.e2taskly.Model.enums.TaskType;
+import com.example.e2taskly.model.enums.Difficulty;
+import com.example.e2taskly.model.enums.Importance;
+import com.example.e2taskly.model.enums.RepeatingType;
+import com.example.e2taskly.model.enums.TaskStatus;
+import com.example.e2taskly.model.enums.TaskType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

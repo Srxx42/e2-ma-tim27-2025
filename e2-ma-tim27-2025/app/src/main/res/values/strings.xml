@@ -16,4 +16,9 @@
 
     <string name="main_welcome_message">Welcome!</string>
     <string name="main_logout_button">Logout</string>
+
+    <string name="category_title">Create category</string>
+    <string name="category_name">Name:</string>
+    <string name="category_color">Color:</string>
+    <string name="save_button">Save</string>
 </resources>

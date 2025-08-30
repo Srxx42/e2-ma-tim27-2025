@@ -1,11 +1,9 @@
-package com.example.e2taskly.Model;
+package com.example.e2taskly.model;
 
-import com.example.e2taskly.Model.enums.Difficulty;
-import com.example.e2taskly.Model.enums.Importance;
-import com.example.e2taskly.Model.enums.TaskStatus;
-import com.example.e2taskly.Model.enums.TaskType;
-
-import java.time.LocalDateTime;
+import com.example.e2taskly.model.enums.Difficulty;
+import com.example.e2taskly.model.enums.Importance;
+import com.example.e2taskly.model.enums.TaskStatus;
+import com.example.e2taskly.model.enums.TaskType;
 
 public abstract class Task {
 
@@ -37,9 +35,9 @@ public abstract class Task {
         this.status = status;
         this.importance = importance;
         this.difficulty = difficulty;
-        this.valueXP = valueXP;
         this.deleted = deleted;
     }
+
 
     public int getId() {
         return Id;

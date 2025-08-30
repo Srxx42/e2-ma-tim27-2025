@@ -1,4 +1,4 @@
-package com.example.e2taskly.Model;
+package com.example.e2taskly.model;
 
 public class TaskCategory {
      int id;
