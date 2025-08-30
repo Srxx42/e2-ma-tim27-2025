@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">E2Taskly</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="username_hint">Username</string>
+
+    <string name="login_title">Login</string>
+    <string name="login_button">Sign In</string>
+    <string name="login_no_account_prompt">Don’t have an account? Register here.</string>
+
+    <string name="registration_title">Registration</string>
+    <string name="registration_confirm_password_hint">Confirm password</string>
+    <string name="registration_choose_avatar_label">Choose avatar:</string>
+    <string name="registration_button">Register</string>
+    <string name="registration_already_have_account_prompt">Already have an account? Sign in here.</string>
+
+    <string name="main_welcome_message">Welcome!</string>
+    <string name="main_logout_button">Logout</string>
 </resources>
