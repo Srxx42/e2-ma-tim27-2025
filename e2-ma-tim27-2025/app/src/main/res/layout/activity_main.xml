@@ -29,4 +29,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="32dp"/>
 
+    <Button
+        android:id="@+id/categoryAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="132dp"
+        android:text="Add Category"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

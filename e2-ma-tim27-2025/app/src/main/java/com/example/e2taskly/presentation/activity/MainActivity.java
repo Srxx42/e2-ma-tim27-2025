@@ -26,6 +26,15 @@ public class MainActivity extends AppCompatActivity {
         buttonLogout = findViewById(R.id.buttonLogout);
 
         buttonLogout.setOnClickListener(v->handleLogout());
+
+        Button categoryAdd = findViewById(R.id.categoryAdd);
+
+        categoryAdd.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddCategoryActivity.class);
+            startActivity(intent);
+        });
+
+
     }
     private void handleLogout() {
         userService.logoutUser();
@@ -34,4 +43,5 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
 }
