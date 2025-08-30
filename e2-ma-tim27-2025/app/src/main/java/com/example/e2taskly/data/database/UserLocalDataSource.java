@@ -26,4 +26,18 @@ public class UserLocalDataSource {
         db.close();
         return newRowId;
     }
+    public void deleteUser(String uid) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete(SQLiteHelper.T_USERS,  "id"+ " = ?", new String[]{uid});
+        db.close();
+    }
+    public int updateUserActivationStatus(String uid, boolean isActivated) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("is_activated", isActivated ? 1 : 0);
+        int rowsAffected = db.update(SQLiteHelper.T_USERS, values, "id" + " = ?", new String[]{uid});
+        db.close();
+
+        return rowsAffected;
+    }
 }
