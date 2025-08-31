@@ -18,10 +18,14 @@ public class User {
     private int coins;
     private List<String> badges;
     private List<String> equipment;
+    private int activeDaysStreak;
+    private Date lastActivityDate;
+
 
     public User() {
         this.badges = new ArrayList<>();
         this.equipment = new ArrayList<>();
+        this.activeDaysStreak=0;
     }
 
     public User(String uid, String email, String username, String avatar, int level, int xp, boolean isActivated, Date registrationTime) {
@@ -151,5 +155,21 @@ public class User {
 
     public void setEquipment(List<String> equipment) {
         this.equipment = equipment;
+    }
+
+    public Date getLastActivityDate() {
+        return lastActivityDate;
+    }
+
+    public void setLastActivityDate(Date lastActivityDate) {
+        this.lastActivityDate = lastActivityDate;
+    }
+
+    public int getActiveDaysStreak() {
+        return activeDaysStreak;
+    }
+
+    public void setActiveDaysStreak(int activeDaysStreak) {
+        this.activeDaysStreak = activeDaysStreak;
     }
 }
