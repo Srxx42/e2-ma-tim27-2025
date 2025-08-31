@@ -26,4 +26,12 @@ public class TaskCategoryRepository {
     public List<TaskCategory> getAllCategories(){
         return localDataSource.getAllCategories();
     }
+
+    public TaskCategory getCategoryById(int id){
+        return localDataSource.getCategoryById(id);
+    }
+
+    public boolean updateCategory(int id,String name, String hexColor){
+        return localDataSource.updateCategory(id,name,hexColor);
+    }
 }

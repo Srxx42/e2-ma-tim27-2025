@@ -27,7 +27,10 @@
             android:name=".presentation.activity.RegistrationActivity"
             android:exported="false">
         </activity>
-        <activity android:name=".presentation.activity.AddCategoryActivity" android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ShowCategoriesActivity"
+            android:exported="false"/>
+        <activity android:name=".presentation.activity.ManageCategoryActivity" android:exported="false" />
         <activity android:name=".presentation.activity.MainActivity" android:exported="false"/>
     </application>
 

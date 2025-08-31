@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
+import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.TaskCategory;
 
 import java.util.ArrayList;
@@ -61,7 +62,44 @@ public class TaskCategoryLocalDataSource {
         db.close();
 
         return categories;
+    }
 
+    public TaskCategory getCategoryById(int id){
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        TaskCategory category = new TaskCategory();
 
+        Cursor cursor = db.rawQuery("SELECT * FROM " +SQLiteHelper.T_CATEGORIES + " WHERE id = ?", new String[]{String.valueOf(id)});
+
+        if(cursor.moveToFirst()){
+                int idd = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                String hexColor = cursor.getString(cursor.getColumnIndexOrThrow("colorhex"));
+
+                category = new TaskCategory(idd,hexColor,name);
+        }
+        cursor.close();
+        db.close();
+
+        return category;
+    }
+
+    public boolean updateCategory(int id,String name, String hexColor){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("name", name);
+        values.put("colorhex",hexColor);
+
+        int rowsAffected = 0;
+
+        try{
+            rowsAffected = db.update(SQLiteHelper.T_CATEGORIES,values,"id = ?", new String[]{String.valueOf(id)});
+            Log.d("DB_SUCCESS", "Updated rows: " + rowsAffected);
+        } catch(SQLiteException e){
+            Log.e("DB_ERROR", "SQLite update error: " + e.getMessage());
+        }finally {
+            db.close();
+        }
+
+        return rowsAffected > 0;
     }
 }

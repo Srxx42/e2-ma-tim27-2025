@@ -6,9 +6,6 @@ import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.service.UserService;
@@ -30,7 +27,14 @@ public class MainActivity extends AppCompatActivity {
         Button categoryAdd = findViewById(R.id.categoryAdd);
 
         categoryAdd.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddCategoryActivity.class);
+            Intent intent = new Intent(MainActivity.this, ManageCategoryActivity.class);
+            startActivity(intent);
+        });
+
+        Button showCategories = findViewById(R.id.categoryShow);
+
+        showCategories.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ShowCategoriesActivity.class);
             startActivity(intent);
         });
 

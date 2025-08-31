@@ -6,10 +6,15 @@
     android:layout_height="match_parent">
 
     <ListView
-        android:layout_width="405dp"
-        android:layout_height="674dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:layout_editor_absoluteY="1dp" />
+        android:id="@+id/categoryListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp"
+        tools:layout_editor_absoluteY="1dp"
+        tools:listitem="@layout/category_item"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="2dp">
+    </ListView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

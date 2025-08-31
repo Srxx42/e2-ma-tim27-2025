@@ -60,6 +60,18 @@ public class TaskCategoryService {
         return names.contains(name);
     }
 
+    public List<TaskCategory> getAllCategories(){
+        return taskCategoryRepository.getAllCategories();
+    }
+
+    public TaskCategory getCategoryById(int id){
+        return taskCategoryRepository.getCategoryById(id);
+    }
+
+    public boolean updateCategory(int id, String name, String hexColor){
+        return taskCategoryRepository.updateCategory(id,name,hexColor);
+    }
+
 
 
 }
