@@ -21,7 +21,12 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "level INTEGER NOT NULL DEFAULT 1, " +
                 "xp INTEGER NOT NULL DEFAULT 0, " +
                 "is_activated INTEGER NOT NULL, " +
-                "registration_time INTEGER NOT NULL" +
+                "registration_time INTEGER NOT NULL," +
+                "title TEXT DEFAULT 'Rookie', " +
+                "power_points INTEGER DEFAULT 0, " +
+                "coins INTEGER DEFAULT 0, " +
+                "badges TEXT, " +
+                "equipment TEXT " +
                 ")");
     }
 

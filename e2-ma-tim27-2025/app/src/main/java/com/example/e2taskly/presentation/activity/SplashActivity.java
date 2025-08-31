@@ -13,10 +13,11 @@ import com.example.e2taskly.R;
 import com.example.e2taskly.util.SharedPreferencesUtil;
 
 public class SplashActivity extends AppCompatActivity {
+    private SharedPreferencesUtil sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferencesUtil sharedPreferences = new SharedPreferencesUtil(this);
+        sharedPreferences = new SharedPreferencesUtil(this);
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_splash);
