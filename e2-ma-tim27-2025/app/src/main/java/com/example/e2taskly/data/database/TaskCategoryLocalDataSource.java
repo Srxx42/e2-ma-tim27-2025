@@ -2,12 +2,17 @@ package com.example.e2taskly.data.database;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
 import com.example.e2taskly.model.TaskCategory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class TaskCategoryLocalDataSource {
 
@@ -33,5 +38,30 @@ public class TaskCategoryLocalDataSource {
             db.close();
         }
         return newRowId;
+    }
+
+    public List<TaskCategory> getAllCategories(){
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<TaskCategory> categories = new ArrayList<>();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + SQLiteHelper.T_CATEGORIES,null);
+
+        if(cursor.moveToFirst()){
+            do{
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                String hexColor = cursor.getString(cursor.getColumnIndexOrThrow("colorhex"));
+
+                TaskCategory category = new TaskCategory(id,hexColor,name);
+                categories.add(category);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return categories;
+
+
     }
 }

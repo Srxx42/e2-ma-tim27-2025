@@ -15,10 +15,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.e2taskly.R;
 import com.example.e2taskly.service.TaskCategoryService;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+
+import java.util.List;
 
 public class AddCategoryActivity extends AppCompatActivity {
 
     private TextInputEditText  editCategoryName;
+    private TextInputLayout  textInputCategoryName;
     private Button saveCategoryButton;
     private GridLayout colorGrid;
     private String selectedColorHex = null;
@@ -41,45 +45,47 @@ public class AddCategoryActivity extends AppCompatActivity {
 
          addColorOptions();
          editCategoryName = findViewById(R.id.editCategoryName);
+         textInputCategoryName = findViewById(R.id.textInputCategoryName);
          saveCategoryButton = findViewById(R.id.saveCategoryButton);
          saveCategoryButton.setOnClickListener(v -> saveCategory());
      }
 
      private void addColorOptions(){
 
-         // List <String> usedColors = taskRepository.getUsedColors();
-         for (String hex : PREDEFINED_COLORS){
+         List<String> usedColors = taskCategoryService.getUsedColors();
+         for (String hex : PREDEFINED_COLORS) {
 
-            // if (!usedColors.contains(hex)) {}
+             if (!usedColors.contains(hex)) {
 
-             View circleView = new View(this);
+                 View circleView = new View(this);
 
-             GridLayout.LayoutParams params= new GridLayout.LayoutParams();
-             params.width = 110;
-             params.height = 110;
-             params.setMargins(40,25,25,25);
-             circleView.setLayoutParams(params);
+                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                 params.width = 110;
+                 params.height = 110;
+                 params.setMargins(40, 25, 25, 25);
+                 circleView.setLayoutParams(params);
 
-             GradientDrawable drawable = (GradientDrawable) getDrawable(R.drawable.colored_circles);
-             drawable = (GradientDrawable) drawable.mutate();
-             drawable.setColor(Color.parseColor(hex));
-             circleView.setBackground(drawable);
+                 GradientDrawable drawable = (GradientDrawable) getDrawable(R.drawable.colored_circles);
+                 drawable = (GradientDrawable) drawable.mutate();
+                 drawable.setColor(Color.parseColor(hex));
+                 circleView.setBackground(drawable);
 
-             GradientDrawable finalDrawable = drawable;
-             circleView.setOnClickListener(v ->{
+                 GradientDrawable finalDrawable = drawable;
+                 circleView.setOnClickListener(v -> {
 
-                 for(int i = 0; i < colorGrid.getChildCount(); i++){
-                     View child = colorGrid.getChildAt(i);
-                     GradientDrawable bg = (GradientDrawable) child.getBackground();
-                     bg.setStroke(2, Color.TRANSPARENT);
-                 }
+                     for (int i = 0; i < colorGrid.getChildCount(); i++) {
+                         View child = colorGrid.getChildAt(i);
+                         GradientDrawable bg = (GradientDrawable) child.getBackground();
+                         bg.setStroke(2, Color.TRANSPARENT);
+                     }
 
-                 finalDrawable.setStroke(6, Color.BLUE);
+                     finalDrawable.setStroke(6, Color.BLUE);
 
-                 selectedColorHex = hex;
-             });
+                     selectedColorHex = hex;
+                 });
 
-             colorGrid.addView(circleView);
+                 colorGrid.addView(circleView);
+             }
          }
      }
 
@@ -87,13 +93,18 @@ public class AddCategoryActivity extends AppCompatActivity {
          String name = editCategoryName.getText() != null ? editCategoryName.getText().toString().trim() : "";
          String hexColor = selectedColorHex;
 
+         if(taskCategoryService.doesNameExist(name)){
+             textInputCategoryName.setError("Category name already exists.");
+             return;
+         }
+
         boolean success = taskCategoryService.saveCategory(name,hexColor);
 
          if(success){
              Toast.makeText(this, "Category saved!", Toast.LENGTH_SHORT).show();
              finish(); // zatvori activity ili idi nazad
          } else {
-             Toast.makeText(this, "Name or color invalid / already used!", Toast.LENGTH_SHORT).show();
+             Toast.makeText(this, "Error occured while saving category.", Toast.LENGTH_SHORT).show();
          }
      }
 

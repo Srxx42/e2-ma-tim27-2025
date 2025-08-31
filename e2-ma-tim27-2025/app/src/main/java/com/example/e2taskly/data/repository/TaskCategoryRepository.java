@@ -9,6 +9,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthResult;
 
+import java.util.List;
+
 public class TaskCategoryRepository {
 
     private TaskCategoryLocalDataSource localDataSource;
@@ -19,5 +21,9 @@ public class TaskCategoryRepository {
 
     public long createCategory (TaskCategory category){
         return localDataSource.addCategory(category);
+    }
+
+    public List<TaskCategory> getAllCategories(){
+        return localDataSource.getAllCategories();
     }
 }

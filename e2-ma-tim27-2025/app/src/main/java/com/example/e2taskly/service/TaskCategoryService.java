@@ -5,6 +5,9 @@ import android.content.Context;
 import com.example.e2taskly.data.repository.TaskCategoryRepository;
 import com.example.e2taskly.model.TaskCategory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TaskCategoryService {
 
     private  TaskCategoryRepository taskCategoryRepository;
@@ -29,6 +32,32 @@ public class TaskCategoryService {
         category.setId(idInt);
 
         return idInt != -1;
+    }
+
+    public List<String> getUsedColors(){
+         List<TaskCategory> categories = new ArrayList<>();
+         List<String> usedColors = new ArrayList<>();
+
+         categories = taskCategoryRepository.getAllCategories();
+
+         for(TaskCategory tc : categories){
+             usedColors.add(tc.getColorHex());
+         }
+
+         return usedColors;
+    }
+
+    public boolean doesNameExist(String name){
+        List<TaskCategory> categories = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+
+        categories = taskCategoryRepository.getAllCategories();
+
+        for(TaskCategory tc : categories){
+            names.add(tc.getName());
+        }
+
+        return names.contains(name);
     }
 
 
