@@ -34,4 +34,8 @@ public class TaskCategoryRepository {
     public boolean updateCategory(int id,String name, String hexColor){
         return localDataSource.updateCategory(id,name,hexColor);
     }
+
+    public boolean deleteById(int id){
+        return localDataSource.deleteById(id);
+    }
 }

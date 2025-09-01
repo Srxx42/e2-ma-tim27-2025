@@ -102,4 +102,23 @@ public class TaskCategoryLocalDataSource {
 
         return rowsAffected > 0;
     }
+
+    public boolean deleteById(int id){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("id", id);
+
+        int rowsAffected = 0;
+
+        try{
+            rowsAffected = db.delete(SQLiteHelper.T_CATEGORIES,"id = ?", new String[]{String.valueOf(id)});
+            Log.d("DB_SUCCESS", "Deleted rows: " + rowsAffected);
+        } catch(SQLiteException e){
+            Log.e("DB_ERROR", "SQLite error: " + e.getMessage());
+        }finally{
+            db.close();
+        }
+
+        return rowsAffected > 0;
+    }
 }

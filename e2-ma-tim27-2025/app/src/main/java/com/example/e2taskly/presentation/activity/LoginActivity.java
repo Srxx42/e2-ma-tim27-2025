@@ -29,6 +29,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+
+
         setContentView(R.layout.activity_login);
         userService = new UserService(this);
         editTextEmail = findViewById(R.id.editTextEmail);

@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -22,16 +23,20 @@ import androidx.annotation.Nullable;
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.TaskCategory;
 import com.example.e2taskly.presentation.activity.ManageCategoryActivity;
+import com.example.e2taskly.service.TaskCategoryService;
 
 import java.util.ArrayList;
 
 public class CategoryListAdapter extends ArrayAdapter<TaskCategory> {
     private ArrayList<TaskCategory> aCategories;
 
+    private TaskCategoryService taskCategoryService;
+
     public CategoryListAdapter(@NonNull Context context, @NonNull ArrayList<TaskCategory> categories) {
         super(context, R.layout.category_item, categories);
         aCategories = categories;
 
+        taskCategoryService = new TaskCategoryService(context);
     }
 
     @Override
@@ -61,6 +66,7 @@ public class CategoryListAdapter extends ArrayAdapter<TaskCategory> {
         LinearLayout categoryCard = converView.findViewById(R.id.categoryItem);
         TextView categoryName = converView.findViewById(R.id.categoryName);
         View categoryColor = converView.findViewById(R.id.colorView);
+        ImageButton deleteButton = converView.findViewById(R.id.deleteButton);
 
         if (category != null) {
             categoryName.setText(category.getName());
@@ -69,6 +75,13 @@ public class CategoryListAdapter extends ArrayAdapter<TaskCategory> {
             drawable = (GradientDrawable) drawable.mutate();
             drawable.setColor(Color.parseColor(category.getColorHex()));
             categoryColor.setBackground(drawable);
+
+            deleteButton.setOnClickListener(v -> {
+                taskCategoryService.deleteById(category.getId());
+                aCategories.remove(category);
+                this.notifyDataSetChanged();
+            });
+
 
             categoryCard.setOnClickListener(v -> {
                 Intent intent = new Intent(getContext(), ManageCategoryActivity.class);

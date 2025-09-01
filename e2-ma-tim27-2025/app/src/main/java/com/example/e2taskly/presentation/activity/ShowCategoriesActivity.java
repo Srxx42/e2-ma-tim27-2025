@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.adapters.CategoryListAdapter;
@@ -27,6 +28,9 @@ public class ShowCategoriesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         taskCategoryService = new TaskCategoryService(this);
         setContentView(R.layout.activity_category_show);
+
+        Toolbar toolbar =findViewById(R.id.customToolbar);
+        setSupportActionBar(toolbar);
 
         categoryListView = findViewById(R.id.categoryListView);
         categories = new ArrayList<>();

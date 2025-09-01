@@ -72,6 +72,10 @@ public class TaskCategoryService {
         return taskCategoryRepository.updateCategory(id,name,hexColor);
     }
 
+    public boolean deleteById(int id){
+        return taskCategoryRepository.deleteById(id);
+    }
+
 
 
 }

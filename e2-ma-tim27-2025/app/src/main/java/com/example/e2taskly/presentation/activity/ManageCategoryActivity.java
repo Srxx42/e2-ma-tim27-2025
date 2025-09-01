@@ -9,6 +9,7 @@ import android.widget.GridLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.TaskCategory;
@@ -41,6 +42,9 @@ public class ManageCategoryActivity extends AppCompatActivity {
          super.onCreate(savedInstanceState);
          taskCategoryService = new TaskCategoryService(this);
          setContentView(R.layout.activity_category_manage);
+
+         Toolbar toolbar =findViewById(R.id.customToolbar);
+         setSupportActionBar(toolbar);
 
          colorGrid = findViewById(R.id.colorGrid);
          editCategoryName = findViewById(R.id.editCategoryName);

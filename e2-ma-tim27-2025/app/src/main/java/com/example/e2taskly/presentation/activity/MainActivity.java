@@ -6,6 +6,7 @@ import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.service.UserService;
@@ -20,6 +21,15 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         userService = new UserService(this);
+
+        Toolbar toolbar =findViewById(R.id.customToolbar);
+        setSupportActionBar(toolbar);
+
+        // Ovo gasi defaultni title (E2Taskly)
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
         buttonLogout = findViewById(R.id.buttonLogout);
 
         buttonLogout.setOnClickListener(v->handleLogout());
