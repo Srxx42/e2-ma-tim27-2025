@@ -127,6 +127,10 @@ public class UserRepository {
         remoteDataSource.updateStreakData(uid,date,newStreak);
         localDataSource.updateStreakData(uid,date,newStreak);
     }
+    public void updateUser(User user){
+        localDataSource.updateUser(user);
+        remoteDataSource.saveUserDetails(user);
+    }
     public void logout(){
         remoteDataSource.logoutUser();
     }

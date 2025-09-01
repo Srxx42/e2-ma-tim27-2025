@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        //userService.addXpToUser(sharedPreferences.getActiveUserUid(),150);
     }
     @Override
     protected void onResume(){

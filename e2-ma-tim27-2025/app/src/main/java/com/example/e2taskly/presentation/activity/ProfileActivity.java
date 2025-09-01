@@ -26,6 +26,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.service.LevelingService;
 import com.example.e2taskly.service.UserService;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.BarcodeFormat;
@@ -34,11 +35,12 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 public class ProfileActivity extends AppCompatActivity {
     public static final String EXTRA_USER_ID = "com.example.e2taskly.USER_ID";
     private ImageView imageViewAvatar, imageViewQrCode;
-    private TextView textViewUsername, textViewTitle, textViewLevel, textViewXp, textViewPower, textViewCoins;
+    private TextView textViewUsername, textViewTitle, textViewLevel, textViewXp, textViewPower, textViewCoins,textViewXpProgress;
     private Button buttonChangePassword;
-    private ProgressBar progressBar;
+    private ProgressBar progressBar,progressBarXp;
     private LinearLayout powerLayout,coinsLayout;
     private UserService userService;
+    private LevelingService levelingService;
     private String profileUserId;
     private String currentUserId;
     @Override
@@ -55,8 +57,14 @@ public class ProfileActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        userService = new UserService(this);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
+        userService = new UserService(this);
+        levelingService = new LevelingService();
         setupViews();
 
         Intent intent = getIntent();
@@ -81,8 +89,10 @@ public class ProfileActivity extends AppCompatActivity {
         textViewTitle = findViewById(R.id.textViewTitle);
         textViewLevel = findViewById(R.id.textViewLevel);
         textViewXp = findViewById(R.id.textViewXp);
+        textViewXpProgress = findViewById(R.id.textViewXpProgress);
         buttonChangePassword = findViewById(R.id.buttonChangePassword);
         progressBar = findViewById(R.id.progressBar);
+        progressBarXp = findViewById(R.id.progressBarXp);
 
         powerLayout = findViewById(R.id.powerLayout);
         coinsLayout = findViewById(R.id.coinsLayout);
@@ -130,6 +140,7 @@ public class ProfileActivity extends AppCompatActivity {
             coinsLayout.setVisibility(View.GONE);
             buttonChangePassword.setVisibility(View.GONE);
         }
+        displayProgress(user);
     }
     private void generateAndSetQrCode(String uid){
         try {
@@ -185,5 +196,30 @@ public class ProfileActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    private void displayProgress(User user) {
+        int currentLevel = user.getLevel();
+        int currentXp = user.getXp();
+
+        // XP potreban za TRENUTNI nivo (početna tačka progres bara)
+        // Ako je level 1, počinjemo od 0 XP.
+        int xpForCurrentLevel = (currentLevel > 2) ? levelingService.getXpForLevel(currentLevel) : 0;
+
+        // XP potreban za SLEDEĆI nivo (krajnja tačka progres bara)
+        int xpForNextLevel = levelingService.getXpForLevel(currentLevel + 1);
+
+        // Koliko XP je korisnik sakupio unutar ovog nivoa
+        int xpProgressInLevel = currentXp - xpForCurrentLevel;
+        // Koliko XP ukupno treba da se sakupi u ovom nivou
+        int xpNeededInLevel = xpForNextLevel - xpForCurrentLevel;
+
+        // Postavljanje vrednosti u UI
+        textViewXpProgress.setText(xpProgressInLevel + " / " + xpNeededInLevel + " XP");
+
+        // Ažuriranje ProgressBar-a
+        if (xpNeededInLevel > 0) { // Izbegavanje deljenja sa nulom
+            progressBarXp.setMax(xpNeededInLevel);
+            progressBarXp.setProgress(xpProgressInLevel);
+        }
     }
 }

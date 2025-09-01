@@ -23,10 +23,12 @@ import java.util.concurrent.TimeUnit;
 public class UserService {
     private final UserRepository userRepository;
     private final SharedPreferencesUtil sharedPreferences;
+    private final LevelingService levelingService;
     public UserService(Context context){
 
         userRepository = new UserRepository(context);
         sharedPreferences = new SharedPreferencesUtil(context);
+        levelingService = new LevelingService();
     }
     public void registerUser(String email, String username,String password, String confirmPassword, String selectedAvatar, OnCompleteListener<AuthResult> listener){
         String validationError = validateRegistrationInput(email, username, password, confirmPassword, selectedAvatar);
@@ -228,5 +230,25 @@ public class UserService {
     public void logoutUser() {
         userRepository.logout();
         sharedPreferences.clearUserSession();
+    }
+    public void addXpToUser(String uid,int xpToAdd){
+        userRepository.getUserProfile(uid).addOnCompleteListener(getTask->{
+           if(!getTask.isSuccessful() || getTask.getResult() == null){
+               Log.e("addXpToUser","Failed to get user profile.",getTask.getException());
+               return;
+           }
+           User user = getTask.getResult();
+           user.setXp(user.getXp() + xpToAdd);
+           int xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel()+1);
+
+           while(user.getXp()>xpNeededForNextLevel){
+               user.setLevel(user.getLevel()+1);
+               int ppGained = levelingService.getPowerPointsForLevel(user.getLevel());
+               user.setPowerPoints(user.getPowerPoints() + ppGained);
+               user.setTitle(levelingService.getTitleForLevel(user.getLevel()));
+               xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel()+1);
+           }
+           userRepository.updateUser(user);
+        });
     }
 }

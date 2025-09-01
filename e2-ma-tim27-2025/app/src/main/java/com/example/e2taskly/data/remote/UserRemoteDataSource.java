@@ -92,7 +92,6 @@ public class UserRemoteDataSource {
                         "lastActivityDate", date
                 );
     }
-
     public void logoutUser() {
         mAuth.signOut();
     }
