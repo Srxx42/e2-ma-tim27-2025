@@ -1,7 +1,9 @@
 package com.example.e2taskly.presentation.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
@@ -9,13 +11,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.e2taskly.R;
+import com.example.e2taskly.model.User;
 import com.example.e2taskly.service.UserService;
+import com.example.e2taskly.util.SharedPreferencesUtil;
 
 public class MainActivity extends AppCompatActivity {
     private Button buttonLogout;
     private Button buttonProfile;
     private Button buttonViewAllUsers;
     private UserService userService;
+    private SharedPreferencesUtil sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
+        sharedPreferences = new SharedPreferencesUtil(this);
         buttonLogout = findViewById(R.id.buttonLogout);
         buttonProfile = findViewById(R.id.buttonProfile);
         buttonViewAllUsers = findViewById(R.id.buttonViewAllUsers);
@@ -61,6 +67,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        checkUserActivityStreak();
+    }
     private void handleLogout() {
         userService.logoutUser();
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
@@ -69,4 +80,11 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
+    private void checkUserActivityStreak(){
+        userService.getUserProfile(sharedPreferences.getActiveUserUid(),task -> {
+            if(task.isSuccessful()){
+                userService.updateDailyStreak(task.getResult());
+            }
+        });
+    }
 }

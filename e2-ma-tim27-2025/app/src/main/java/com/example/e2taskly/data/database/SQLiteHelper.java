@@ -28,7 +28,9 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "power_points INTEGER DEFAULT 0, " +
                 "coins INTEGER DEFAULT 0, " +
                 "badges TEXT, " +
-                "equipment TEXT " +
+                "equipment TEXT, " +
+                "active_days_streak INTEGER, " +
+                "last_activity_date INTEGER " +
                 ")");
 
         db.execSQL("create  table " + T_CATEGORIES + " (" +

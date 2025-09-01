@@ -2,6 +2,7 @@ package com.example.e2taskly.service;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 
 import com.example.e2taskly.data.repository.UserRepository;
@@ -14,8 +15,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class UserService {
     private final UserRepository userRepository;
@@ -50,6 +53,8 @@ public class UserService {
                     newUser.setTitle("Rookie");
                     newUser.setPowerPoints(0);
                     newUser.setCoins(0);
+                    newUser.setActiveDaysStreak(0);
+                    newUser.setLastActivityDate(new Date());
 
                     return userRepository.registerUser(email, password, newUser);
                 })
@@ -172,6 +177,53 @@ public class UserService {
     }
     public void getAllUsers(OnCompleteListener<List<User>> listener){
         userRepository.getAllUsers().addOnCompleteListener(listener);
+    }
+    public void updateDailyStreak(User user){
+        if(user ==null || user.getUid()==null){
+            Log.e("StreakUpdate","User object is invalid");
+            return;
+        }
+        Date lastActivity = user.getLastActivityDate();
+        Date today = new Date();
+        if(lastActivity==null){
+
+            userRepository.updateStreakData(user.getUid(),1);
+            return;
+        }
+        if(isSameDay(lastActivity,today)){
+            return;
+        }
+        if(wasYesterday(lastActivity,today)){
+            int newStreak = user.getActiveDaysStreak()+1;
+            userRepository.updateStreakData(user.getUid(),newStreak);
+        }else{
+            userRepository.updateStreakData(user.getUid(),1);
+        }
+    }
+    public boolean isSameDay(Date lastDate,Date today){
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(lastDate);
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(today);
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
+    }
+    public boolean wasYesterday(Date lastDate,Date today){
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(lastDate);
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(today);
+        cal1.set(Calendar.HOUR_OF_DAY, 0);
+        cal1.set(Calendar.MINUTE, 0);
+        cal1.set(Calendar.SECOND, 0);
+        cal1.set(Calendar.MILLISECOND, 0);
+
+        cal2.set(Calendar.HOUR_OF_DAY, 0);
+        cal2.set(Calendar.MINUTE, 0);
+        cal2.set(Calendar.SECOND, 0);
+        cal2.set(Calendar.MILLISECOND, 0);
+        long diff = cal2.getTimeInMillis()-cal1.getTimeInMillis();
+        return TimeUnit.MILLISECONDS.toDays(diff)==1;
     }
     public void logoutUser() {
         userRepository.logout();

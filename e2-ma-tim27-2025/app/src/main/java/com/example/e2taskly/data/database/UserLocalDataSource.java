@@ -7,6 +7,10 @@ import android.text.TextUtils;
 
 import com.example.e2taskly.model.User;
 
+import org.checkerframework.checker.units.qual.C;
+
+import java.util.Date;
+
 public class UserLocalDataSource {
     private SQLiteHelper dbHelper;
 
@@ -33,6 +37,8 @@ public class UserLocalDataSource {
         if (user.getEquipment() != null) {
             values.put("equipment", TextUtils.join(",", user.getEquipment()));
         }
+        values.put("active_days_streak",user.getActiveDaysStreak());
+        values.put("last_activity_date",user.getLastActivityDate().getTime());
         long newRowId = db.insert(SQLiteHelper.T_USERS, null, values);
         db.close();
         return newRowId;
@@ -50,5 +56,12 @@ public class UserLocalDataSource {
         db.close();
 
         return rowsAffected;
+    }
+    public void updateStreakData(String uid, Date date, int newStreak){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("active_days_streak",newStreak);
+        values.put("last_activity_date",date.getTime());
+        db.update(SQLiteHelper.T_USERS,values,"id"+"=?",new String[]{uid});
     }
 }
