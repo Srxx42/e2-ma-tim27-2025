@@ -31,10 +31,16 @@
             android:exported="false" />
         <activity
             android:name=".presentation.activity.RegistrationActivity"
-            android:exported="false" />
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".presentation.activity.ShowCategoriesActivity"
+            android:exported="false"/>
+        <activity android:name=".presentation.activity.ManageCategoryActivity" android:exported="false" />
         <activity
             android:name=".presentation.activity.MainActivity"
-            android:exported="true" />
+            android:exported="false"
+            android:windowFullscreen="true"/>
     </application>
 
 </manifest>

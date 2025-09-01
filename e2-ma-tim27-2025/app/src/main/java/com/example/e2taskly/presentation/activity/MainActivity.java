@@ -6,9 +6,7 @@ import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.service.UserService;
@@ -25,10 +23,34 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         userService = new UserService(this);
+
+        Toolbar toolbar =findViewById(R.id.customToolbar);
+        setSupportActionBar(toolbar);
+
+        // Ovo gasi defaultni title (E2Taskly)
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
         buttonLogout = findViewById(R.id.buttonLogout);
         buttonProfile = findViewById(R.id.buttonProfile);
         buttonViewAllUsers = findViewById(R.id.buttonViewAllUsers);
         buttonLogout.setOnClickListener(v->handleLogout());
+        Button categoryAdd = findViewById(R.id.categoryAdd);
+
+        categoryAdd.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ManageCategoryActivity.class);
+            startActivity(intent);
+        });
+
+        Button showCategories = findViewById(R.id.categoryShow);
+
+        showCategories.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ShowCategoriesActivity.class);
+            startActivity(intent);
+        });
+
+
         buttonProfile.setOnClickListener(v->{
             Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
             startActivity(intent);
@@ -37,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, UsersListActivity.class);
             startActivity(intent);
         });
+
     }
     private void handleLogout() {
         userService.logoutUser();
@@ -45,4 +68,5 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
 }

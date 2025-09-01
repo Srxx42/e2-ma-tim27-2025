@@ -6,8 +6,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "e2taskly.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     public static final String T_USERS = "users";
+
+    public static final String T_CATEGORIES = "taskCategories";
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -28,11 +30,18 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "badges TEXT, " +
                 "equipment TEXT " +
                 ")");
+
+        db.execSQL("create  table " + T_CATEGORIES + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "name TEXT NOT NULL UNIQUE," +
+                "colorhex TEXT NOT NULL UNIQUE" +
+                ")");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
         onCreate(db);
     }
 }

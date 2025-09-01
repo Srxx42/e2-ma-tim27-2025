@@ -16,6 +16,12 @@
 
     <string name="main_welcome_message">Welcome!</string>
     <string name="main_logout_button">Logout</string>
+
+    <string name="category_title">Category</string>
+    <string name="category_name">Name:</string>
+    <string name="category_color">Color:</string>
+    <string name="save_button">Save</string>
+
     <string name="profile_level_label">Level</string>
     <string name="profile_xp_label">XP</string>
     <string name="profile_pp_label">Power</string>
@@ -32,4 +38,5 @@
     <string name="dialog_cancel_button">Cancel</string>
     <string name="main_profile_button">My Profile</string>
     <string name="main_all_users_button">All Users</string>
+
 </resources>
