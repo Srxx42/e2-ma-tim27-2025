@@ -8,12 +8,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 public class UserRemoteDataSource {
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
+    private final FirebaseAuth mAuth;
+    private final FirebaseFirestore db;
     public UserRemoteDataSource() {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -62,6 +63,25 @@ public class UserRemoteDataSource {
     public Task<Void> deleteUserDetails(String uid) {
         return db.collection("users").document(uid).delete();
     }
+    public Task<Void> updateUserActivationStatus(String uid, boolean isActivated) {
+        return db.collection("users")
+                .document(uid)
+                .update("activated",isActivated);
+    }
+    public Task<DocumentSnapshot> getUserDetails(String uid) {
+        return db.collection("users").document(uid).get();
+    }
+    public Task<Void> updatePassword(String newPassword){
+        FirebaseUser user = mAuth.getCurrentUser();
+        if(user!=null){
+            return user.updatePassword(newPassword);
+        }
+        return Tasks.forException(new Exception("User not logged in"));
+    }
+    public Task<QuerySnapshot> getAllUsers(){
+        return db.collection("users").get();
+    }
+
     public void logoutUser() {
         mAuth.signOut();
     }

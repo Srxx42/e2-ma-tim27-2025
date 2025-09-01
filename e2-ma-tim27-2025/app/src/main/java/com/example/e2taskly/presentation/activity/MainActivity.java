@@ -13,6 +13,8 @@ import com.example.e2taskly.service.UserService;
 
 public class MainActivity extends AppCompatActivity {
     private Button buttonLogout;
+    private Button buttonProfile;
+    private Button buttonViewAllUsers;
     private UserService userService;
 
     @Override
@@ -31,9 +33,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         buttonLogout = findViewById(R.id.buttonLogout);
-
+        buttonProfile = findViewById(R.id.buttonProfile);
+        buttonViewAllUsers = findViewById(R.id.buttonViewAllUsers);
         buttonLogout.setOnClickListener(v->handleLogout());
-
         Button categoryAdd = findViewById(R.id.categoryAdd);
 
         categoryAdd.setOnClickListener(v -> {
@@ -48,6 +50,15 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+
+        buttonProfile.setOnClickListener(v->{
+            Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
+            startActivity(intent);
+        });
+        buttonViewAllUsers.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, UsersListActivity.class);
+            startActivity(intent);
+        });
 
     }
     private void handleLogout() {

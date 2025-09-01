@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.E2Taskly">
         <activity
+            android:name=".presentation.activity.UsersListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".presentation.activity.SplashActivity"
             android:exported="true">
             <intent-filter>

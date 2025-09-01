@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Date;
+import java.util.List;
 
 public class UserService {
     private final UserRepository userRepository;
@@ -25,7 +26,7 @@ public class UserService {
         sharedPreferences = new SharedPreferencesUtil(context);
     }
     public void registerUser(String email, String username,String password, String confirmPassword, String selectedAvatar, OnCompleteListener<AuthResult> listener){
-        String validationError = validateInput(email, username, password, confirmPassword, selectedAvatar);
+        String validationError = validateRegistrationInput(email, username, password, confirmPassword, selectedAvatar);
         if(validationError!=null){
             listener.onComplete(Tasks.forException(new Exception(validationError)));
             return;
@@ -46,6 +47,9 @@ public class UserService {
                     newUser.setXp(0);
                     newUser.setActivated(false);
                     newUser.setRegistrationTime(new Date());
+                    newUser.setTitle("Rookie");
+                    newUser.setPowerPoints(0);
+                    newUser.setCoins(0);
 
                     return userRepository.registerUser(email, password, newUser);
                 })
@@ -109,7 +113,23 @@ public class UserService {
             }
         });
     }
-    private String validateInput(String email, String username, String password, String confirmPassword, String selectedAvatar) {
+    public void getUserProfile(String uid,OnCompleteListener<User> listener) {
+        if (uid==null || uid.isEmpty()) {
+            listener.onComplete(Tasks.forException(new Exception("No user is currently logged in.")));
+            return;
+        }
+        userRepository.getUserProfile(uid).addOnCompleteListener(listener);
+    }
+    public void changePassword(String oldPassword, String newPassword, String confirmPassword, OnCompleteListener<Void> listener) {
+        String validationError = validatePasswordChange(oldPassword, newPassword, confirmPassword);
+        if (validationError != null) {
+            listener.onComplete(Tasks.forException(new Exception(validationError)));
+            return;
+        }
+
+        userRepository.changePassword(oldPassword, newPassword).addOnCompleteListener(listener);
+    }
+    private String validateRegistrationInput(String email, String username, String password, String confirmPassword, String selectedAvatar) {
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
             return "All fields are required.";
         }
@@ -127,6 +147,31 @@ public class UserService {
             return "Choose avatar.";
         }
         return null;
+    }
+    private String validatePasswordChange(String oldPassword, String newPassword, String confirmPassword) {
+        if (TextUtils.isEmpty(oldPassword) || TextUtils.isEmpty(newPassword) || TextUtils.isEmpty(confirmPassword)) {
+            return "All password fields are required.";
+        }
+        if (newPassword.length() < 6) {
+            return "The new password must be at least 6 characters long.";
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            return "The new passwords do not match.";
+        }
+        if (oldPassword.equals(newPassword)) {
+            return "The new password cannot be the same as the old password.";
+        }
+        return null;
+    }
+    public String getCurrentUserId(){
+        FirebaseUser firebaseUser = userRepository.getCurrentUser();
+        if(firebaseUser != null){
+            return firebaseUser.getUid();
+        }
+        return null;
+    }
+    public void getAllUsers(OnCompleteListener<List<User>> listener){
+        userRepository.getAllUsers().addOnCompleteListener(listener);
     }
     public void logoutUser() {
         userRepository.logout();

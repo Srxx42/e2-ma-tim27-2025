@@ -21,4 +21,22 @@
     <string name="category_name">Name:</string>
     <string name="category_color">Color:</string>
     <string name="save_button">Save</string>
+
+    <string name="profile_level_label">Level</string>
+    <string name="profile_xp_label">XP</string>
+    <string name="profile_pp_label">Power</string>
+    <string name="profile_coins_label">Coins</string>
+    <string name="profile_your_qr_code_label">Your QR Code</string>
+    <string name="profile_badges_label">Badges</string>
+    <string name="profile_equipment_label">Equipment</string>
+    <string name="profile_change_password_button">Change Password</string>
+    <string name="profile_change_password_dialog_title">Change Password</string>
+    <string name="profile_old_password_hint">Old Password</string>
+    <string name="profile_new_password_hint">New Password</string>
+    <string name="profile_confirm_new_password_hint">Confirm New Password</string>
+    <string name="dialog_change_button">Change</string>
+    <string name="dialog_cancel_button">Cancel</string>
+    <string name="main_profile_button">My Profile</string>
+    <string name="main_all_users_button">All Users</string>
+
 </resources>

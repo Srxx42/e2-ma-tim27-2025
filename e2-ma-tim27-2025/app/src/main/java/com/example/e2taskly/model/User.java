@@ -1,6 +1,8 @@
 package com.example.e2taskly.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class User {
     private String uid;
@@ -11,8 +13,19 @@ public class User {
     private int xp;
     private boolean isActivated;
     private Date registrationTime;
+    private String title;
+    private int powerPoints;
+    private int coins;
+    private List<String> badges;
+    private List<String> equipment;
+    private int activeDaysStreak;
+    private Date lastActivityDate;
+
 
     public User() {
+        this.badges = new ArrayList<>();
+        this.equipment = new ArrayList<>();
+        this.activeDaysStreak=0;
     }
 
     public User(String uid, String email, String username, String avatar, int level, int xp, boolean isActivated, Date registrationTime) {
@@ -24,6 +37,20 @@ public class User {
         this.xp = xp;
         this.isActivated = isActivated;
         this.registrationTime = registrationTime;
+    }
+
+    public User(String uid, String email, String username, String avatar, int level, int xp, boolean isActivated, Date registrationTime, String title, int powerPoints, int coins) {
+        this.uid = uid;
+        this.email = email;
+        this.username = username;
+        this.avatar = avatar;
+        this.level = level;
+        this.xp = xp;
+        this.isActivated = isActivated;
+        this.registrationTime = registrationTime;
+        this.title = title;
+        this.powerPoints = powerPoints;
+        this.coins = coins;
     }
 
     public String getUid() {
@@ -88,5 +115,61 @@ public class User {
 
     public void setRegistrationTime(Date registrationTime) {
         this.registrationTime = registrationTime;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public int getPowerPoints() {
+        return powerPoints;
+    }
+
+    public void setPowerPoints(int powerPoints) {
+        this.powerPoints = powerPoints;
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
+    }
+
+    public List<String> getBadges() {
+        return badges;
+    }
+
+    public void setBadges(List<String> badges) {
+        this.badges = badges;
+    }
+
+    public List<String> getEquipment() {
+        return equipment;
+    }
+
+    public void setEquipment(List<String> equipment) {
+        this.equipment = equipment;
+    }
+
+    public Date getLastActivityDate() {
+        return lastActivityDate;
+    }
+
+    public void setLastActivityDate(Date lastActivityDate) {
+        this.lastActivityDate = lastActivityDate;
+    }
+
+    public int getActiveDaysStreak() {
+        return activeDaysStreak;
+    }
+
+    public void setActiveDaysStreak(int activeDaysStreak) {
+        this.activeDaysStreak = activeDaysStreak;
     }
 }
