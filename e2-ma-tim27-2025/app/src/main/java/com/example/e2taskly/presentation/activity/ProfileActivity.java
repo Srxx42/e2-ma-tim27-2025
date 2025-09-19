@@ -201,23 +201,17 @@ public class ProfileActivity extends AppCompatActivity {
         int currentLevel = user.getLevel();
         int currentXp = user.getXp();
 
-        // XP potreban za TRENUTNI nivo (početna tačka progres bara)
-        // Ako je level 1, počinjemo od 0 XP.
         int xpForCurrentLevel = (currentLevel > 2) ? levelingService.getXpForLevel(currentLevel) : 0;
 
-        // XP potreban za SLEDEĆI nivo (krajnja tačka progres bara)
+
         int xpForNextLevel = levelingService.getXpForLevel(currentLevel + 1);
 
-        // Koliko XP je korisnik sakupio unutar ovog nivoa
         int xpProgressInLevel = currentXp - xpForCurrentLevel;
-        // Koliko XP ukupno treba da se sakupi u ovom nivou
         int xpNeededInLevel = xpForNextLevel - xpForCurrentLevel;
 
-        // Postavljanje vrednosti u UI
         textViewXpProgress.setText(xpProgressInLevel + " / " + xpNeededInLevel + " XP");
 
-        // Ažuriranje ProgressBar-a
-        if (xpNeededInLevel > 0) { // Izbegavanje deljenja sa nulom
+        if (xpNeededInLevel > 0) {
             progressBarXp.setMax(xpNeededInLevel);
             progressBarXp.setProgress(xpProgressInLevel);
         }

@@ -42,8 +42,12 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
-        db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
-        onCreate(db);
+//        db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
+//        db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
+//        onCreate(db);
+        if (oldVersion < 2) {
+            // Add the new column if it doesn't exist
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN active_days_streak INTEGER DEFAULT 0;");
+        }
     }
 }

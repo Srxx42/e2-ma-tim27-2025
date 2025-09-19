@@ -192,6 +192,10 @@ public class UserService {
             userRepository.updateStreakData(user.getUid(),1);
             return;
         }
+        if(isSameDay(lastActivity,user.getRegistrationTime()) && user.getRegistrationTime()!=null){
+            userRepository.updateStreakData(user.getUid(),1);
+            return;
+        }
         if(isSameDay(lastActivity,today)){
             return;
         }
@@ -241,14 +245,30 @@ public class UserService {
            user.setXp(user.getXp() + xpToAdd);
            int xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel()+1);
 
-           while(user.getXp()>xpNeededForNextLevel){
+           while(user.getXp()>=xpNeededForNextLevel){
                user.setLevel(user.getLevel()+1);
                int ppGained = levelingService.getPowerPointsForLevel(user.getLevel());
                user.setPowerPoints(user.getPowerPoints() + ppGained);
                user.setTitle(levelingService.getTitleForLevel(user.getLevel()));
                xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel()+1);
+//               updateTaskXpForUser(user.getUid(), user.getLevel());
            }
            userRepository.updateUser(user);
         });
     }
+//    private void updateTaskXpForUser(String userId, int newLevel) {
+//        List<com.example.e2taskly.model.Task> tasks = taskRepository.getTasksByCreator(userId);
+//
+//        for(com.example.e2taskly.model.Task task : tasks){
+//            int baseImportanceXp = task.getImportance().getXpValue();
+//            int baseDifficultyXp = task.getDifficulty().getXpValue();
+//            int newImportanceXp = levelingService.calculateNextXpGain(baseImportanceXp,newLevel);
+//            int newDifficultyXp = levelingService.calculateNextXpGain(baseDifficultyXp,newLevel);
+//
+//            // zbir oba
+//            task.setValueXP(newImportanceXp + newDifficultyXp);
+//
+//            taskRepository.updateTask(task);
+//        }
+//    }
 }
