@@ -101,14 +101,16 @@ public class ProfileActivity extends AppCompatActivity {
     }
     private void loadUserProfile() {
         progressBar.setVisibility(View.VISIBLE);
-        userService.getUserProfile(profileUserId,task -> runOnUiThread(() -> {
-            progressBar.setVisibility(View.GONE);
-            if (task.isSuccessful()) {
-                populateUI(task.getResult());
-            } else {
-                Toast.makeText(this, "Failed to load profile: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }));
+        userService.getUserProfile(profileUserId)
+                .addOnCompleteListener(this, task -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        populateUI(task.getResult());
+                    } else {
+                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                        Toast.makeText(this, "Failed to load profile: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     private void populateUI(User user) {
@@ -181,14 +183,16 @@ public class ProfileActivity extends AppCompatActivity {
     }
     private void performPasswordChange(String oldPass, String newPass, String confirmPass) {
         progressBar.setVisibility(View.VISIBLE);
-        userService.changePassword(oldPass, newPass, confirmPass, task -> runOnUiThread(() -> {
-            progressBar.setVisibility(View.GONE);
-            if (task.isSuccessful()) {
-                Toast.makeText(this, "Password changed successfully!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Failed to change password: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }));
+        userService.changePassword(oldPass, newPass, confirmPass)
+                .addOnCompleteListener(this, task -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (task.isSuccessful()) {
+                        Toast.makeText(this, "Password changed successfully!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                        Toast.makeText(this, "Failed to change password: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -201,7 +205,7 @@ public class ProfileActivity extends AppCompatActivity {
         int currentLevel = user.getLevel();
         int currentXp = user.getXp();
 
-        int xpForCurrentLevel = (currentLevel > 2) ? levelingService.getXpForLevel(currentLevel) : 0;
+        int xpForCurrentLevel = (currentLevel > 1) ? levelingService.getXpForLevel(currentLevel) : 0;
 
 
         int xpForNextLevel = levelingService.getXpForLevel(currentLevel + 1);

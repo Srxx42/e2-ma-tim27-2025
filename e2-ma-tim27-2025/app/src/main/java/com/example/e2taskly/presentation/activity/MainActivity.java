@@ -82,10 +82,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkUserActivityStreak(){
-        userService.getUserProfile(sharedPreferences.getActiveUserUid(),task -> {
-            if(task.isSuccessful()){
-                userService.updateDailyStreak(task.getResult());
-            }
-        });
+        String uid = sharedPreferences.getActiveUserUid();
+        if (uid == null || uid.isEmpty()) {
+            return;
+        }
+
+        userService.getUserProfile(uid)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        userService.updateDailyStreak(task.getResult());
+                    } else {
+                        Log.e("MainActivity", "Failed to get user profile for streak check.", task.getException());
+                    }
+                });
     }
 }

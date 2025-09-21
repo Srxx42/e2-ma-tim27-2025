@@ -82,25 +82,27 @@ public class RegistrationActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         buttonRegister.setEnabled(false);
 
-        userService.registerUser(email, username, password, confirmPassword, selectedAvatarId, task -> {
-            progressBar.setVisibility(View.GONE);
-            buttonRegister.setEnabled(true);
+        userService.registerUser(email, username, password, confirmPassword, selectedAvatarId)
+                .addOnCompleteListener(this, task -> {
+                    progressBar.setVisibility(View.GONE);
+                    buttonRegister.setEnabled(true);
 
-            if (task.isSuccessful()) {
-                Toast.makeText(RegistrationActivity.this,
-                        "Registration successful! A verification link has been sent to your email.",
-                        Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-            } else {
-                String errorMessage = "An unknown error has occurred.";
-                if (task.getException() != null) {
-                    errorMessage = task.getException().getMessage();
-                }
-                Toast.makeText(RegistrationActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
-            }
-        });
+                    if (task.isSuccessful()) {
+                        Toast.makeText(RegistrationActivity.this,
+                                "Registration successful! A verification link has been sent to your email.",
+                                Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        String errorMessage = "An unknown error has occurred.";
+                        if (task.getException() != null) {
+                            errorMessage = task.getException().getMessage();
+                        }
+                        Toast.makeText(RegistrationActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     private void setupInputValidationListeners() {

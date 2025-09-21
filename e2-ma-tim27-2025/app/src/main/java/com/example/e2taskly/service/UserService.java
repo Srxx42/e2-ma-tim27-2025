@@ -30,17 +30,18 @@ public class UserService {
         sharedPreferences = new SharedPreferencesUtil(context);
         levelingService = new LevelingService();
     }
-    public void registerUser(String email, String username,String password, String confirmPassword, String selectedAvatar, OnCompleteListener<AuthResult> listener){
+    public Task<AuthResult> registerUser(String email, String username, String password, String confirmPassword, String selectedAvatar){
         String validationError = validateRegistrationInput(email, username, password, confirmPassword, selectedAvatar);
-        if(validationError!=null){
-            listener.onComplete(Tasks.forException(new Exception(validationError)));
-            return;
+        if(validationError != null){
+            return Tasks.forException(new Exception(validationError));
         }
 
-        userRepository.checkUsernameExists(username)
+        return userRepository.checkUsernameExists(username)
                 .continueWithTask(isUniqueTask -> {
-                    if (!isUniqueTask.isSuccessful()) { throw isUniqueTask.getException(); }
-                    if (!isUniqueTask.getResult().isEmpty()) {
+                    if (!isUniqueTask.isSuccessful()) {
+                        throw isUniqueTask.getException();
+                    }
+                    if (isUniqueTask.getResult() != null && !isUniqueTask.getResult().isEmpty()) {
                         throw new Exception("Username already exists.");
                     }
 
@@ -60,81 +61,67 @@ public class UserService {
 
                     return userRepository.registerUser(email, password, newUser);
                 })
-                .addOnCompleteListener(authTask -> {
+                .continueWithTask(authTask -> {
                     if (!authTask.isSuccessful() && authTask.getException() != null && authTask.getException().getCause() instanceof FirebaseAuthUserCollisionException) {
-                        Exception emailExistsException = new Exception("The provided email address is already in use.");
-                        listener.onComplete(Tasks.forException(emailExistsException));
-                    } else {
-                        listener.onComplete(authTask);
+                        return Tasks.forException(new Exception("The provided email address is already in use."));
                     }
+                    return authTask;
                 });
     }
-    public void loginUser(String email, String password, OnCompleteListener<AuthResult> listener){
+
+    public Task<AuthResult> loginUser(String email, String password){
         if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            Task<AuthResult> failedTask = Tasks.forException(new Exception("Please enter your email and password."));
-            listener.onComplete(failedTask);
-            return;
+            return Tasks.forException(new Exception("Please enter your email and password."));
         }
-        userRepository.loginUser(email, password).addOnCompleteListener(loginTask -> {
-            if (loginTask.isSuccessful()) {
-                FirebaseUser firebaseUser = userRepository.getCurrentUser();
 
-                if (firebaseUser == null) {
-                    listener.onComplete(Tasks.forException(new Exception("User not found after login.")));
-                    return;
-                }
+        return userRepository.loginUser(email, password).continueWithTask(loginTask -> {
+            if (!loginTask.isSuccessful()) {
+                throw new Exception("Incorrect email or password.", loginTask.getException());
+            }
 
-                if (firebaseUser.isEmailVerified()) {
+            FirebaseUser firebaseUser = userRepository.getCurrentUser();
+            if (firebaseUser == null) {
+                throw new Exception("User not found after login.");
+            }
 
-                    userRepository.updateUserActivationStatus(firebaseUser.getUid(), true);
-
-                    sharedPreferences.saveUserSession(firebaseUser.getUid());
-
-                    listener.onComplete(loginTask);
-
-                } else {
-                    long creationTimestamp = firebaseUser.getMetadata().getCreationTimestamp();
-                    long twentyFourHoursInMs = 24 * 60 * 60 * 1000;
-                    boolean isExpired = (System.currentTimeMillis() - creationTimestamp) > twentyFourHoursInMs;
-
-                    if (isExpired) {
-                        userRepository.reauthenticateAndDeleteUser(email, password)
-                                .addOnCompleteListener(deleteTask -> {
-                                    if (deleteTask.isSuccessful()) {
-                                        Exception userDeletedException = new Exception("Your activation link has expired. The account has been deleted, please register again.");
-                                        listener.onComplete(Tasks.forException(userDeletedException));
-                                    } else {
-                                        Exception deleteFailedException = new Exception("Error deleting the old account. Please contact support.");
-                                        listener.onComplete(Tasks.forException(deleteFailedException));
-                                    }
-                                });
-                    } else {
-                        userRepository.logout();
-                        Exception notVerifiedException = new Exception("Account not activated. Please check your email for the verification link.");
-                        listener.onComplete(Tasks.forException(notVerifiedException));
-                    }
-                }
+            if (firebaseUser.isEmailVerified()) {
+                userRepository.updateUserActivationStatus(firebaseUser.getUid(), true);
+                sharedPreferences.saveUserSession(firebaseUser.getUid());
+                return loginTask;
             } else {
-                Exception loginFailedException = new Exception("Incorrect email or password.");
-                listener.onComplete(Tasks.forException(loginFailedException));
+                long creationTimestamp = firebaseUser.getMetadata().getCreationTimestamp();
+                long twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+                boolean isExpired = (System.currentTimeMillis() - creationTimestamp) > twentyFourHoursInMs;
+
+                if (isExpired) {
+                    return userRepository.reauthenticateAndDeleteUser(email, password)
+                            .continueWithTask(deleteTask -> {
+                                if (deleteTask.isSuccessful()) {
+                                    throw new Exception("Your activation link has expired. The account has been deleted, please register again.");
+                                } else {
+                                    throw new Exception("Error deleting the old account. Please contact support.", deleteTask.getException());
+                                }
+                            });
+                } else {
+                    userRepository.logout();
+                    throw new Exception("Account not activated. Please check your email for the verification link.");
+                }
             }
         });
     }
-    public void getUserProfile(String uid,OnCompleteListener<User> listener) {
-        if (uid==null || uid.isEmpty()) {
-            listener.onComplete(Tasks.forException(new Exception("No user is currently logged in.")));
-            return;
+    public Task<User> getUserProfile(String uid) {
+        if (uid == null || uid.isEmpty()) {
+            return Tasks.forException(new Exception("No user is currently logged in."));
         }
-        userRepository.getUserProfile(uid).addOnCompleteListener(listener);
+        return userRepository.getUserProfile(uid);
     }
-    public void changePassword(String oldPassword, String newPassword, String confirmPassword, OnCompleteListener<Void> listener) {
+
+    public Task<Void> changePassword(String oldPassword, String newPassword, String confirmPassword) {
         String validationError = validatePasswordChange(oldPassword, newPassword, confirmPassword);
         if (validationError != null) {
-            listener.onComplete(Tasks.forException(new Exception(validationError)));
-            return;
+            return Tasks.forException(new Exception(validationError));
         }
-
-        userRepository.changePassword(oldPassword, newPassword).addOnCompleteListener(listener);
+        return userRepository.changePassword(oldPassword, newPassword);
     }
     private String validateRegistrationInput(String email, String username, String password, String confirmPassword, String selectedAvatar) {
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
@@ -177,8 +164,8 @@ public class UserService {
         }
         return null;
     }
-    public void getAllUsers(OnCompleteListener<List<User>> listener){
-        userRepository.getAllUsers().addOnCompleteListener(listener);
+    public Task<List<User>> getAllUsers(){
+        return userRepository.getAllUsers();
     }
     public void updateDailyStreak(User user){
         if(user ==null || user.getUid()==null){
