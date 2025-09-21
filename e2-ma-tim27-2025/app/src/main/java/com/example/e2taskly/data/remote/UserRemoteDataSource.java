@@ -9,8 +9,13 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserRemoteDataSource {
     private final FirebaseAuth mAuth;
@@ -81,7 +86,12 @@ public class UserRemoteDataSource {
     public Task<QuerySnapshot> getAllUsers(){
         return db.collection("users").get();
     }
-
+    public void updateStreakData(String uid, Date date, int newStreak){
+        db.collection("users").document(uid)
+                .update("activeDaysStreak",newStreak,
+                        "lastActivityDate", date
+                );
+    }
     public void logoutUser() {
         mAuth.signOut();
     }

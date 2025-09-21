@@ -34,6 +34,7 @@
     <string name="profile_old_password_hint">Old Password</string>
     <string name="profile_new_password_hint">New Password</string>
     <string name="profile_confirm_new_password_hint">Confirm New Password</string>
+    <string name="profile_level_progress">Level Progress</string>
     <string name="dialog_change_button">Change</string>
     <string name="dialog_cancel_button">Cancel</string>
     <string name="main_profile_button">My Profile</string>

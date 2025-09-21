@@ -13,6 +13,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class UserRepository {
@@ -120,6 +121,15 @@ public class UserRepository {
             }
             return Tasks.forResult(new ArrayList<>());
         });
+    }
+    public void updateStreakData(String uid, int newStreak){
+        Date date = new Date();
+        remoteDataSource.updateStreakData(uid,date,newStreak);
+        localDataSource.updateStreakData(uid,date,newStreak);
+    }
+    public void updateUser(User user){
+        localDataSource.updateUser(user);
+        remoteDataSource.saveUserDetails(user);
     }
     public void logout(){
         remoteDataSource.logoutUser();

@@ -162,7 +162,34 @@
                     android:text="@string/profile_coins_label"/>
             </LinearLayout>
         </LinearLayout>
+        <TextView
+            android:id="@+id/labelLevelProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/profile_level_progress"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/statsContainer" />
 
+        <ProgressBar
+            android:id="@+id/progressBarXp"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/labelLevelProgress"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:progress="60" />
+
+        <TextView
+            android:id="@+id/textViewXpProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@id/progressBarXp"
+            app:layout_constraintTop_toBottomOf="@id/progressBarXp"
+            tools:text="1500 / 2500 XP" />
         <!-- QR Code -->
         <TextView
             android:id="@+id/labelQrCode"
@@ -172,7 +199,7 @@
             android:text="@string/profile_your_qr_code_label"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/statsContainer" />
+            app:layout_constraintTop_toBottomOf="@id/progressBarXp" />
 
         <ImageView
             android:id="@+id/imageViewQrCode"

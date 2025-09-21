@@ -66,24 +66,24 @@ public class UsersListActivity extends AppCompatActivity {
 
     private void loadUsers() {
         progressBar.setVisibility(View.VISIBLE);
-        userService.getAllUsers(task -> runOnUiThread(() -> {
-            progressBar.setVisibility(View.GONE);
-            if (task.isSuccessful()) {
-                String currentUserId = userService.getCurrentUserId();
-                fullUserList.clear();
+        userService.getAllUsers()
+                .addOnCompleteListener(this, task -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        String currentUserId = userService.getCurrentUserId();
+                        fullUserList.clear();
 
-                for (User user : task.getResult()) {
-                    if (currentUserId != null && !user.getUid().equals(currentUserId)) {
-                        fullUserList.add(user);
+                        for (User user : task.getResult()) {
+                            if (currentUserId != null && !user.getUid().equals(currentUserId)) {
+                                fullUserList.add(user);
+                            }
+                        }
+                        filter("");
+
+                    } else {
+                        Toast.makeText(this, "Failed to load users.", Toast.LENGTH_SHORT).show();
                     }
-                }
-
-                userAdapter.filterList(fullUserList);
-
-            } else {
-                Toast.makeText(this, "Failed to load users.", Toast.LENGTH_SHORT).show();
-            }
-        }));
+                });
     }
     private void setupSearch() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
