@@ -25,42 +25,49 @@ import com.example.e2taskly.presentation.adapter.UserAdapter; // IMPORTANT: Use 
 import com.example.e2taskly.service.UserService;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class FriendsListActivity extends AppCompatActivity {
+public class FriendsListActivity extends AppCompatActivity implements UserAdapter.OnFriendActionListener {
 
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView textViewInfo;
     private SearchView searchView;
-    private FriendAdapter friendAdapter;
+    private UserAdapter userAdapter;
     private UserService userService;
-
-    private List<User> displayedUserList = new ArrayList<>();
-    public static List<User> myFriendsListCache = new ArrayList<>(); // Public for adapter access
-    private List<User> allUsersListCache = new ArrayList<>();
-    private List<String> myFriendIds = new ArrayList<>();
     private String currentUserId;
-    public static boolean isSearchActive = false; // Public for adapter access
-
+    private List<String> myFriendIds = new ArrayList<>();
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(),
             result -> {
                 if (result.getContents() != null) {
                     String scannedUid = result.getContents();
 
-                    Toast.makeText(this, "Scanned UID: " + scannedUid, Toast.LENGTH_SHORT).show();
+                    if (scannedUid.equals(currentUserId)) {
+                        Toast.makeText(this, "You cannot add yourself.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (myFriendIds.contains(scannedUid)) {
+                        Toast.makeText(this, "You are already friends.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-                    // Now, open the profile of the scanned user
-                    Intent intent = new Intent(this, ProfileActivity.class);
-                    intent.putExtra(ProfileActivity.EXTRA_USER_ID, scannedUid);
-                    startActivity(intent);
-
+                    progressBar.setVisibility(View.VISIBLE);
+                    userService.getUserProfile(scannedUid).addOnCompleteListener(task -> {
+                        progressBar.setVisibility(View.GONE);
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            User userToAdd = task.getResult();
+                            onAddFriend(userToAdd);
+                        } else {
+                            Toast.makeText(this, "Invalid QR Code: User not found.", Toast.LENGTH_LONG).show();
+                        }
+                    });
                 } else {
-                    // This happens if the user presses the back button without scanning anything.
                     Toast.makeText(this, "Scan cancelled", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -75,6 +82,7 @@ public class FriendsListActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Friends");
         }
 
         userService = new UserService(this);
@@ -87,75 +95,25 @@ public class FriendsListActivity extends AppCompatActivity {
 
         setupRecyclerView();
         setupSearch();
-        loadInitialData();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (userService != null && currentUserId != null) {
-            userService.getUserProfile(currentUserId).addOnSuccessListener(user -> {
-                myFriendIds.clear();
-                myFriendIds.addAll(user.getFriendIds());
-                if (!isSearchActive) {
-                    loadInitialData();
-                } else {
-                    friendAdapter.notifyDataSetChanged();
-                }
-            });
+        String currentQuery = searchView.getQuery().toString();
+        if (currentQuery.isEmpty()) {
+            loadFriendsList();
+        } else {
+            searchUsers(currentQuery);
         }
     }
 
     private void setupRecyclerView() {
-        friendAdapter = new FriendAdapter(this, displayedUserList, myFriendIds, userService,currentUserId);
+        userAdapter = new UserAdapter(this, new ArrayList<>(), myFriendIds, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(friendAdapter);
+        recyclerView.setAdapter(userAdapter);
     }
 
-    private void loadInitialData() {
-        progressBar.setVisibility(View.VISIBLE);
-        recyclerView.setVisibility(View.GONE);
-        textViewInfo.setVisibility(View.GONE);
-
-        Task<User> currentUserProfileTask = userService.getUserProfile(currentUserId);
-        Task<List<User>> allUsersTask = userService.getAllUsers();
-
-        Tasks.whenAll(currentUserProfileTask, allUsersTask).addOnCompleteListener(task -> {
-            progressBar.setVisibility(View.GONE);
-            if (!task.isSuccessful()) {
-                Toast.makeText(this, "Error loading data.", Toast.LENGTH_LONG).show(); return;
-            }
-
-            if (currentUserProfileTask.isSuccessful() && currentUserProfileTask.getResult() != null) {
-                myFriendIds.clear();
-                myFriendIds.addAll(currentUserProfileTask.getResult().getFriendIds());
-            }
-
-            if (allUsersTask.isSuccessful() && allUsersTask.getResult() != null) {
-                allUsersListCache.clear();
-                for (User user : allUsersTask.getResult()) {
-                    if (!user.getUid().equals(currentUserId)) {
-                        allUsersListCache.add(user);
-                    }
-                }
-            }
-
-            myFriendsListCache.clear();
-            for (User user : allUsersListCache) {
-                if (myFriendIds.contains(user.getUid())) {
-                    myFriendsListCache.add(user);
-                }
-            }
-
-            // Handle search state after data refresh
-            String currentQuery = searchView.getQuery().toString();
-            if (currentQuery.isEmpty()) {
-                updateDisplayedList(myFriendsListCache);
-            } else {
-                filterAllUsers(currentQuery);
-            }
-        });
-    }
 
     private void setupSearch() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -164,38 +122,103 @@ public class FriendsListActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                isSearchActive = !newText.isEmpty();
-                if (isSearchActive) {
-                    filterAllUsers(newText);
+                if (newText.isEmpty()) {
+                    loadFriendsList();
                 } else {
-                    updateDisplayedList(myFriendsListCache);
+                    searchUsers(newText);
                 }
                 return true;
             }
         });
     }
+    private void loadFriendsList() {
+        progressBar.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+        textViewInfo.setVisibility(View.GONE);
 
-    private void filterAllUsers(String text) {
-        List<User> filteredList = new ArrayList<>();
-        for (User user : allUsersListCache) {
-            if (user.getUsername().toLowerCase().contains(text.toLowerCase())) {
-                filteredList.add(user);
+        userService.getFriendsForCurrentUser(currentUserId).addOnCompleteListener(task -> {
+            progressBar.setVisibility(View.GONE);
+            if (task.isSuccessful() && task.getResult() != null) {
+                List<User> friends = task.getResult();
+                myFriendIds = friends.stream().map(User::getUid).collect(Collectors.toList());
+                userAdapter.updateFriendIds(myFriendIds);
+                updateDisplayedList(friends, false);
+            } else {
+                Toast.makeText(this, "Error loading friends.", Toast.LENGTH_SHORT).show();
+                updateDisplayedList(new ArrayList<>(), false);
             }
-        }
-        updateDisplayedList(filteredList);
+        });
+    }
+    private void searchUsers(String query) {
+        progressBar.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+        textViewInfo.setVisibility(View.GONE);
+
+        userService.getUserProfile(currentUserId).addOnSuccessListener(currentUser -> {
+            myFriendIds.clear();
+            myFriendIds.addAll(currentUser.getFriendIds());
+            userAdapter.updateFriendIds(myFriendIds);
+
+            userService.searchUsers(query).addOnCompleteListener(task -> {
+                progressBar.setVisibility(View.GONE);
+                if (task.isSuccessful() && task.getResult() != null) {
+                    List<User> searchResults = task.getResult().stream()
+                            .filter(user -> !user.getUid().equals(currentUserId))
+                            .collect(Collectors.toList());
+                    updateDisplayedList(searchResults, true);
+                } else {
+                    Toast.makeText(this, "Search failed.", Toast.LENGTH_SHORT).show();
+                    updateDisplayedList(new ArrayList<>(), true);
+                }
+            });
+        }).addOnFailureListener(e -> {
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(this, "Error fetching user profile.", Toast.LENGTH_SHORT).show();
+        });
     }
 
-    private void updateDisplayedList(List<User> newList) {
-        displayedUserList.clear();
-        displayedUserList.addAll(newList);
-        friendAdapter.notifyDataSetChanged();
-        updateUIVisibility();
+
+    @Override
+    public void onAddFriend(User userToAdd) {
+        progressBar.setVisibility(View.VISIBLE);
+        userService.addFriend(currentUserId, userToAdd.getUid()).addOnCompleteListener(task -> {
+            progressBar.setVisibility(View.GONE);
+            if (task.isSuccessful()) {
+                Toast.makeText(this, "Friend '" + userToAdd.getUsername() + "' added!", Toast.LENGTH_SHORT).show();
+                onResume();
+            } else {
+                Toast.makeText(this, "Failed to add friend.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
-    public void updateUIVisibility() {
-        if (displayedUserList.isEmpty()) {
+
+    @Override
+    public void onRemoveFriend(User userToRemove) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Remove Friend")
+                .setMessage("Are you sure you want to remove '" + userToRemove.getUsername() + "'?")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Remove", (dialog, which) -> {
+                    progressBar.setVisibility(View.VISIBLE);
+                    userService.removeFriend(currentUserId, userToRemove.getUid()).addOnCompleteListener(task -> {
+                        progressBar.setVisibility(View.GONE);
+                        if (task.isSuccessful()) {
+                            Toast.makeText(this, "Friend removed.", Toast.LENGTH_SHORT).show();
+                            onResume();
+                        } else {
+                            Toast.makeText(this, "Failed to remove friend.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .show();
+    }
+
+    private void updateDisplayedList(List<User> newList, boolean isSearch) {
+        userAdapter.updateUsers(newList);
+        if (newList.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             textViewInfo.setVisibility(View.VISIBLE);
-            if (isSearchActive) {
+            if (isSearch) {
                 textViewInfo.setText("No users found");
             } else {
                 textViewInfo.setText("You have no friends yet.\nUse the search bar to find some!");

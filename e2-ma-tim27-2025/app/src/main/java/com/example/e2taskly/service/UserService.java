@@ -273,7 +273,7 @@ public class UserService {
     }
     public Task<List<User>> getFriendsForCurrentUser(String currentUid) {
         if (currentUid == null) {
-            return Tasks.forException(new Exception("Korisnik nije ulogovan."));
+            return Tasks.forException(new Exception("User is not logged in."));
         }
         return userRepository.getUserProfile(currentUid).continueWithTask(task -> {
             if (!task.isSuccessful() || task.getResult() == null) {
@@ -289,5 +289,7 @@ public class UserService {
             return userRepository.getFriends(friendIds);
         });
     }
-
+    public Task<List<User>> searchUsers(String query) {
+        return userRepository.searchUsersByUsername(query); // Pretpostavljamo da ova metoda postoji u repozitorijumu
+    }
 }

@@ -161,4 +161,17 @@ public class UserRemoteDataSource {
             return userList;
         });
     }
+    public Task<QuerySnapshot> searchUsersByUsername(String query) {
+        if (query == null || query.isEmpty()) {
+            // Return an empty result if the query is empty
+            return Tasks.forResult(null);
+        }
+
+        return db.collection("users")
+                .orderBy("username")
+                .startAt(query)
+                .endAt(query + '\uf8ff')
+                .limit(20) // It's a good practice to limit search results
+                .get();
+    }
 }

@@ -146,4 +146,23 @@ public class UserRepository {
         }
         return remoteDataSource.getUsersByIds(friendIds);
     }
+    public Task<List<User>> searchUsersByUsername(String query) {
+        return remoteDataSource.searchUsersByUsername(query)
+                .continueWith(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+
+                    List<User> userList = new ArrayList<>();
+                    if (task.getResult() != null) {
+                        for (DocumentSnapshot doc : task.getResult().getDocuments()) {
+                            User user = doc.toObject(User.class);
+                            if (user != null) {
+                                userList.add(user);
+                            }
+                        }
+                    }
+                    return userList;
+                });
+    }
 }

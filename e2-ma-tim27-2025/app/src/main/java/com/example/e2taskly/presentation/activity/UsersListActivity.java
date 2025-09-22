@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.presentation.adapter.FriendAdapter;
 import com.example.e2taskly.presentation.adapter.UserAdapter;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
@@ -31,7 +32,7 @@ public class UsersListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerViewUsers;
     private ProgressBar progressBar;
-    private UserAdapter userAdapter;
+    private FriendAdapter friendAdapter;
     private SearchView searchView;
     private List<User> displayedUserList = new ArrayList<>();
     private List<User> fullUserList = new ArrayList<>();
@@ -63,9 +64,9 @@ public class UsersListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(List<String> friendIds) {
-        userAdapter = new UserAdapter(this, displayedUserList, friendIds, userService, currentUser.getUid());
+        friendAdapter = new FriendAdapter(this, displayedUserList, friendIds, userService, currentUser.getUid());
         recyclerViewUsers.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewUsers.setAdapter(userAdapter);
+        recyclerViewUsers.setAdapter(friendAdapter);
     }
 
     private void loadUsers() {
@@ -128,7 +129,7 @@ public class UsersListActivity extends AppCompatActivity {
 
         displayedUserList.clear();
         displayedUserList.addAll(filteredList);
-        userAdapter.notifyDataSetChanged();
+        friendAdapter.notifyDataSetChanged();
     }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

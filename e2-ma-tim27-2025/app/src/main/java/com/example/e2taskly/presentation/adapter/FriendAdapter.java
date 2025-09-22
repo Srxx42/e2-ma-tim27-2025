@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,15 +24,16 @@ import java.util.List;
 
 public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendViewHolder> {
 
+    private final List<User> userList;
     private final Context context;
-    private final List<User> displayedUserList;
-    private final List<String> friendIdList;
+    private final List<String> currentUserFriendIds;
     private final UserService userService;
     private String currentUserId;
-    public FriendAdapter(Context context, List<User> displayedUserList, List<String> friendIdList, UserService userService, String currentUserId) {
+
+    public FriendAdapter(Context context, List<User> userList, List<String> currentUserFriendIds, UserService userService, String currentUserId) {
         this.context = context;
-        this.displayedUserList = displayedUserList;
-        this.friendIdList = friendIdList;
+        this.userList = userList;
+        this.currentUserFriendIds = currentUserFriendIds;
         this.userService = userService;
         this.currentUserId = currentUserId;
     }
@@ -45,25 +47,35 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendView
 
     @Override
     public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
-        holder.bind(displayedUserList.get(position));
+        User user = userList.get(position);
+        holder.bind(user);
+    }
+    public void updateUserList(List<User> newList) {
+        userList.clear();
+        userList.addAll(newList);
+        notifyDataSetChanged();
     }
 
     @Override
     public int getItemCount() {
-        return displayedUserList.size();
+        return userList.size();
     }
 
     class FriendViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageViewAvatar, imageViewAction;
+        ImageView imageViewAvatar,imageViewAddFriend;
         TextView textViewUsername, textViewTitle, textViewLevel;
+        LinearLayout layoutUserInfo;
+
+
 
         public FriendViewHolder(@NonNull View itemView) {
             super(itemView);
             imageViewAvatar = itemView.findViewById(R.id.imageViewAvatar);
-            imageViewAction = itemView.findViewById(R.id.imageViewAddFriend);
+            imageViewAddFriend = itemView.findViewById(R.id.imageViewAddFriend);
             textViewUsername = itemView.findViewById(R.id.textViewUsername);
             textViewTitle = itemView.findViewById(R.id.textViewTitle);
             textViewLevel = itemView.findViewById(R.id.textViewLevel);
+            layoutUserInfo = itemView.findViewById(R.id.layoutUserInfo);
         }
 
         void bind(final User user) {
@@ -76,77 +88,64 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendView
                 if (resId != 0) imageViewAvatar.setImageResource(resId);
             }
 
-            if (friendIdList.contains(user.getUid())) {
-                imageViewAction.setImageResource(R.drawable.ic_remove_friend);
-                imageViewAction.setOnClickListener(v -> showRemoveFriendDialog(user));
-            } else {
-                imageViewAction.setImageResource(R.drawable.ic_add_friend);
-                imageViewAction.setOnClickListener(v -> addFriend(user));
-            }
 
-            itemView.setOnClickListener(v -> {
+            View.OnClickListener openProfileListener = v -> {
                 Intent intent = new Intent(context, ProfileActivity.class);
                 intent.putExtra(ProfileActivity.EXTRA_USER_ID, user.getUid());
                 context.startActivity(intent);
-            });
-        }
+            };
+            itemView.setOnClickListener(openProfileListener);
+            layoutUserInfo.setOnClickListener(openProfileListener);
 
-        private void showRemoveFriendDialog(User user) {
-            new MaterialAlertDialogBuilder(context)
-                    .setTitle("Remove Friend")
-                    .setMessage("Are you sure you want to remove " + user.getUsername() + "?")
-                    .setNegativeButton("Cancel", null)
-                    .setPositiveButton("Remove", (dialog, which) -> removeFriend(user))
-                    .show();
+            if (currentUserFriendIds.contains(user.getUid())) {
+                // User IS a friend, show remove icon and logic
+                imageViewAddFriend.setImageResource(R.drawable.ic_remove_friend); // You need to create this drawable
+                imageViewAddFriend.setOnClickListener(v -> {
+                    new MaterialAlertDialogBuilder(context)
+                            .setTitle("Remove Friend")
+                            .setMessage("Are you sure you want to remove " + user.getUsername() + " as a friend?")
+                            .setNegativeButton("Cancel", null)
+                            .setPositiveButton("Remove", (dialog, which) -> {
+                                performRemoveFriend(user);
+                            })
+                            .show();
+                });
+            } else {
+                // User IS NOT a friend, show add icon and logic
+                imageViewAddFriend.setImageResource(R.drawable.ic_add_friend);
+                imageViewAddFriend.setOnClickListener(v -> {
+                    performAddFriend(user);
+                });
+            }
         }
-
-        private void addFriend(User user) {
-            imageViewAction.setEnabled(false);
-            // ISPRAVAN POZIV - samo sa ID-jem prijatelja
+        private void performAddFriend(User user) {
+            imageViewAddFriend.setEnabled(false);
             userService.addFriend(currentUserId,user.getUid()).addOnCompleteListener(task -> {
-                imageViewAction.setEnabled(true);
+                imageViewAddFriend.setEnabled(true);
                 if (task.isSuccessful()) {
-                    Toast.makeText(context, "Added " + user.getUsername(), Toast.LENGTH_SHORT).show();
-                    friendIdList.add(user.getUid());
-                    // *** GLAVNA ISPRAVKA: AŽURIRAJ I CACHE LISTU PRIJATELJA ***
-                    FriendsListActivity.myFriendsListCache.add(user);
-                    notifyItemChanged(getAdapterPosition());
+                    Toast.makeText(context, "Added " + user.getUsername() + " as a friend.", Toast.LENGTH_SHORT).show();
+                    currentUserFriendIds.add(user.getUid());
+                    notifyItemChanged(getAdapterPosition()); // Refresh this item to show the new state
                 } else {
-                    Toast.makeText(context, "Failed to add friend", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Failed to add friend.", Toast.LENGTH_SHORT).show();
                 }
             });
         }
 
-        private void removeFriend(User user) {
-            imageViewAction.setEnabled(false);
-            // ISPRAVAN POZIV - samo sa ID-jem prijatelja
+        private void performRemoveFriend(User user) {
+            imageViewAddFriend.setEnabled(false);
             userService.removeFriend(currentUserId,user.getUid()).addOnCompleteListener(task -> {
-                imageViewAction.setEnabled(true);
+                imageViewAddFriend.setEnabled(true);
                 if (task.isSuccessful()) {
-                    Toast.makeText(context, "Removed " + user.getUsername(), Toast.LENGTH_SHORT).show();
-                    friendIdList.remove(user.getUid());
-                    // *** GLAVNA ISPRAVKA: AŽURIRAJ I CACHE LISTU PRIJATELJA ***
-                    FriendsListActivity.myFriendsListCache.removeIf(u -> u.getUid().equals(user.getUid()));
-
-                    // Ako nismo u pretrazi, ukloni item iz liste vizuelno
-                    if (!FriendsListActivity.isSearchActive) {
-                        int currentPosition = getAdapterPosition();
-                        if (currentPosition != RecyclerView.NO_POSITION) {
-                            displayedUserList.remove(currentPosition);
-                            notifyItemRemoved(currentPosition);
-                            // Proveri da li je lista sada prazna
-                            if (displayedUserList.isEmpty()) {
-                                ((FriendsListActivity)context).updateUIVisibility();
-                            }
-                        }
-                    } else {
-                        // Ako smo u pretrazi, samo osveži ikonicu
-                        notifyItemChanged(getAdapterPosition());
-                    }
+                    Toast.makeText(context, "Removed " + user.getUsername() + " from friends.", Toast.LENGTH_SHORT).show();
+                    currentUserFriendIds.remove(user.getUid());
+                    notifyItemChanged(getAdapterPosition()); // Refresh this item
                 } else {
-                    Toast.makeText(context, "Failed to remove friend", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Failed to remove friend.", Toast.LENGTH_SHORT).show();
                 }
             });
         }
     }
+
 }
+
