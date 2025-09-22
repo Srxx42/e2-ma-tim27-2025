@@ -16,16 +16,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.presentation.activity.ProfileActivity;
+import com.example.e2taskly.service.UserService;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
     private final List<User> userList;
     private final Context context;
+    private final List<String> currentUserFriendIds;
+    private final UserService userService;
+    private String currentUserId;
 
-    public UserAdapter(Context context, List<User> userList) {
+    public UserAdapter(Context context, List<User> userList, List<String> currentUserFriendIds, UserService userService, String currentUserId) {
         this.context = context;
         this.userList = userList;
+        this.currentUserFriendIds = currentUserFriendIds;
+        this.userService = userService;
+        this.currentUserId = currentUserId;
     }
 
     @NonNull
@@ -40,9 +48,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         User user = userList.get(position);
         holder.bind(user);
     }
-    public void filterList(List<User> filteredList) {
+    public void updateUserList(List<User> newList) {
         userList.clear();
-        userList.addAll(filteredList);
+        userList.addAll(newList);
         notifyDataSetChanged();
     }
 
@@ -87,12 +95,54 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             itemView.setOnClickListener(openProfileListener);
             layoutUserInfo.setOnClickListener(openProfileListener);
 
-            imageViewAddFriend.setOnClickListener(v -> {
-                // TODO: Implementirati logiku za slanje zahteva za prijateljstvo
-                Toast.makeText(context, "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
-                imageViewAddFriend.setEnabled(false); // Onemogući ikonicu nakon klika
-                imageViewAddFriend.setAlpha(0.5f);
+            if (currentUserFriendIds.contains(user.getUid())) {
+                // User IS a friend, show remove icon and logic
+                imageViewAddFriend.setImageResource(R.drawable.ic_remove_friend); // You need to create this drawable
+                imageViewAddFriend.setOnClickListener(v -> {
+                    new MaterialAlertDialogBuilder(context)
+                            .setTitle("Remove Friend")
+                            .setMessage("Are you sure you want to remove " + user.getUsername() + " as a friend?")
+                            .setNegativeButton("Cancel", null)
+                            .setPositiveButton("Remove", (dialog, which) -> {
+                                performRemoveFriend(user);
+                            })
+                            .show();
+                });
+            } else {
+                // User IS NOT a friend, show add icon and logic
+                imageViewAddFriend.setImageResource(R.drawable.ic_add_friend);
+                imageViewAddFriend.setOnClickListener(v -> {
+                    performAddFriend(user);
+                });
+            }
+        }
+        private void performAddFriend(User user) {
+            imageViewAddFriend.setEnabled(false);
+            userService.addFriend(currentUserId,user.getUid()).addOnCompleteListener(task -> {
+                imageViewAddFriend.setEnabled(true);
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "Added " + user.getUsername() + " as a friend.", Toast.LENGTH_SHORT).show();
+                    currentUserFriendIds.add(user.getUid());
+                    notifyItemChanged(getAdapterPosition()); // Refresh this item to show the new state
+                } else {
+                    Toast.makeText(context, "Failed to add friend.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        private void performRemoveFriend(User user) {
+            imageViewAddFriend.setEnabled(false);
+            userService.removeFriend(currentUserId,user.getUid()).addOnCompleteListener(task -> {
+                imageViewAddFriend.setEnabled(true);
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "Removed " + user.getUsername() + " from friends.", Toast.LENGTH_SHORT).show();
+                    currentUserFriendIds.remove(user.getUid());
+                    notifyItemChanged(getAdapterPosition()); // Refresh this item
+                } else {
+                    Toast.makeText(context, "Failed to remove friend.", Toast.LENGTH_SHORT).show();
+                }
             });
         }
     }
+
 }

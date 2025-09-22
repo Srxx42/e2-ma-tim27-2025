@@ -134,5 +134,16 @@ public class UserRepository {
     public void logout(){
         remoteDataSource.logoutUser();
     }
-
+    public Task<Void> addFriend(String currentUid, String friendUid) {
+        return remoteDataSource.addFriend(currentUid, friendUid);
+    }
+    public Task<Void> removeFriend(String currentUid, String friendUid) {
+        return remoteDataSource.removeFriend(currentUid, friendUid);
+    }
+    public Task<List<User>> getFriends(List<String> friendIds) {
+        if (friendIds == null || friendIds.isEmpty()) {
+            return Tasks.forResult(new ArrayList<>());
+        }
+        return remoteDataSource.getUsersByIds(friendIds);
+    }
 }

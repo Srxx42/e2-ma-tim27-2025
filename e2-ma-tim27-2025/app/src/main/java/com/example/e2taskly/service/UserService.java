@@ -15,6 +15,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -258,4 +259,35 @@ public class UserService {
 //            taskRepository.updateTask(task);
 //        }
 //    }
+    public Task<Void> addFriend(String currentUid,String friendUid) {
+    if (currentUid == null || currentUid.equals(friendUid)) {
+        return Tasks.forException(new Exception("You can't add yourself as a friend."));
+    }
+    return userRepository.addFriend(currentUid, friendUid);
+    }
+    public Task<Void> removeFriend(String currentUid,String friendUid) {
+        if (currentUid == null) {
+            return Tasks.forException(new Exception("User is not logged in."));
+        }
+        return userRepository.removeFriend(currentUid, friendUid);
+    }
+    public Task<List<User>> getFriendsForCurrentUser(String currentUid) {
+        if (currentUid == null) {
+            return Tasks.forException(new Exception("Korisnik nije ulogovan."));
+        }
+        return userRepository.getUserProfile(currentUid).continueWithTask(task -> {
+            if (!task.isSuccessful() || task.getResult() == null) {
+                throw task.getException();
+            }
+            User currentUser = task.getResult();
+            List<String> friendIds = currentUser.getFriendIds();
+
+            if (friendIds == null || friendIds.isEmpty()) {
+                return Tasks.forResult(new ArrayList<>());
+            }
+
+            return userRepository.getFriends(friendIds);
+        });
+    }
+
 }

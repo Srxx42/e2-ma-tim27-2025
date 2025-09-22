@@ -38,6 +38,7 @@ public class UserLocalDataSource {
         }
         values.put("active_days_streak",user.getActiveDaysStreak());
         values.put("last_activity_date",user.getLastActivityDate().getTime());
+        values.put("friends_ids",TextUtils.join(",", user.getFriendIds()));
         long newRowId = db.insert(SQLiteHelper.T_USERS, null, values);
         db.close();
         return newRowId;

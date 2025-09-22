@@ -22,6 +22,7 @@ import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.presentation.adapter.UserAdapter;
 import com.example.e2taskly.service.UserService;
+import com.example.e2taskly.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,8 @@ public class UsersListActivity extends AppCompatActivity {
     private List<User> displayedUserList = new ArrayList<>();
     private List<User> fullUserList = new ArrayList<>();
     private UserService userService;
+    private User currentUser;
+    private SharedPreferencesUtil sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,42 +51,57 @@ public class UsersListActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        sharedPreferences = new SharedPreferencesUtil(this);
         userService = new UserService(this);
         progressBar = findViewById(R.id.progressBar);
         recyclerViewUsers = findViewById(R.id.recyclerViewUsers);
         searchView = findViewById(R.id.searchView);
 
-        setupRecyclerView();
+//        setupRecyclerView();
         setupSearch();
         loadUsers();
     }
 
-    private void setupRecyclerView() {
-        userAdapter = new UserAdapter(this, displayedUserList);
+    private void setupRecyclerView(List<String> friendIds) {
+        userAdapter = new UserAdapter(this, displayedUserList, friendIds, userService, currentUser.getUid());
         recyclerViewUsers.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewUsers.setAdapter(userAdapter);
     }
 
     private void loadUsers() {
         progressBar.setVisibility(View.VISIBLE);
-        userService.getAllUsers()
-                .addOnCompleteListener(this, task -> {
-                    progressBar.setVisibility(View.GONE);
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        String currentUserId = userService.getCurrentUserId();
-                        fullUserList.clear();
+        String currentUserId = sharedPreferences.getActiveUserUid();
+        if (currentUserId == null) {
+            Toast.makeText(this, "Error: The user is not logged in.", Toast.LENGTH_SHORT).show();
+            progressBar.setVisibility(View.GONE);
+            return;
+        }
 
-                        for (User user : task.getResult()) {
-                            if (currentUserId != null && !user.getUid().equals(currentUserId)) {
+        // 1. Prvo učitaj profil trenutnog korisnika
+        userService.getUserProfile(currentUserId).addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                currentUser = task.getResult();
+                setupRecyclerView(currentUser.getFriendIds());
+
+                userService.getAllUsers().addOnCompleteListener(allUsersTask -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (allUsersTask.isSuccessful() && allUsersTask.getResult() != null) {
+                        fullUserList.clear();
+                        for (User user : allUsersTask.getResult()) {
+                            if (!user.getUid().equals(currentUserId)) {
                                 fullUserList.add(user);
                             }
                         }
-                        filter("");
-
+                        filter(""); // Prikaz početne liste
                     } else {
-                        Toast.makeText(this, "Failed to load users.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Failed to load users", Toast.LENGTH_SHORT).show();
                     }
                 });
+            } else {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(this, "Failed to load profile.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     private void setupSearch() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
