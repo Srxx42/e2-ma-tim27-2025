@@ -26,6 +26,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.service.LevelingService;
 import com.example.e2taskly.service.UserService;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.BarcodeFormat;
@@ -34,11 +35,12 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 public class ProfileActivity extends AppCompatActivity {
     public static final String EXTRA_USER_ID = "com.example.e2taskly.USER_ID";
     private ImageView imageViewAvatar, imageViewQrCode;
-    private TextView textViewUsername, textViewTitle, textViewLevel, textViewXp, textViewPower, textViewCoins;
+    private TextView textViewUsername, textViewTitle, textViewLevel, textViewXp, textViewPower, textViewCoins,textViewXpProgress;
     private Button buttonChangePassword;
-    private ProgressBar progressBar;
+    private ProgressBar progressBar,progressBarXp;
     private LinearLayout powerLayout,coinsLayout;
     private UserService userService;
+    private LevelingService levelingService;
     private String profileUserId;
     private String currentUserId;
     @Override
@@ -55,8 +57,14 @@ public class ProfileActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        userService = new UserService(this);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
+        userService = new UserService(this);
+        levelingService = new LevelingService();
         setupViews();
 
         Intent intent = getIntent();
@@ -81,8 +89,10 @@ public class ProfileActivity extends AppCompatActivity {
         textViewTitle = findViewById(R.id.textViewTitle);
         textViewLevel = findViewById(R.id.textViewLevel);
         textViewXp = findViewById(R.id.textViewXp);
+        textViewXpProgress = findViewById(R.id.textViewXpProgress);
         buttonChangePassword = findViewById(R.id.buttonChangePassword);
         progressBar = findViewById(R.id.progressBar);
+        progressBarXp = findViewById(R.id.progressBarXp);
 
         powerLayout = findViewById(R.id.powerLayout);
         coinsLayout = findViewById(R.id.coinsLayout);
@@ -91,14 +101,16 @@ public class ProfileActivity extends AppCompatActivity {
     }
     private void loadUserProfile() {
         progressBar.setVisibility(View.VISIBLE);
-        userService.getUserProfile(profileUserId,task -> runOnUiThread(() -> {
-            progressBar.setVisibility(View.GONE);
-            if (task.isSuccessful()) {
-                populateUI(task.getResult());
-            } else {
-                Toast.makeText(this, "Failed to load profile: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }));
+        userService.getUserProfile(profileUserId)
+                .addOnCompleteListener(this, task -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        populateUI(task.getResult());
+                    } else {
+                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                        Toast.makeText(this, "Failed to load profile: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     private void populateUI(User user) {
@@ -130,6 +142,7 @@ public class ProfileActivity extends AppCompatActivity {
             coinsLayout.setVisibility(View.GONE);
             buttonChangePassword.setVisibility(View.GONE);
         }
+        displayProgress(user);
     }
     private void generateAndSetQrCode(String uid){
         try {
@@ -170,14 +183,16 @@ public class ProfileActivity extends AppCompatActivity {
     }
     private void performPasswordChange(String oldPass, String newPass, String confirmPass) {
         progressBar.setVisibility(View.VISIBLE);
-        userService.changePassword(oldPass, newPass, confirmPass, task -> runOnUiThread(() -> {
-            progressBar.setVisibility(View.GONE);
-            if (task.isSuccessful()) {
-                Toast.makeText(this, "Password changed successfully!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Failed to change password: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }));
+        userService.changePassword(oldPass, newPass, confirmPass)
+                .addOnCompleteListener(this, task -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (task.isSuccessful()) {
+                        Toast.makeText(this, "Password changed successfully!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                        Toast.makeText(this, "Failed to change password: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -185,5 +200,24 @@ public class ProfileActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    private void displayProgress(User user) {
+        int currentLevel = user.getLevel();
+        int currentXp = user.getXp();
+
+        int xpForCurrentLevel = (currentLevel > 1) ? levelingService.getXpForLevel(currentLevel) : 0;
+
+
+        int xpForNextLevel = levelingService.getXpForLevel(currentLevel + 1);
+
+        int xpProgressInLevel = currentXp - xpForCurrentLevel;
+        int xpNeededInLevel = xpForNextLevel - xpForCurrentLevel;
+
+        textViewXpProgress.setText(xpProgressInLevel + " / " + xpNeededInLevel + " XP");
+
+        if (xpNeededInLevel > 0) {
+            progressBarXp.setMax(xpNeededInLevel);
+            progressBarXp.setProgress(xpProgressInLevel);
+        }
     }
 }

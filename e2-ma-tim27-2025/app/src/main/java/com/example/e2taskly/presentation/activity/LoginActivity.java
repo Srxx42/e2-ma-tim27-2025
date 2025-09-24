@@ -53,20 +53,21 @@ public class LoginActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         buttonLogin.setEnabled(false);
 
-        userService.loginUser(email, password, task -> {
-            runOnUiThread(() -> {
-                progressBar.setVisibility(View.GONE);
-                buttonLogin.setEnabled(true);
+        userService.loginUser(email, password)
+                .addOnCompleteListener(this, task -> {
+                    progressBar.setVisibility(View.GONE);
+                    buttonLogin.setEnabled(true);
 
-                if (task.isSuccessful()) {
-                    Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                    finish();
-                } else {
-                    String errorMessage = task.getException() != null ? task.getException().getMessage() : "An unknown error occurred.";
-                    Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                }
-            });
-        });
+                    if (task.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "An unknown error occurred.";
+                        Toast.makeText(LoginActivity.this, "Login Failed: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }

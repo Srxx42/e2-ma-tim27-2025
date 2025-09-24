@@ -28,7 +28,9 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "power_points INTEGER DEFAULT 0, " +
                 "coins INTEGER DEFAULT 0, " +
                 "badges TEXT, " +
-                "equipment TEXT " +
+                "equipment TEXT, " +
+                "active_days_streak INTEGER, " +
+                "last_activity_date INTEGER " +
                 ")");
 
         db.execSQL("create  table " + T_CATEGORIES + " (" +
@@ -40,8 +42,12 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
-        db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
-        onCreate(db);
+//        db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
+//        db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
+//        onCreate(db);
+        if (oldVersion < 2) {
+            // Add the new column if it doesn't exist
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN active_days_streak INTEGER DEFAULT 0;");
+        }
     }
 }
