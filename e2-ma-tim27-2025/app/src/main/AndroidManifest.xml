@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.E2Taskly">
         <activity
-            android:name=".presentation.activity.UsersListActivity"
+            android:name=".presentation.activity.FriendsListActivity"
             android:exported="false" />
         <activity
             android:name=".presentation.activity.ProfileActivity"
@@ -31,16 +31,17 @@
             android:exported="false" />
         <activity
             android:name=".presentation.activity.RegistrationActivity"
-            android:exported="false">
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".presentation.activity.ShowCategoriesActivity"
-            android:exported="false"/>
-        <activity android:name=".presentation.activity.ManageCategoryActivity" android:exported="false" />
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ManageCategoryActivity"
+            android:exported="false" />
         <activity
             android:name=".presentation.activity.MainActivity"
             android:exported="false"
-            android:windowFullscreen="true"/>
+            android:windowFullscreen="true" />
     </application>
 
 </manifest>

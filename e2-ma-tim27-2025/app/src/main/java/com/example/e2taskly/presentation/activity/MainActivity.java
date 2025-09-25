@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences = new SharedPreferencesUtil(this);
         buttonLogout = findViewById(R.id.buttonLogout);
         buttonProfile = findViewById(R.id.buttonProfile);
-        buttonViewAllUsers = findViewById(R.id.buttonViewAllUsers);
         buttonLogout.setOnClickListener(v->handleLogout());
         Button categoryAdd = findViewById(R.id.categoryAdd);
 
@@ -59,10 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
         buttonProfile.setOnClickListener(v->{
             Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
-            startActivity(intent);
-        });
-        buttonViewAllUsers.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, UsersListActivity.class);
             startActivity(intent);
         });
 

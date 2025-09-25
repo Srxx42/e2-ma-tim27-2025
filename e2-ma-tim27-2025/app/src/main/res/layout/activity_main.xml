@@ -23,15 +23,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/main_profile_button"
-        app:layout_constraintBottom_toTopOf="@id/buttonViewAllUsers"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="16dp"/>
-    <Button
-        android:id="@+id/buttonViewAllUsers"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/main_all_users_button"
         app:layout_constraintBottom_toTopOf="@id/buttonLogout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

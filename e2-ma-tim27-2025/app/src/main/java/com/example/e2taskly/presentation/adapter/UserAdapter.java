@@ -16,16 +16,38 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.presentation.activity.ProfileActivity;
+import com.example.e2taskly.service.UserService;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
-    private final List<User> userList;
-    private final Context context;
 
-    public UserAdapter(Context context, List<User> userList) {
+    private final Context context;
+    private List<User> displayedUserList;
+    private List<String> friendIdList;
+    private final OnFriendActionListener listener;
+
+    public interface OnFriendActionListener {
+        void onAddFriend(User userToAdd);
+        void onRemoveFriend(User userToRemove);
+    }
+
+    public UserAdapter(Context context, List<User> userList, List<String> friendIdList, OnFriendActionListener listener) {
         this.context = context;
-        this.userList = userList;
+        this.displayedUserList = userList;
+        this.friendIdList = friendIdList;
+        this.listener = listener;
+    }
+
+    public void updateUsers(List<User> newUsers) {
+        this.displayedUserList = newUsers;
+        notifyDataSetChanged();
+    }
+
+    public void updateFriendIds(List<String> newFriendIds) {
+        this.friendIdList = newFriendIds;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -37,35 +59,25 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        User user = userList.get(position);
-        holder.bind(user);
-    }
-    public void filterList(List<User> filteredList) {
-        userList.clear();
-        userList.addAll(filteredList);
-        notifyDataSetChanged();
+        holder.bind(displayedUserList.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return userList.size();
+        return displayedUserList.size();
     }
 
     class UserViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageViewAvatar,imageViewAddFriend;
+        ImageView imageViewAvatar, imageViewAction;
         TextView textViewUsername, textViewTitle, textViewLevel;
-        LinearLayout layoutUserInfo;
-
-
 
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
             imageViewAvatar = itemView.findViewById(R.id.imageViewAvatar);
-            imageViewAddFriend = itemView.findViewById(R.id.imageViewAddFriend);
+            imageViewAction = itemView.findViewById(R.id.imageViewAddFriend);
             textViewUsername = itemView.findViewById(R.id.textViewUsername);
             textViewTitle = itemView.findViewById(R.id.textViewTitle);
             textViewLevel = itemView.findViewById(R.id.textViewLevel);
-            layoutUserInfo = itemView.findViewById(R.id.layoutUserInfo);
         }
 
         void bind(final User user) {
@@ -78,20 +90,18 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 if (resId != 0) imageViewAvatar.setImageResource(resId);
             }
 
+            if (friendIdList.contains(user.getUid())) {
+                imageViewAction.setImageResource(R.drawable.ic_remove_friend);
+                imageViewAction.setOnClickListener(v -> listener.onRemoveFriend(user));
+            } else {
+                imageViewAction.setImageResource(R.drawable.ic_add_friend);
+                imageViewAction.setOnClickListener(v -> listener.onAddFriend(user));
+            }
 
-            View.OnClickListener openProfileListener = v -> {
+            itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, ProfileActivity.class);
                 intent.putExtra(ProfileActivity.EXTRA_USER_ID, user.getUid());
                 context.startActivity(intent);
-            };
-            itemView.setOnClickListener(openProfileListener);
-            layoutUserInfo.setOnClickListener(openProfileListener);
-
-            imageViewAddFriend.setOnClickListener(v -> {
-                // TODO: Implementirati logiku za slanje zahteva za prijateljstvo
-                Toast.makeText(context, "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
-                imageViewAddFriend.setEnabled(false); // Onemogući ikonicu nakon klika
-                imageViewAddFriend.setAlpha(0.5f);
             });
         }
     }

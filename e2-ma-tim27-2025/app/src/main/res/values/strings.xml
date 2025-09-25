@@ -39,5 +39,8 @@
     <string name="dialog_cancel_button">Cancel</string>
     <string name="main_profile_button">My Profile</string>
     <string name="main_all_users_button">All Users</string>
+    <string name="button_add_friend">Add Friend</string>
+    <string name="button_remove_friend">Remove Friend</string>
+    <string name="button_my_friends">My Friends</string>
 
 </resources>
