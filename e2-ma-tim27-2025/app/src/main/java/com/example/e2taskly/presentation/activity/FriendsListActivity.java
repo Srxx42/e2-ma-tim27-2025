@@ -1,6 +1,5 @@
 package com.example.e2taskly.presentation.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,11 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
-import com.example.e2taskly.presentation.adapter.FriendAdapter;
-import com.example.e2taskly.presentation.adapter.UserAdapter; // IMPORTANT: Use the UserAdapter
+import com.example.e2taskly.presentation.adapter.UserAdapter;
 import com.example.e2taskly.service.UserService;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;

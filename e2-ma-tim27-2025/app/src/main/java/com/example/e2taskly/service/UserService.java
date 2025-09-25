@@ -290,6 +290,6 @@ public class UserService {
         });
     }
     public Task<List<User>> searchUsers(String query) {
-        return userRepository.searchUsersByUsername(query); // Pretpostavljamo da ova metoda postoji u repozitorijumu
+        return userRepository.searchUsersByUsername(query);
     }
 }
