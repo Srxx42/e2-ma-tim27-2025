@@ -292,4 +292,11 @@ public class UserService {
     public Task<List<User>> searchUsers(String query) {
         return userRepository.searchUsersByUsername(query);
     }
+    public Task<List<User>> getUsersByIds(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Tasks.forResult(new ArrayList<>());
+        }
+
+        return userRepository.getUsersByIds(userIds);
+    }
 }

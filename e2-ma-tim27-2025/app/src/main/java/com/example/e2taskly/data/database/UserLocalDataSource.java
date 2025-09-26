@@ -2,6 +2,7 @@ package com.example.e2taskly.data.database;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
@@ -86,6 +87,88 @@ public class UserLocalDataSource {
         }
         values.put("active_days_streak",user.getActiveDaysStreak());
         values.put("last_activity_date",user.getLastActivityDate().getTime());
+        values.put("alliance_id", user.getAllianceId());
         db.update(SQLiteHelper.T_USERS,values,"id"+" = ?",new String[]{user.getUid()});
+    }
+    public int updateUserAllianceId(String uid, String allianceId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("alliance_id", allianceId);
+
+        int rowsAffected = db.update(SQLiteHelper.T_USERS, values, "id = ?", new String[]{uid});
+        db.close();
+
+        return rowsAffected;
+    }
+    public void addFriend(String currentUid, String friendUid) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        String currentFriends = null;
+        Cursor cursor = db.query(SQLiteHelper.T_USERS,
+                new String[]{"friends_ids"},
+                "id=?",
+                new String[]{currentUid},
+                null, null, null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                currentFriends = cursor.getString(0);
+            }
+            cursor.close();
+        }
+
+        if (currentFriends == null || currentFriends.isEmpty()) {
+            currentFriends = friendUid;
+        } else {
+            String[] existing = currentFriends.split(",");
+            for (String f : existing) {
+                if (f.equals(friendUid)) {
+                    db.close();
+                    return;
+                }
+            }
+            currentFriends = currentFriends + "," + friendUid;
+        }
+        ContentValues values = new ContentValues();
+        values.put("friends_ids", currentFriends);
+        db.update(SQLiteHelper.T_USERS, values, "id=?", new String[]{currentUid});
+        db.close();
+    }
+    public void removeFriend(String currentUid, String friendUid) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String currentFriends = null;
+        Cursor cursor = db.query(SQLiteHelper.T_USERS,
+                new String[]{"friends_ids"},
+                "id=?",
+                new String[]{currentUid},
+                null, null, null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                currentFriends = cursor.getString(0);
+            }
+            cursor.close();
+        }
+
+        if (currentFriends == null || currentFriends.isEmpty()) {
+            db.close();
+            return;
+        }
+
+        StringBuilder updatedFriends = new StringBuilder();
+        String[] existing = currentFriends.split(",");
+        for (String f : existing) {
+            if (!f.equals(friendUid) && !f.isEmpty()) {
+                if (updatedFriends.length() > 0) {
+                    updatedFriends.append(",");
+                }
+                updatedFriends.append(f);
+            }
+        }
+
+        ContentValues values = new ContentValues();
+        values.put("friends_ids", updatedFriends.toString());
+        db.update(SQLiteHelper.T_USERS, values, "id=?", new String[]{currentUid});
+        db.close();
     }
 }

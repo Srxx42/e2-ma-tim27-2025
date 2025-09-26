@@ -32,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar =findViewById(R.id.customToolbar);
         setSupportActionBar(toolbar);
 
-        // Ovo gasi defaultni title (E2Taskly)
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }

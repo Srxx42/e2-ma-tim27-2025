@@ -21,6 +21,7 @@ public class User {
     private int activeDaysStreak;
     private Date lastActivityDate;
     private List<String> friendIds;
+    private String allianceId;
 
 
     public User() {
@@ -179,7 +180,15 @@ public class User {
         return friendIds;
     }
 
-    public void setFriendsIds(List<String> friendIds) {
+    public void setFriendIds(List<String> friendIds) {
         this.friendIds = friendIds;
+    }
+
+    public String getAllianceId() {
+        return allianceId;
+    }
+
+    public void setAllianceId(String allianceId) {
+        this.allianceId = allianceId;
     }
 }

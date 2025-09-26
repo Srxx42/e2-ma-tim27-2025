@@ -6,4 +6,9 @@
         android:icon="@drawable/ic_qr_code_scanner"
         android:title="Scan QR Code"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_view_alliance"
+        android:title="My Alliance"
+        android:icon="@drawable/ic_alliance"
+        app:showAsAction="ifRoom" />
 </menu>

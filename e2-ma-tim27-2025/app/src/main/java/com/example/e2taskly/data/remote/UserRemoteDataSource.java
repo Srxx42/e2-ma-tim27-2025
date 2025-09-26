@@ -163,7 +163,6 @@ public class UserRemoteDataSource {
     }
     public Task<QuerySnapshot> searchUsersByUsername(String query) {
         if (query == null || query.isEmpty()) {
-            // Return an empty result if the query is empty
             return Tasks.forResult(null);
         }
 
@@ -171,7 +170,10 @@ public class UserRemoteDataSource {
                 .orderBy("username")
                 .startAt(query)
                 .endAt(query + '\uf8ff')
-                .limit(20) // It's a good practice to limit search results
+                .limit(20)
                 .get();
+    }
+    public Task<Void> updateUserAllianceId(String uid, String allianceId) {
+        return db.collection("users").document(uid).update("allianceId", allianceId);
     }
 }
