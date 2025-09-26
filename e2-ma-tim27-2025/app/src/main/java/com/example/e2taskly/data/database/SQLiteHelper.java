@@ -10,6 +10,10 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String T_USERS = "users";
 
     public static final String T_CATEGORIES = "taskCategories";
+
+    public static final String T_TASKS = "tasks";
+    public static final String T_SINGLE_TASKS = "single_tasks";
+    public static final String T_REPEATING_TASKS = "repeating_tasks";
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -38,6 +42,43 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "name TEXT NOT NULL UNIQUE," +
                 "colorhex TEXT NOT NULL UNIQUE" +
                 ")");
+
+        // GLAVNA TABELA SA ZAJEDNIČKIM POLJIMA
+        String createTaskTable = "CREATE TABLE " + T_TASKS + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "creatorId TEXT, " +
+                "name TEXT NOT NULL, " +
+                "description TEXT, " +
+                "categoryId INTEGER, " +
+                "taskType TEXT NOT NULL, " +
+                "status TEXT, " +
+                "importance TEXT, " +
+                "difficulty TEXT, " +
+                "valueXP INTEGER, " +
+                "deleted INTEGER DEFAULT 0, " +
+                "FOREIGN KEY(categoryId) REFERENCES " + T_CATEGORIES + "(id)" +
+                ");";
+
+        // TABELA SAMO ZA SINGLE TASK POLJA
+        String createSingleTaskTable = "CREATE TABLE " + T_SINGLE_TASKS + " (" +
+                "taskId INTEGER PRIMARY KEY, " +
+                "taskDate TEXT NOT NULL, " +
+                "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE" +
+                ");";
+
+        // TABELA SAMO ZA REPEATING TASK POLJA
+        String createRepeatingTaskTable = "CREATE TABLE " + T_REPEATING_TASKS + " (" +
+                "taskId INTEGER PRIMARY KEY, " +
+                "repeatingType TEXT, " +
+                "interval INTEGER, " +
+                "startingDate TEXT NOT NULL, " +
+                "finishingDate TEXT NOT NULL, " +
+                "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE" +
+                ");";
+
+        db.execSQL(createTaskTable);
+        db.execSQL(createSingleTaskTable);
+        db.execSQL(createRepeatingTaskTable);
     }
 
     @Override

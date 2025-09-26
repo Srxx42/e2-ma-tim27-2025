@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/stones">
+
+        <include
+            android:id="@+id/includeToolbar"
+            layout="@layout/toolbar"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/task_creation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dp"
+            android:text="Task"
+            android:textColor="#F0BC54"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/includeToolbar" />
+
+        <TextView
+            android:id="@+id/task_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/category_name"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/task_creation" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputTasksName"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:background="#80FFFFFF"
+            android:textColor="#F0BC54"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/task_name">
+
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTaskName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Task name"
+                android:textColor="@color/black" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/TaskCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="Category:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textInputTasksName" />
+
+        <Spinner
+            android:id="@+id/categorySpinner"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:spinnerMode="dropdown"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/TaskCategory" />
+
+        <TextView
+            android:id="@+id/task_difficulty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="Difficulty:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/categorySpinner" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupDifficulty"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:padding="3pt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/task_difficulty">
+
+            <RadioButton
+                android:id="@+id/Easy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EASY"
+                android:textColor="#F0BC54"
+                android:textStyle="bold"
+                app:buttonTint="#111" />
+
+            <RadioButton
+                android:id="@+id/Normal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10pt"
+                android:text="NORMAL"
+                android:textColor="#F0BC54"
+                android:textStyle="bold"
+                app:buttonTint="#111" />
+
+            <RadioButton
+                android:id="@+id/Hard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10pt"
+                android:text="HARD"
+                android:textColor="#F0BC54"
+                android:textStyle="bold"
+                app:buttonTint="#111" />
+
+            <RadioButton
+                android:id="@+id/VeryHard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8pt"
+                android:text="EPIC"
+                android:textColor="#F0BC54"
+                android:textStyle="bold"
+                app:buttonTint="#111" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/task_IMPORTANCE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="Importance:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/radioGroupDifficulty" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupImportance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:padding="3pt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/task_IMPORTANCE">
+
+            <RadioButton
+                android:id="@+id/ImportanceNormal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NORMAL"
+                android:textColor="#F0BC54"
+                android:textStyle="bold"
+                app:buttonTint="#111" />
+
+            <RadioButton
+                android:id="@+id/ImportanceImportant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="IMPORTANT"
+                android:textColor="#F0BC54"
+                android:textStyle="bold"
+                app:buttonTint="#111" />
+
+            <RadioButton
+                android:id="@+id/ImportanceUrgent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="URGENT"
+                android:textColor="#F0BC54"
+                android:textStyle="bold"
+                app:buttonTint="#111" />
+
+            <RadioButton
+                android:id="@+id/ImportanceSpecial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SPECIAL"
+                android:textColor="#F0BC54"
+                android:textStyle="bold"
+                app:buttonTint="#111" />
+        </RadioGroup>
+
+
+        <TextView
+            android:id="@+id/TaskDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="Description:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/radioGroupImportance" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputTasksDescription"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:background="#80FFFFFF"
+            android:textColor="#F0BC54"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/TaskDescription">
+
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTasksDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Task description"
+                android:textColor="@color/black" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Početak drugog prozora -->
+        <Button
+            android:id="@+id/btnSingle"
+            android:layout_width="50pt"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Single"
+            android:textColor="#F0BC54"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/btnRepeating"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textInputTasksDescription" />
+
+        <Button
+            android:id="@+id/btnRepeating"
+            android:layout_width="50pt"
+            android:layout_height="wrap_content"
+            android:text="Repeating"
+            android:textColor="#F0BC54"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSingle"
+            app:layout_constraintTop_toTopOf="@id/btnSingle" />
+
+        <!-- Layout za SINGLE -->
+
+        <LinearLayout
+            android:id="@+id/layoutSingle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnSingle">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="16dp"
+                android:text="Select date:"
+                android:textColor="#F0BC54"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <DatePicker
+                android:id="@+id/singleDatePicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:calendarViewShown="true" />
+
+            <Button
+                android:id="@+id/saveSingleTask"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:text=" Save "
+                android:textColor="#F0BC54"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Layout za REPEATING -->
+
+        <LinearLayout
+            android:id="@+id/layoutRepeating"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnSingle">
+
+            <!-- Start Date -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="16dp"
+                android:text="Start date:"
+                android:textColor="#F0BC54"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="24dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editStartDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Select start date"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:cursorVisible="false"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- End Date -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="20dp"
+                android:text="End date:"
+                android:textColor="#F0BC54"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="24dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editEndDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Select end date"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:cursorVisible="false"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Repeat Type -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="20dp"
+                android:text="Repeat type:"
+                android:textColor="#F0BC54"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/radioGroupRepeatInterval"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/repeatDaily"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Daily"
+                    android:textColor="#F0BC54"
+                    android:textStyle="bold"
+                    app:buttonTint="#111" />
+
+                <RadioButton
+                    android:id="@+id/repeatWeekly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Weekly"
+                    android:textColor="#F0BC54"
+                    android:textStyle="bold"
+                    app:buttonTint="#111" />
+            </RadioGroup>
+
+            <!-- Interval -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="20dp"
+                android:text="Repeat every:"
+                android:textColor="#F0BC54"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/repeatIntervalSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp" />
+
+            <!-- Save Button -->
+            <Button
+                android:id="@+id/saveRepeatingTask"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="40dp"
+                android:layout_marginBottom="50dp"
+                android:text="Save"
+                android:textColor="#F0BC54"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

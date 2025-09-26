@@ -24,7 +24,7 @@ public class RepeatingTask extends  Task {
     List<LocalDate> taskDates;
 
 
-    public RepeatingTask(int id, int creatorId, String name, String description, TaskCategory category,
+    public RepeatingTask(int id, String creatorId, String name, String description, TaskCategory category,
                          TaskType type, TaskStatus status, Importance importance, Difficulty difficulty,
                          int valueXP, boolean deleted, RepeatingType repeatingType,int interval,
                          LocalDate startingDate, LocalDate finishingDate) {
