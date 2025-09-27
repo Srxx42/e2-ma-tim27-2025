@@ -18,7 +18,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="My Alliance" />
+            app:title="@string/alliance_title" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -54,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Members:"
+            android:text="@string/members_label"
             android:textAppearance="?attr/textAppearanceTitleMedium" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -85,7 +85,7 @@
             android:id="@+id/textViewNoAllianceInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="You are not part of an alliance."
+            android:text="@string/no_alliance_message"
             android:textAppearance="?attr/textAppearanceBodyLarge"
             android:textAlignment="center"/>
 
@@ -94,7 +94,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Create New Alliance" />
+            android:text="@string/create_alliance_button" />
 
     </LinearLayout>
 
@@ -107,5 +107,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabInviteMembers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add_friend"
+    android:visibility="gone"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:contentDescription="@string/invite_members_description" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

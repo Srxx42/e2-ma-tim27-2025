@@ -6,6 +6,9 @@ plugins {
 android {
     namespace 'com.example.e2taskly'
     compileSdk 36
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId "com.example.e2taskly"
@@ -15,12 +18,24 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        Properties properties = new Properties()
+        if (project.rootProject.file("local.properties").exists()) {
+            properties.load(project.rootProject.file("local.properties").newDataInputStream())
+        }
+
+        // Dodajemo polje u BuildConfig. Ovo će se primeniti na sve build tipove
+        buildConfigField "String", "FCM_SERVER_KEY", "\"${properties.getProperty("FCM_SERVER_KEY", "")}\""
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    packaging {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES']
         }
     }
     compileOptions {
@@ -48,4 +63,7 @@ dependencies {
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
     implementation 'com.google.firebase:firebase-messaging:24.0.0'
+    implementation 'com.android.volley:volley:1.2.1'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.19.0'
+    implementation 'io.grpc:grpc-okhttp:1.58.0'
 }

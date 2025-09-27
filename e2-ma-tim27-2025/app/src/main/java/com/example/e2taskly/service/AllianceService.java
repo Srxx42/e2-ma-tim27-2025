@@ -1,8 +1,10 @@
 package com.example.e2taskly.service;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.e2taskly.data.repository.AllianceRepository;
+import com.example.e2taskly.data.repository.InviteRepository;
 import com.example.e2taskly.data.repository.UserRepository;
 import com.example.e2taskly.model.Alliance;
 import com.example.e2taskly.model.User;
@@ -17,12 +19,13 @@ import java.util.UUID;
 public class AllianceService {
     private final AllianceRepository allianceRepository;
     private final UserRepository userRepository;
-
+    private final InviteService inviteService;
     public AllianceService(Context context){
         this.allianceRepository = new AllianceRepository(context);
         this.userRepository = new UserRepository(context);
+        this.inviteService = new InviteService(context);
     }
-    public Task<Void> createAlliance(String leaderId, String allianceName, List<String> friendIdsToInvite) {
+    public Task<Void> createAlliance(String leaderId, String allianceName, List<User> friendsToInvite, String leaderUsername) {
         return userRepository.getUserProfile(leaderId).continueWithTask(task -> {
             if (!task.isSuccessful() || task.getResult() == null) {
                 throw new Exception("Could not retrieve user profile to create alliance.");
@@ -43,36 +46,94 @@ public class AllianceService {
             newAlliance.setMissionStatus(MissionStatus.NOT_STARTED);
             newAlliance.setCurrentMissionId(null);
 
-
             return allianceRepository.createAlliance(newAlliance)
-                    .onSuccessTask(aVoid -> userRepository.updateUserAllianceId(leaderId, newAlliance.getAllianceId()));
+                    .onSuccessTask(aVoid -> userRepository.updateUserAllianceId(leaderId, newAlliance.getAllianceId()))
+                    .onSuccessTask(aVoid -> {
+                        if (friendsToInvite != null && !friendsToInvite.isEmpty()) {
+                            return inviteService.sendInvites(leaderId, leaderUsername, newAlliance, friendsToInvite);
+                        }
+                        return Tasks.forResult(null);
+                    });
         });
     }
     public Task<Alliance> getAlliance(String allianceId) {
         return allianceRepository.getAlliance(allianceId);
     }
 
-    public Task<Void> acceptInvite(String userId, String newAllianceId) {
+    public Task<Void> acceptInvite(String userId, String newAllianceId, String inviteId) {
         return userRepository.getUserProfile(userId).continueWithTask(task -> {
             if (!task.isSuccessful() || task.getResult() == null) {
-                throw new Exception("Could not retrieve user profile to accept invite.");
+                throw new Exception("Could not retrieve user profile.");
             }
             User user = task.getResult();
             String oldAllianceId = user.getAllianceId();
 
-            Task<Void> leaveTask = Tasks.forResult(null);
 
             if (oldAllianceId != null && !oldAllianceId.isEmpty()) {
-                leaveTask = leaveAlliance(userId, oldAllianceId);
+                throw new Exception("ALREADY_IN_ALLIANCE");
             }
 
-            return leaveTask.onSuccessTask(aVoid -> {
-                Task<Void> addMemberTask = allianceRepository.addMember(newAllianceId, userId);
-                Task<Void> updateUserTask = userRepository.updateUserAllianceId(userId, newAllianceId);
-                return Tasks.whenAll(addMemberTask, updateUserTask);
+            // Ako nije, nastavi sa normalnim pridruživanjem
+            return joinNewAlliance(userId, newAllianceId, inviteId);
+        });
+    }
+
+    public Task<Void> forceAcceptInvitationAndLeaveOld(String inviteId, String userId) {
+        return userRepository.getUserProfile(userId).continueWithTask(task -> {
+            if (!task.isSuccessful() || task.getResult() == null) {
+                throw new Exception("Could not find user profile.");
+            }
+            User user = task.getResult();
+            String oldAllianceId = user.getAllianceId();
+
+            if (oldAllianceId == null || oldAllianceId.isEmpty()) {
+
+                return inviteService.getInvitationById(inviteId).onSuccessTask(invite ->
+                        joinNewAlliance(userId, invite.getAllianceId(), inviteId)
+                );
+            }
+
+            return leaveAlliance(userId, oldAllianceId).onSuccessTask(aVoid ->
+                    inviteService.getInvitationById(inviteId).onSuccessTask(invite ->
+                            joinNewAlliance(userId, invite.getAllianceId(), inviteId)
+                    )
+            );
+        });
+    }
+    private Task<Void> joinNewAlliance(String userId, String newAllianceId, String inviteId) {
+        Task<Void> addMemberTask = allianceRepository.addMember(newAllianceId, userId);
+        Task<Void> updateUserTask = userRepository.updateUserAllianceId(userId, newAllianceId);
+        Task<Void> updateInviteTask = inviteService.acceptInvite(inviteId);
+
+        return Tasks.whenAll(addMemberTask, updateUserTask, updateInviteTask)
+                .onSuccessTask(aVoid -> sendAcceptanceNotification(newAllianceId, userId));
+    }
+    private Task<Void> sendAcceptanceNotification(String allianceId, String newMemberId) {
+        Task<Alliance> allianceTask = allianceRepository.getAlliance(allianceId);
+        Task<User> newMemberTask = userRepository.getUserProfile(newMemberId);
+
+        return Tasks.whenAll(allianceTask, newMemberTask).onSuccessTask(aVoid -> {
+            Alliance alliance = allianceTask.getResult();
+            User newMember = newMemberTask.getResult();
+
+            if (alliance == null || newMember == null) {
+                Log.e("AllianceService", "Alliance or new member not found, cannot send notification.");
+                return Tasks.forResult(null);
+            }
+
+            return userRepository.getUserProfile(alliance.getLeaderId()).onSuccessTask(leader -> {
+                if (leader == null || leader.getFcmToken() == null || leader.getFcmToken().isEmpty()) {
+                    Log.e("AllianceService", "Leader not found or has no FCM token.");
+                    return Tasks.forResult(null);
+                }
+
+                inviteService.sendAcceptanceNotification(leader.getFcmToken(), newMember.getUsername(), alliance.getName());
+                return Tasks.forResult(null);
             });
         });
     }
+
+
 
     public Task<Void> leaveAlliance(String userId, String allianceId) {
         return allianceRepository.getAlliance(allianceId).continueWithTask(task -> {

@@ -299,4 +299,7 @@ public class UserService {
 
         return userRepository.getUsersByIds(userIds);
     }
+    public Task<Void> updateUserFcmToken(String uid, String token) {
+        return userRepository.updateUserFcmToken(uid, token);
+    }
 }

@@ -42,5 +42,12 @@
     <string name="button_add_friend">Add Friend</string>
     <string name="button_remove_friend">Remove Friend</string>
     <string name="button_my_friends">My Friends</string>
-
+    <string name="decision_info">You are already in an alliance. Do you want to leave your current alliance to join the new one?</string>
+    <string name="button_confirm_join">Yes, Leave and Join New Alliance</string>
+    <string name="button_cancel_join">No, Stay in Current Alliance</string>
+    <string name="alliance_title">My Alliance</string>
+    <string name="members_label">Members:</string>
+    <string name="no_alliance_message">You are not part of an alliance.</string>
+    <string name="create_alliance_button">Create New Alliance</string>
+    <string name="invite_members_description">Invite New Members</string>
 </resources>

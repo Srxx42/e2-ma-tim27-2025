@@ -176,4 +176,7 @@ public class UserRemoteDataSource {
     public Task<Void> updateUserAllianceId(String uid, String allianceId) {
         return db.collection("users").document(uid).update("allianceId", allianceId);
     }
+    public Task<Void> updateUserFcmToken(String uid, String token) {
+        return db.collection("users").document(uid).update("fcmToken", token);
+    }
 }

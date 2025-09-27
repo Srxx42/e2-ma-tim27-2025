@@ -171,4 +171,11 @@ public class UserLocalDataSource {
         db.update(SQLiteHelper.T_USERS, values, "id=?", new String[]{currentUid});
         db.close();
     }
+    public void updateUserFcmToken(String uid, String token) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("fcm_token", token);
+        db.update(SQLiteHelper.T_USERS, values, "id = ?", new String[]{uid});
+        db.close();
+    }
 }

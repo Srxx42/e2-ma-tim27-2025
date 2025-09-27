@@ -2,6 +2,7 @@ package com.example.e2taskly.presentation.activity;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,12 +29,15 @@ import com.example.e2taskly.model.Alliance;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.presentation.adapter.UserAdapter;
 import com.example.e2taskly.service.AllianceService;
+import com.example.e2taskly.service.InviteService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AllianceActivity extends AppCompatActivity {
     private ProgressBar progressBar;
@@ -41,6 +45,7 @@ public class AllianceActivity extends AppCompatActivity {
     private TextView textViewAllianceName, textViewAllianceLeader;
     private RecyclerView recyclerViewMembers;
     private Button buttonCreateAlliance;
+    private FloatingActionButton fabInviteMembers;
     private UserService userService;
     private AllianceService allianceService;
     private UserAdapter memberAdapter;
@@ -48,6 +53,9 @@ public class AllianceActivity extends AppCompatActivity {
     private User currentUser;
     private SharedPreferencesUtil sharedPreferences;
     private Alliance currentAlliance;
+    private List<User> friendList = new ArrayList<>();
+    private List<User> selectedFriends = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +81,8 @@ public class AllianceActivity extends AppCompatActivity {
         textViewAllianceLeader = findViewById(R.id.textViewAllianceLeader);
         recyclerViewMembers = findViewById(R.id.recyclerViewMembers);
         buttonCreateAlliance = findViewById(R.id.buttonCreateAlliance);
+        fabInviteMembers = findViewById(R.id.fabInviteMembers);
+        fabInviteMembers.setOnClickListener(v -> showInviteMoreFriendsDialog());
 
         setupRecyclerView();
 
@@ -92,50 +102,66 @@ public class AllianceActivity extends AppCompatActivity {
     }
 
     private void loadUserAllianceStatus() {
-        progressBar.setVisibility(View.VISIBLE);
-        layoutAllianceInfo.setVisibility(View.GONE);
-        layoutNoAlliance.setVisibility(View.GONE);
-
-        userService.getUserProfile(currentUserId).addOnSuccessListener(user -> {
-            this.currentUser = user;
-            if (user.getAllianceId() != null && !user.getAllianceId().isEmpty()) {
-                loadAllianceDetails(user.getAllianceId());
-            } else {
-                displayNoAllianceView();
-            }
-        }).addOnFailureListener(e -> {
-            progressBar.setVisibility(View.GONE);
-            Toast.makeText(this, "Error fetching profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        });
+        setLoadingState(true);
+        userService.getUserProfile(currentUserId)
+                .addOnSuccessListener(user -> {
+                    this.currentUser = user;
+                    if (user.getAllianceId() != null && !user.getAllianceId().isEmpty()) {
+                        loadAllianceDetails(user.getAllianceId());
+                    } else {
+                        displayNoAllianceView();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    setLoadingState(false);
+                    Toast.makeText(this, "Error fetching profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
+
     private void loadAllianceDetails(String allianceId) {
-        allianceService.getAlliance(allianceId).addOnSuccessListener(alliance -> {
-            this.currentAlliance = alliance;
-            invalidateOptionsMenu();
-            userService.getUsersByIds(alliance.getMemberIds()).addOnSuccessListener(members -> {
-                progressBar.setVisibility(View.GONE);
-                displayAllianceDetails(alliance, members);
-            }).addOnFailureListener(e -> {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(this, "Error fetching members: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            });
-        }).addOnFailureListener(e -> {
-            progressBar.setVisibility(View.GONE);
-            Toast.makeText(this, "Error fetching alliance: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        });
+        allianceService.getAlliance(allianceId)
+                .addOnSuccessListener(alliance -> {
+                    this.currentAlliance = alliance;
+                    invalidateOptionsMenu();
+
+                    userService.getUsersByIds(alliance.getMemberIds())
+                            .addOnSuccessListener(members -> {
+                                setLoadingState(false);
+                                displayAllianceDetails(alliance, members);
+                            })
+                            .addOnFailureListener(e -> {
+                                setLoadingState(false);
+                                Toast.makeText(this, "Error fetching members: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    setLoadingState(false);
+                    Toast.makeText(this, "Error fetching alliance: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+    private void setLoadingState(boolean isLoading) {
+        progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        if (isLoading) {
+            layoutAllianceInfo.setVisibility(View.GONE);
+            layoutNoAlliance.setVisibility(View.GONE);
+        }
     }
 
     private void displayNoAllianceView() {
-        progressBar.setVisibility(View.GONE);
+        setLoadingState(false);
+        this.currentAlliance = null;
+        invalidateOptionsMenu();
         layoutAllianceInfo.setVisibility(View.GONE);
         layoutNoAlliance.setVisibility(View.VISIBLE);
+        fabInviteMembers.setVisibility(View.GONE);
     }
 
     private void displayAllianceDetails(Alliance alliance, List<User> members) {
         layoutAllianceInfo.setVisibility(View.VISIBLE);
         layoutNoAlliance.setVisibility(View.GONE);
-
+        boolean isLeader = currentUser.getUid().equals(alliance.getLeaderId());
+        fabInviteMembers.setVisibility(isLeader ? View.VISIBLE : View.GONE);
         textViewAllianceName.setText(alliance.getName());
 
         String leaderName = "Unknown";
@@ -151,39 +177,76 @@ public class AllianceActivity extends AppCompatActivity {
     }
 
     private void showCreateAllianceDialog() {
+        progressBar.setVisibility(View.VISIBLE);
+        userService.getFriendsForCurrentUser(currentUserId)
+                .addOnSuccessListener(friends -> {
+                    progressBar.setVisibility(View.GONE);
+                    this.friendList = friends;
+                    showDialogWithFriendList();
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Could not load friends list to invite.", Toast.LENGTH_SHORT).show();
+                });
+    }
+    private void showDialogWithFriendList() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle("Create New Alliance");
 
-        final EditText input = new EditText(this);
-        input.setHint("Enter alliance name");
-        builder.setView(input);
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(48, 24, 48, 24);
+        final EditText inputName = new EditText(this);
+        inputName.setHint("Enter alliance name");
+        layout.addView(inputName);
+        builder.setView(layout);
 
-        builder.setPositiveButton("Create", (dialog, which) -> {
-            String allianceName = input.getText().toString().trim();
+        if (friendList.isEmpty()) {
+            builder.setMessage("You have no friends to invite.");
+        } else {
+            String[] friendNames = friendList.stream().map(User::getUsername).toArray(String[]::new);
+            boolean[] checkedItems = new boolean[friendList.size()];
+            selectedFriends.clear();
+
+            builder.setMultiChoiceItems(friendNames, checkedItems, (dialog, which, isChecked) -> {
+                User selectedFriend = friendList.get(which);
+                if (isChecked) {
+                    selectedFriends.add(selectedFriend);
+                } else {
+                    selectedFriends.remove(selectedFriend);
+                }
+            });
+        }
+
+        builder.setPositiveButton("Create & Invite", (dialog, which) -> {
+            String allianceName = inputName.getText().toString().trim();
             if (TextUtils.isEmpty(allianceName)) {
                 Toast.makeText(this, "Alliance name cannot be empty.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            // TODO: Ovde bi idealno išao korak za izbor prijatelja
-            List<String> friendsToInvite = new ArrayList<>();
-
-            progressBar.setVisibility(View.VISIBLE);
-            allianceService.createAlliance(currentUserId, allianceName, friendsToInvite)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Alliance '" + allianceName + "' created!", Toast.LENGTH_SHORT).show();
-                        loadUserAllianceStatus();
-                    })
-                    .addOnFailureListener(e -> {
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
+            createAllianceWithInvites(allianceName, selectedFriends);
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
     }
-
+    private void createAllianceWithInvites(String allianceName, List<User> friendsToInvite) {
+        progressBar.setVisibility(View.VISIBLE);
+        Log.d("AllianceActivity", "Creating alliance. Inviting the following users:");
+        for (User friend : friendsToInvite) {
+            Log.d("AllianceActivity", "Inviting -> Username: " + friend.getUsername() + ", UID: " + friend.getUid());
+        }
+        //
+        allianceService.createAlliance(currentUserId, allianceName, friendsToInvite, currentUser.getUsername())
+             .addOnSuccessListener(aVoid -> {
+                 Toast.makeText(this, "Alliance created and invites sent!", Toast.LENGTH_SHORT).show();
+                 loadUserAllianceStatus();
+             })
+             .addOnFailureListener(e -> {
+                 progressBar.setVisibility(View.GONE);
+                 Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+             });
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.alliance_menu, menu);
@@ -223,14 +286,14 @@ public class AllianceActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to leave '" + currentAlliance.getName() + "'?")
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Leave", (dialog, which) -> {
-                    progressBar.setVisibility(View.VISIBLE);
+                    setLoadingState(true);
                     allianceService.leaveAlliance(currentUserId, currentAlliance.getAllianceId())
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(this, "You have left the alliance.", Toast.LENGTH_SHORT).show();
-                                loadUserAllianceStatus();
+                                displayNoAllianceView();
                             })
                             .addOnFailureListener(e -> {
-                                progressBar.setVisibility(View.GONE);
+                                setLoadingState(false);
                                 Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             });
                 })
@@ -243,17 +306,69 @@ public class AllianceActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to permanently disband '" + currentAlliance.getName() + "'? This action cannot be undone.")
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Disband", (dialog, which) -> {
-                    progressBar.setVisibility(View.VISIBLE);
+                    setLoadingState(true);
                     allianceService.disbandAlliance(currentUserId, currentAlliance.getAllianceId())
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(this, "Alliance has been disbanded.", Toast.LENGTH_SHORT).show();
-                                loadUserAllianceStatus();
+                                displayNoAllianceView();
                             })
                             .addOnFailureListener(e -> {
-                                progressBar.setVisibility(View.GONE);
+                                setLoadingState(false);
                                 Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             });
                 })
                 .show();
+    }
+    private void showInviteMoreFriendsDialog() {
+        progressBar.setVisibility(View.VISIBLE);
+        userService.getFriendsForCurrentUser(currentUserId)
+                .addOnSuccessListener(allFriends -> {
+                    progressBar.setVisibility(View.GONE);
+
+                    List<String> currentMemberIds = currentAlliance.getMemberIds();
+                    List<User> friendsToDisplay = allFriends.stream()
+                            .filter(friend -> !currentMemberIds.contains(friend.getUid()))
+                            .collect(Collectors.toList());
+
+                    if (friendsToDisplay.isEmpty()) {
+                        Toast.makeText(this, "All of your friends are already in the alliance.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    displayInviteDialog(friendsToDisplay);
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Could not load friends list.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void displayInviteDialog(List<User> friendsToInvite) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("Invite More Friends");
+
+        String[] friendNames = friendsToInvite.stream().map(User::getUsername).toArray(String[]::new);
+        boolean[] checkedItems = new boolean[friendsToInvite.size()];
+        List<User> newlySelectedFriends = new ArrayList<>();
+
+        builder.setMultiChoiceItems(friendNames, checkedItems, (dialog, which, isChecked) -> {
+            User selected = friendsToInvite.get(which);
+            if (isChecked) {
+                newlySelectedFriends.add(selected);
+            } else {
+                newlySelectedFriends.remove(selected);
+            }
+        });
+
+        builder.setPositiveButton("Send Invites", (dialog, which) -> {
+            if (!newlySelectedFriends.isEmpty()) {
+                InviteService inviteService = new InviteService(this);
+                inviteService.sendInvites(currentUserId, currentUser.getUsername(), currentAlliance, newlySelectedFriends)
+                        .addOnSuccessListener(aVoid -> Toast.makeText(this, "Invites sent!", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
     }
 }

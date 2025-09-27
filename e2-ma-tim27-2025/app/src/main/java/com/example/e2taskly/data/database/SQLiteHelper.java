@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "e2taskly.db";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     public static final String T_USERS = "users";
 
     public static final String T_CATEGORIES = "taskCategories";
@@ -34,7 +34,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "active_days_streak INTEGER, " +
                 "last_activity_date INTEGER, " +
                 "friends_ids TEXT," +
-                "alliance_id TEXT" +
+                "alliance_id TEXT," +
+                "fcm_token TEXT" +
                 ")");
 
         db.execSQL("create  table " + T_CATEGORIES + " (" +
@@ -101,6 +102,9 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     "timestamp INTEGER NOT NULL, " +
                     "status TEXT NOT NULL" +
                     ")");
+        }
+        if (oldVersion < 7) {
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN fcm_token TEXT");
         }
     }
 }

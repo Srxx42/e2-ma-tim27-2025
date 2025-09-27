@@ -183,4 +183,8 @@ public class UserRepository {
         }
         return remoteDataSource.getUsersByIds(userIds);
     }
+    public Task<Void> updateUserFcmToken(String uid, String token) {
+        localDataSource.updateUserFcmToken(uid, token);
+        return remoteDataSource.updateUserFcmToken(uid, token);
+    }
 }
