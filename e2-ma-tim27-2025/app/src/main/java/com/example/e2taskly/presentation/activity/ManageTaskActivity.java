@@ -34,6 +34,7 @@ import com.example.e2taskly.model.enums.RepeatingType;
 import com.example.e2taskly.model.enums.TaskStatus;
 import com.example.e2taskly.model.enums.TaskType;
 import com.example.e2taskly.service.TaskCategoryService;
+import com.example.e2taskly.service.TaskService;
 import com.example.e2taskly.service.UserService;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.common.collect.ArrayTable;
@@ -77,6 +78,7 @@ public class ManageTaskActivity extends AppCompatActivity {
 
     private UserService userService;
     private TaskCategoryService  categoryService;
+    private TaskService taskService;
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault());
 
@@ -86,6 +88,7 @@ public class ManageTaskActivity extends AppCompatActivity {
 
         userService = new UserService(this);
         categoryService = new TaskCategoryService(this);
+        taskService = new TaskService(this);
         setContentView(R.layout.activity_task_manage);
 
         initViews();
@@ -171,6 +174,7 @@ public class ManageTaskActivity extends AppCompatActivity {
 
     private void validateAndSaveTask(){
         //Validacija zajednicih polja
+        boolean success = false;
         String name = editTaskName.getText().toString().trim();
         if(TextUtils.isEmpty(name)){
             editTaskName.setError("Naziv zadatka je obavezan.");
@@ -197,7 +201,7 @@ public class ManageTaskActivity extends AppCompatActivity {
         Importance importance = getSelectedImportance();
 
         //Podrazumevane vrednosti za novi task
-        int id = 0;
+        int id = -1;
         String creatorId = userService.getCurrentUserId();
         TaskStatus status = TaskStatus.ACTIVE;
         int valueXP = caluclateTaskXP(difficulty,importance);
@@ -211,7 +215,7 @@ public class ManageTaskActivity extends AppCompatActivity {
             LocalDate taskDate = LocalDate.of(year,month,day);
 
             SingleTask task = new SingleTask(id,creatorId,name,description,category,TaskType.SINGLE,status,importance,difficulty,valueXP,deleted,taskDate);
-            saveSingleTask(task);
+           success = taskService.saveTask(task);
         }
         //Kreiranje task objekta - REPEATING
         else{
@@ -254,20 +258,18 @@ public class ManageTaskActivity extends AppCompatActivity {
             RepeatingTask task = new RepeatingTask(id, creatorId, name, description, category, TaskType.REPEATING,
                     status, importance, difficulty, valueXP, deleted, repeatingType, interval, startDate, endDate);
 
-            saveRepeatingTask(task);
+           success = taskService.saveTask(task);
+           if(success) taskService.createRepeatingTaskOccurrences(task);
+        }
+
+        if (success) {
+            Toast.makeText(this, "Task saved!", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            Toast.makeText(this, "Error occured while saving task.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void saveSingleTask(SingleTask task){
-        Log.d("ManageTaskActivity", "Kreiran task: " + task.toString());
-        Toast.makeText(this, "Task '" + task.getName() + "' je uspešno sačuvan!", Toast.LENGTH_LONG).show();
-        finish();
-    }
-    private void saveRepeatingTask(RepeatingTask task){
-        Log.d("ManageTaskActivity", "Kreiran task: " + task.toString());
-        Toast.makeText(this, "Task '" + task.getName() + "' je uspešno sačuvan!", Toast.LENGTH_LONG).show();
-        finish();
-    }
 
 
     private Difficulty getSelectedDifficulty() {

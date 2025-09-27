@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
 import com.example.e2taskly.model.RepeatingTask;
+import com.example.e2taskly.model.RepeatingTaskOccurrence;
 import com.example.e2taskly.model.SingleTask;
 import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.TaskCategory;
@@ -15,7 +16,9 @@ import com.example.e2taskly.model.enums.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TaskLocalDataSource {
 
@@ -26,8 +29,6 @@ public class TaskLocalDataSource {
         this.context = context;
         this.dbHelper = new SQLiteHelper(context);
     }
-
-    // Tvoja addTask metoda - ostaje nepromenjena, ispravna je
     public long addTask(Task task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         long newRowId = -1;
@@ -39,7 +40,7 @@ public class TaskLocalDataSource {
             commonValues.put("name", task.getName());
             commonValues.put("description", task.getDescription());
             commonValues.put("categoryId", task.getCategory().getId());
-            commonValues.put("taskType", task.getType().name()); // Preimenovano u getTaskType() radi konzistentnosti sa modelom
+            commonValues.put("taskType", task.getType().name());
             commonValues.put("status", task.getStatus().name());
             commonValues.put("importance", task.getImportance().name());
             commonValues.put("difficulty", task.getDifficulty().name());
@@ -115,7 +116,6 @@ public class TaskLocalDataSource {
         return tasks;
     }
 
-    // Tvoja getAllRepeatingTasks metoda - ISPRAVLJENA da koristi 'startingDate' i 'finishingDate'
     public List<RepeatingTask> getAllRepeatingTasks() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<RepeatingTask> tasks = new ArrayList<>();
@@ -129,6 +129,7 @@ public class TaskLocalDataSource {
         if (cursor.moveToFirst()) {
             do {
                 TaskCategory category = categoryDataSource.getCategoryById(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
+
                 RepeatingTask task = new RepeatingTask(
                         cursor.getInt(cursor.getColumnIndexOrThrow("id")),
                         cursor.getString(cursor.getColumnIndexOrThrow("creatorId")),
@@ -143,7 +144,6 @@ public class TaskLocalDataSource {
                         cursor.getInt(cursor.getColumnIndexOrThrow("deleted")) == 1,
                         RepeatingType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("repeatingType"))),
                         cursor.getInt(cursor.getColumnIndexOrThrow("interval")),
-                        // --- ISPRAVKA OVDE ---
                         LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("startingDate"))),
                         LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("finishingDate")))
                 );
@@ -155,7 +155,7 @@ public class TaskLocalDataSource {
         return tasks;
     }
 
-    // Metoda getTaskById - DOPUNJENA
+    // Metoda getTaskById
     public Task getTaskById(int id) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Task task = null;
@@ -187,7 +187,7 @@ public class TaskLocalDataSource {
                 }
                 specificCursor.close();
             }
-            // --- POČETAK DOPUNE ---
+            // AKO JE REPEATING TAKS U PITANJU
             else if (taskType == TaskType.REPEATING) {
                 Cursor specificCursor = db.query(SQLiteHelper.T_REPEATING_TASKS, null, "taskId = ?", new String[]{String.valueOf(id)}, null, null, null);
                 if (specificCursor.moveToFirst()) {
@@ -211,22 +211,20 @@ public class TaskLocalDataSource {
                 }
                 specificCursor.close();
             }
-            // --- KRAJ DOPUNE ---
         }
         commonCursor.close();
         db.close();
         return task;
     }
 
-    // Metoda updateTask - DOPUNJENA
+
     public boolean updateTask(Task task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rowsAffected = 0;
 
         db.beginTransaction();
         try {
-            // --- POČETAK DOPUNE ---
-            // KORAK 1: Ažuriranje zajedničkih podataka u glavnoj tabeli
+
             ContentValues commonValues = new ContentValues();
             commonValues.put("creatorId", task.getCreatorId());
             commonValues.put("name", task.getName());
@@ -242,7 +240,7 @@ public class TaskLocalDataSource {
             rowsAffected = db.update(SQLiteHelper.T_TASKS, commonValues, "id = ?", new String[]{String.valueOf(task.getId())});
 
             if (rowsAffected > 0) {
-                // KORAK 2: Ažuriranje specifičnih podataka u odgovarajućoj tabeli
+                // Ažuriranje specifičnih podataka u odgovarajućoj tabeli
                 if (task instanceof SingleTask) {
                     SingleTask singleTask = (SingleTask) task;
                     ContentValues singleValues = new ContentValues();
@@ -259,7 +257,7 @@ public class TaskLocalDataSource {
                     db.update(SQLiteHelper.T_REPEATING_TASKS, repeatingValues, "taskId = ?", new String[]{String.valueOf(task.getId())});
                 }
             }
-            // --- KRAJ DOPUNE ---
+
             db.setTransactionSuccessful();
             Log.d("DB_SUCCESS", "Task updated successfully for ID: " + task.getId());
         } catch (Exception e) {
@@ -272,7 +270,7 @@ public class TaskLocalDataSource {
         return rowsAffected > 0;
     }
 
-    // Tvoja deleteTaskById metoda - ostaje nepromenjena, ispravna je
+
     public boolean deleteTaskById(int id) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rowsAffected = 0;
@@ -286,4 +284,57 @@ public class TaskLocalDataSource {
         }
         return rowsAffected > 0;
     }
+
+
+    public boolean saveTaskOccurrence(RepeatingTaskOccurrence occurence){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        long newRowId = -1;
+
+        db.beginTransaction();
+        try{
+            ContentValues commonValues = new ContentValues();
+            commonValues.put("repeatingTaskId", occurence.getRepeatingTaskId());
+            commonValues.put("occurrenceDate",occurence.getOccurrenceDate().toString());
+            commonValues.put("occurrenceStatus",occurence.getOccurrenceStatus().name());
+
+            newRowId = db.insertOrThrow(SQLiteHelper.T_R_TASK_OCCURRENCE,null,commonValues);
+
+            db.setTransactionSuccessful();
+            Log.d("DB_SUCCESS", "Task inserted successfully with ID: " + newRowId);
+        } catch (Exception e) {
+            Log.e("DB_ERROR", "Failed to insert occurrence: " + e.getMessage());
+            newRowId = -1;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+        return newRowId != -1;
+    }
+
+    public List<RepeatingTaskOccurrence> getAllTaskOccurrences(int taskId){
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<RepeatingTaskOccurrence> occurrences = new ArrayList<>();
+
+        Cursor commonCursor = db.query(SQLiteHelper.T_R_TASK_OCCURRENCE, null, "repeatingTaskId = ?", new String[]{String.valueOf(taskId)}, null, null, null);
+
+        if (commonCursor.moveToFirst()) {
+            do {
+                RepeatingTaskOccurrence occurence = new RepeatingTaskOccurrence(
+                        commonCursor.getInt(commonCursor.getColumnIndexOrThrow("occurrenceId")),
+                        commonCursor.getInt(commonCursor.getColumnIndexOrThrow("repeatingTaskId")),
+                        LocalDate.parse(commonCursor.getString(commonCursor.getColumnIndexOrThrow("occurrenceDate"))),
+                        TaskStatus.valueOf(commonCursor.getString(commonCursor.getColumnIndexOrThrow("occurrenceStatus")))
+                );
+
+                occurrences.add(occurence);
+
+            } while (commonCursor.moveToNext());
+        }
+        commonCursor.close();
+        db.close();
+        return occurrences;
+    }
+
+
+
 }

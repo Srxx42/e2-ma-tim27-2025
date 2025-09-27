@@ -34,9 +34,14 @@
             android:exported="false">
         </activity>
         <activity
+            android:name=".presentation.activity.ManageTaskActivity"
+            android:exported="false"/>
+        <activity
             android:name=".presentation.activity.ShowCategoriesActivity"
             android:exported="false"/>
-        <activity android:name=".presentation.activity.ManageCategoryActivity" android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ManageCategoryActivity"
+            android:exported="false" />
         <activity
             android:name=".presentation.activity.MainActivity"
             android:exported="false"

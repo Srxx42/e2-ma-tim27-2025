@@ -35,6 +35,7 @@ public abstract class Task {
         this.status = status;
         this.importance = importance;
         this.difficulty = difficulty;
+        this.valueXP = valueXP;
         this.deleted = deleted;
     }
 
