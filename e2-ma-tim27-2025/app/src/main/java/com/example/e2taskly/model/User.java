@@ -22,6 +22,7 @@ public class User {
     private Date lastActivityDate;
     private List<String> friendIds;
     private String allianceId;
+    private String fcmToken;
 
 
     public User() {
@@ -190,5 +191,13 @@ public class User {
 
     public void setAllianceId(String allianceId) {
         this.allianceId = allianceId;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }

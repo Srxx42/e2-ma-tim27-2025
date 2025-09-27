@@ -43,7 +43,6 @@ public class AllianceService {
             newAlliance.setMissionStatus(MissionStatus.NOT_STARTED);
             newAlliance.setCurrentMissionId(null);
 
-            // TODO: Ovde ide logika za slanje notifikacija/pozivnica prijateljima
 
             return allianceRepository.createAlliance(newAlliance)
                     .onSuccessTask(aVoid -> userRepository.updateUserAllianceId(leaderId, newAlliance.getAllianceId()));
