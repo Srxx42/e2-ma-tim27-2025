@@ -20,12 +20,16 @@ public class User {
     private List<String> equipment;
     private int activeDaysStreak;
     private Date lastActivityDate;
+    private List<String> friendIds;
+    private String allianceId;
+    private String fcmToken;
 
 
     public User() {
         this.badges = new ArrayList<>();
         this.equipment = new ArrayList<>();
         this.activeDaysStreak=0;
+        this.friendIds = new ArrayList<>();
     }
 
     public User(String uid, String email, String username, String avatar, int level, int xp, boolean isActivated, Date registrationTime) {
@@ -171,5 +175,29 @@ public class User {
 
     public void setActiveDaysStreak(int activeDaysStreak) {
         this.activeDaysStreak = activeDaysStreak;
+    }
+
+    public List<String> getFriendIds() {
+        return friendIds;
+    }
+
+    public void setFriendIds(List<String> friendIds) {
+        this.friendIds = friendIds;
+    }
+
+    public String getAllianceId() {
+        return allianceId;
+    }
+
+    public void setAllianceId(String allianceId) {
+        this.allianceId = allianceId;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }

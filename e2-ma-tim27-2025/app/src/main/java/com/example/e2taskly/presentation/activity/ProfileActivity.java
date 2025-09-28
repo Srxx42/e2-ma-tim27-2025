@@ -1,6 +1,7 @@
 package com.example.e2taskly.presentation.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -28,6 +29,7 @@ import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.service.LevelingService;
 import com.example.e2taskly.service.UserService;
+import com.example.e2taskly.util.SharedPreferencesUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
@@ -36,6 +38,7 @@ public class ProfileActivity extends AppCompatActivity {
     public static final String EXTRA_USER_ID = "com.example.e2taskly.USER_ID";
     private ImageView imageViewAvatar, imageViewQrCode;
     private TextView textViewUsername, textViewTitle, textViewLevel, textViewXp, textViewPower, textViewCoins,textViewXpProgress;
+    private Button buttonAddFriend, buttonRemoveFriend, buttonMyFriends;
     private Button buttonChangePassword;
     private ProgressBar progressBar,progressBarXp;
     private LinearLayout powerLayout,coinsLayout;
@@ -43,10 +46,14 @@ public class ProfileActivity extends AppCompatActivity {
     private LevelingService levelingService;
     private String profileUserId;
     private String currentUserId;
+    private User currentUserObject;
+    private User profileUserObject;
+    private SharedPreferencesUtil sharedPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        sharedPreferences = new SharedPreferencesUtil(this);
         setContentView(R.layout.activity_profile);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -69,7 +76,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         profileUserId = intent.getStringExtra(EXTRA_USER_ID);
-        currentUserId = userService.getCurrentUserId();
+        currentUserId = sharedPreferences.getActiveUserUid();
         if(profileUserId==null || profileUserId.isEmpty()){
             profileUserId = currentUserId;
         }
@@ -90,6 +97,9 @@ public class ProfileActivity extends AppCompatActivity {
         textViewLevel = findViewById(R.id.textViewLevel);
         textViewXp = findViewById(R.id.textViewXp);
         textViewXpProgress = findViewById(R.id.textViewXpProgress);
+        buttonAddFriend = findViewById(R.id.buttonAddFriend);
+        buttonRemoveFriend = findViewById(R.id.buttonRemoveFriend);
+        buttonMyFriends = findViewById(R.id.buttonMyFriends);
         buttonChangePassword = findViewById(R.id.buttonChangePassword);
         progressBar = findViewById(R.id.progressBar);
         progressBarXp = findViewById(R.id.progressBarXp);
@@ -98,19 +108,35 @@ public class ProfileActivity extends AppCompatActivity {
         coinsLayout = findViewById(R.id.coinsLayout);
         textViewPower = findViewById(R.id.textViewPower);
         textViewCoins = findViewById(R.id.textViewCoins);
+        buttonMyFriends.setOnClickListener(v -> {
+            // Navigate to the FriendsListActivity
+            Intent intent = new Intent(ProfileActivity.this, FriendsListActivity.class);
+            // You can pass extra information like current user's ID if needed
+            startActivity(intent);
+        });
     }
     private void loadUserProfile() {
         progressBar.setVisibility(View.VISIBLE);
-        userService.getUserProfile(profileUserId)
-                .addOnCompleteListener(this, task -> {
+        // First, load the current user's profile to know the friendship status
+        userService.getUserProfile(currentUserId).addOnCompleteListener(currentUserTask -> {
+            if (currentUserTask.isSuccessful() && currentUserTask.getResult() != null) {
+                this.currentUserObject = currentUserTask.getResult();
+
+                // Now, load the profile of the user being viewed
+                userService.getUserProfile(profileUserId).addOnCompleteListener(profileUserTask -> {
                     progressBar.setVisibility(View.GONE);
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        populateUI(task.getResult());
+                    if (profileUserTask.isSuccessful() && profileUserTask.getResult() != null) {
+                        this.profileUserObject = profileUserTask.getResult();
+                        populateUI(this.profileUserObject);
                     } else {
-                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Unknown error";
-                        Toast.makeText(this, "Failed to load profile: " + errorMessage, Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Failed to load profile.", Toast.LENGTH_LONG).show();
                     }
                 });
+            } else {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(this, "Error loading your session.", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void populateUI(User user) {
@@ -137,12 +163,64 @@ public class ProfileActivity extends AppCompatActivity {
             buttonChangePassword.setVisibility(View.VISIBLE);
             textViewPower.setText(String.valueOf(user.getPowerPoints()));
             textViewCoins.setText(String.valueOf(user.getCoins()));
+            buttonMyFriends.setVisibility(View.VISIBLE);
+            buttonAddFriend.setVisibility(View.GONE);
+            buttonRemoveFriend.setVisibility(View.GONE);
         }else{
             powerLayout.setVisibility(View.GONE);
             coinsLayout.setVisibility(View.GONE);
             buttonChangePassword.setVisibility(View.GONE);
+            buttonMyFriends.setVisibility(View.GONE);
+            updateFriendshipButtons();
         }
         displayProgress(user);
+    }
+    private void updateFriendshipButtons() {
+        // Check if the viewed user's ID is in the current user's friend list
+        boolean areFriends = currentUserObject.getFriendIds().contains(profileUserObject.getUid());
+
+        if (areFriends) {
+            buttonAddFriend.setVisibility(View.GONE);
+            buttonRemoveFriend.setVisibility(View.VISIBLE);
+        } else {
+            buttonAddFriend.setVisibility(View.VISIBLE);
+            buttonRemoveFriend.setVisibility(View.GONE);
+        }
+
+        buttonAddFriend.setOnClickListener(v -> {
+            buttonAddFriend.setEnabled(false);
+            userService.addFriend(currentUserObject.getUid(),profileUserObject.getUid()).addOnCompleteListener(task -> {
+                buttonAddFriend.setEnabled(true);
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Friend added!", Toast.LENGTH_SHORT).show();
+                    currentUserObject.getFriendIds().add(profileUserObject.getUid()); // Update local state
+                    updateFriendshipButtons();
+                } else {
+                    Toast.makeText(this, "Error adding friend.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        buttonRemoveFriend.setOnClickListener(v -> {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Remove Friend")
+                    .setMessage("Are you sure you want to remove " + profileUserObject.getUsername() + "?")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Remove", (dialog, which) -> {
+                        buttonRemoveFriend.setEnabled(false);
+                        userService.removeFriend(currentUserObject.getUid(),profileUserObject.getUid()).addOnCompleteListener(task -> {
+                            buttonRemoveFriend.setEnabled(true);
+                            if (task.isSuccessful()) {
+                                Toast.makeText(this, "Friend removed.", Toast.LENGTH_SHORT).show();
+                                currentUserObject.getFriendIds().remove(profileUserObject.getUid()); // Update local state
+                                updateFriendshipButtons();
+                            } else {
+                                Toast.makeText(this, "Error removing friend.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .show();
+        });
     }
     private void generateAndSetQrCode(String uid){
         try {

@@ -10,10 +10,13 @@ import java.time.LocalDate;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "e2taskly.db";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 9;
     public static final String T_USERS = "users";
 
     public static final String T_CATEGORIES = "taskCategories";
+    public static final String T_ALLIANCES = "alliances";
+    public static final String T_ALLIANCE_INVITES = "alliance_invites";
+    public static final String T_MESSAGES = "messages";
 
     public static final String T_TASKS = "tasks";
     public static final String T_SINGLE_TASKS = "single_tasks";
@@ -39,7 +42,43 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "badges TEXT, " +
                 "equipment TEXT, " +
                 "active_days_streak INTEGER, " +
-                "last_activity_date INTEGER " +
+                "last_activity_date INTEGER, " +
+                "friends_ids TEXT," +
+                "alliance_id TEXT," +
+                "fcm_token TEXT" +
+                ")");
+
+        db.execSQL("CREATE TABLE " + T_ALLIANCES + " (" +
+                "id TEXT PRIMARY KEY, " +
+                "name TEXT NOT NULL, " +
+                "leader_id TEXT NOT NULL, " +
+                "member_ids TEXT, " +
+                "mission_started TEXT NOT NULL," +
+                "current_mission_id TEXT," +
+                "FOREIGN KEY(leader_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                ")");
+        db.execSQL("CREATE TABLE " + T_ALLIANCE_INVITES + " (" +
+                "id TEXT PRIMARY KEY, " +
+                "alliance_id TEXT NOT NULL, " +
+                "alliance_name TEXT NOT NULL, " +
+                "sender_id TEXT NOT NULL, " +
+                "inviter_username TEXT NOT NULL, " +
+                "receiver_id TEXT NOT NULL, " +
+                "timestamp INTEGER NOT NULL, " +
+                "status TEXT NOT NULL," +
+                "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY(receiver_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                ")");
+        db.execSQL("CREATE TABLE " + T_MESSAGES + " (" +
+                "id TEXT PRIMARY KEY, " +
+                "alliance_id TEXT NOT NULL, " +
+                "sender_id TEXT NOT NULL, " +
+                "sender_username TEXT NOT NULL, " +
+                "text TEXT NOT NULL, " +
+                "timestamp INTEGER NOT NULL, " +
+                "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ")");
 
     }
@@ -131,6 +170,66 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     "colorhex TEXT NOT NULL " +
                     ")");
 
+        }
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN friends_ids TEXT");
+        }
+        if(oldVersion < 4){
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN alliance_id  TEXT");
+        }
+        if(oldVersion < 5){
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + T_ALLIANCES + " (" +
+                    "id TEXT PRIMARY KEY, " +
+                    "name TEXT NOT NULL, " +
+                    "leader_id TEXT NOT NULL, " +
+                    "member_ids TEXT, " +
+                    "mission_status TEXT NOT NULL," +
+                    "current_mission_id TEXT," +
+                    "FOREIGN KEY(leader_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                    ")");
+        }
+        if (oldVersion < 6) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + T_ALLIANCE_INVITES + " (" +
+                    "id TEXT PRIMARY KEY, " +
+                    "alliance_id TEXT NOT NULL, " +
+                    "alliance_name TEXT NOT NULL, " +
+                    "sender_id TEXT NOT NULL, " +
+                    "inviter_username TEXT NOT NULL, " +
+                    "receiver_id TEXT NOT NULL, " +
+                    "timestamp INTEGER NOT NULL, " +
+                    "status TEXT NOT NULL" +
+                    ")");
+        }
+        if (oldVersion < 7) {
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN fcm_token TEXT");
+        }
+        if (oldVersion < 8) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + T_MESSAGES + " (" +
+                    "id TEXT PRIMARY KEY, " +
+                    "alliance_id TEXT NOT NULL, " +
+                    "sender_id TEXT NOT NULL, " +
+                    "sender_username TEXT NOT NULL, " +
+                    "text TEXT NOT NULL, " +
+                    "timestamp INTEGER NOT NULL, " +
+                    "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                    ")");
+        }
+        if (oldVersion < 9) {
+            db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCE_INVITES);
+            db.execSQL("CREATE TABLE " + T_ALLIANCE_INVITES + " (" +
+                    "id TEXT PRIMARY KEY, " +
+                    "alliance_id TEXT NOT NULL, " +
+                    "alliance_name TEXT NOT NULL, " +
+                    "sender_id TEXT NOT NULL, " +
+                    "inviter_username TEXT NOT NULL, " +
+                    "receiver_id TEXT NOT NULL, " +
+                    "timestamp INTEGER NOT NULL, " +
+                    "status TEXT NOT NULL, " +
+                    "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY(receiver_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                    ")");
         }
     }
 }

@@ -134,5 +134,57 @@ public class UserRepository {
     public void logout(){
         remoteDataSource.logoutUser();
     }
+    public Task<Void> addFriend(String currentUid, String friendUid) {
+        return remoteDataSource.addFriend(currentUid, friendUid)
+                .onSuccessTask(aVoid -> {
+                    localDataSource.addFriend(currentUid, friendUid);
+                    return Tasks.forResult(null);
+                });
+    }
+    public Task<Void> removeFriend(String currentUid, String friendUid) {
+        return remoteDataSource.removeFriend(currentUid, friendUid)
+                .onSuccessTask(aVoid -> {
+                    localDataSource.removeFriend(currentUid, friendUid);
+                    return Tasks.forResult(null);
+                });
+    }
+    public Task<List<User>> getFriends(List<String> friendIds) {
+        if (friendIds == null || friendIds.isEmpty()) {
+            return Tasks.forResult(new ArrayList<>());
+        }
+        return remoteDataSource.getUsersByIds(friendIds);
+    }
+    public Task<List<User>> searchUsersByUsername(String query) {
+        return remoteDataSource.searchUsersByUsername(query)
+                .continueWith(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
 
+                    List<User> userList = new ArrayList<>();
+                    if (task.getResult() != null) {
+                        for (DocumentSnapshot doc : task.getResult().getDocuments()) {
+                            User user = doc.toObject(User.class);
+                            if (user != null) {
+                                userList.add(user);
+                            }
+                        }
+                    }
+                    return userList;
+                });
+    }
+    public Task<Void> updateUserAllianceId(String uid, String allianceId) {
+        localDataSource.updateUserAllianceId(uid, allianceId);
+        return remoteDataSource.updateUserAllianceId(uid, allianceId);
+    }
+    public Task<List<User>> getUsersByIds(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Tasks.forResult(new ArrayList<>());
+        }
+        return remoteDataSource.getUsersByIds(userIds);
+    }
+    public Task<Void> updateUserFcmToken(String uid, String token) {
+        localDataSource.updateUserFcmToken(uid, token);
+        return remoteDataSource.updateUserFcmToken(uid, token);
+    }
 }

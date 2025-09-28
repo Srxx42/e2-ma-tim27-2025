@@ -222,6 +222,32 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
+        <Button
+            android:id="@+id/buttonAddFriend"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/button_add_friend"
+            app:icon="@drawable/ic_add_friend"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/imageViewQrCode"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <Button
+            android:id="@+id/buttonRemoveFriend"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/button_remove_friend"
+            app:icon="@drawable/ic_remove_friend"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/buttonAddFriend"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <Button
             android:id="@+id/buttonChangePassword"
@@ -230,6 +256,15 @@
             android:layout_marginTop="32dp"
             android:text="@string/profile_change_password_button"
             app:layout_constraintTop_toBottomOf="@id/imageViewQrCode"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+        <Button
+            android:id="@+id/buttonMyFriends"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/button_my_friends"
+            app:layout_constraintTop_toBottomOf="@id/buttonChangePassword"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

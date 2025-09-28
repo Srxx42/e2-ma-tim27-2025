@@ -39,5 +39,25 @@
     <string name="dialog_cancel_button">Cancel</string>
     <string name="main_profile_button">My Profile</string>
     <string name="main_all_users_button">All Users</string>
-
+    <string name="button_add_friend">Add Friend</string>
+    <string name="button_remove_friend">Remove Friend</string>
+    <string name="button_my_friends">My Friends</string>
+    <string name="decision_info">You are already in an alliance. Do you want to leave your current alliance to join the new one?</string>
+    <string name="button_confirm_join">Yes, Leave and Join New Alliance</string>
+    <string name="button_cancel_join">No, Stay in Current Alliance</string>
+    <string name="alliance_title">My Alliance</string>
+    <string name="members_label">Members:</string>
+    <string name="no_alliance_message">You are not part of an alliance.</string>
+    <string name="create_alliance_button">Create New Alliance</string>
+    <string name="invite_members_description">Invite New Members</string>
+    <string name="hint_alliance_name">Enter alliance name</string>
+    <string name="label_invite_friends">Invite friends:</string>
+    <string name="text_no_friends">There are no friends to invite.</string>
+    <string name="checkbox_friend_placeholder">Friend Username</string>
+    <string name="type_a_message">Type a message...</string>
+    <string name="send_message">Send message</string>
+    <string name="alliance_chat_title">Alliance Chat</string>
+    <string name="chat">Chat</string>
+    <string name="leave_alliance">Leave Alliance</string>
+    <string name="disband_alliance">Disband Alliance</string>
 </resources>
