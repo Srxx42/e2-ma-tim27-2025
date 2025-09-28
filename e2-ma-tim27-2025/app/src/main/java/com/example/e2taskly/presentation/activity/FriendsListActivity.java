@@ -1,5 +1,6 @@
 package com.example.e2taskly.presentation.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -240,7 +241,12 @@ public class FriendsListActivity extends AppCompatActivity implements UserAdapte
         } else if (itemId == R.id.action_scan_qr) {
             launchQrScanner();
             return true;
+        } else if (itemId == R.id.action_view_alliance) {
+            startActivity(new Intent(this, AllianceActivity.class));
+            return true;
         }
+
+
         return super.onOptionsItemSelected(item);
     }
 

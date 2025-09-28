@@ -135,10 +135,18 @@ public class UserRepository {
         remoteDataSource.logoutUser();
     }
     public Task<Void> addFriend(String currentUid, String friendUid) {
-        return remoteDataSource.addFriend(currentUid, friendUid);
+        return remoteDataSource.addFriend(currentUid, friendUid)
+                .onSuccessTask(aVoid -> {
+                    localDataSource.addFriend(currentUid, friendUid);
+                    return Tasks.forResult(null);
+                });
     }
     public Task<Void> removeFriend(String currentUid, String friendUid) {
-        return remoteDataSource.removeFriend(currentUid, friendUid);
+        return remoteDataSource.removeFriend(currentUid, friendUid)
+                .onSuccessTask(aVoid -> {
+                    localDataSource.removeFriend(currentUid, friendUid);
+                    return Tasks.forResult(null);
+                });
     }
     public Task<List<User>> getFriends(List<String> friendIds) {
         if (friendIds == null || friendIds.isEmpty()) {
@@ -164,5 +172,19 @@ public class UserRepository {
                     }
                     return userList;
                 });
+    }
+    public Task<Void> updateUserAllianceId(String uid, String allianceId) {
+        localDataSource.updateUserAllianceId(uid, allianceId);
+        return remoteDataSource.updateUserAllianceId(uid, allianceId);
+    }
+    public Task<List<User>> getUsersByIds(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Tasks.forResult(new ArrayList<>());
+        }
+        return remoteDataSource.getUsersByIds(userIds);
+    }
+    public Task<Void> updateUserFcmToken(String uid, String token) {
+        localDataSource.updateUserFcmToken(uid, token);
+        return remoteDataSource.updateUserFcmToken(uid, token);
     }
 }

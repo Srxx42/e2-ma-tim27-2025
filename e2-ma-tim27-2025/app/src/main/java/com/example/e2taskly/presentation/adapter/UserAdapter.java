@@ -27,17 +27,22 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private List<User> displayedUserList;
     private List<String> friendIdList;
     private final OnFriendActionListener listener;
+    private final boolean showActionIcon;
 
     public interface OnFriendActionListener {
         void onAddFriend(User userToAdd);
         void onRemoveFriend(User userToRemove);
     }
-
     public UserAdapter(Context context, List<User> userList, List<String> friendIdList, OnFriendActionListener listener) {
+        this(context, userList, friendIdList, listener, true);
+    }
+
+    public UserAdapter(Context context, List<User> userList, List<String> friendIdList, OnFriendActionListener listener, boolean showActionIcon) {
         this.context = context;
         this.displayedUserList = userList;
         this.friendIdList = friendIdList;
         this.listener = listener;
+        this.showActionIcon = showActionIcon;
     }
 
     public void updateUsers(List<User> newUsers) {
@@ -90,13 +95,23 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 if (resId != 0) imageViewAvatar.setImageResource(resId);
             }
 
-            if (friendIdList.contains(user.getUid())) {
-                imageViewAction.setImageResource(R.drawable.ic_remove_friend);
-                imageViewAction.setOnClickListener(v -> listener.onRemoveFriend(user));
+            if (showActionIcon) {
+                imageViewAction.setVisibility(View.VISIBLE);
+                if (friendIdList.contains(user.getUid())) {
+                    imageViewAction.setImageResource(R.drawable.ic_remove_friend);
+                    imageViewAction.setOnClickListener(v -> {
+                        if (listener != null) listener.onRemoveFriend(user);
+                    });
+                } else {
+                    imageViewAction.setImageResource(R.drawable.ic_add_friend);
+                    imageViewAction.setOnClickListener(v -> {
+                        if (listener != null) listener.onAddFriend(user);
+                    });
+                }
             } else {
-                imageViewAction.setImageResource(R.drawable.ic_add_friend);
-                imageViewAction.setOnClickListener(v -> listener.onAddFriend(user));
+                imageViewAction.setVisibility(View.GONE);
             }
+            // ===================================
 
             itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, ProfileActivity.class);

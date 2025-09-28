@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_leave_alliance"
+        android:title="Leave Alliance"
+        android:icon="@drawable/ic_leave"
+    app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_disband_alliance"
+        android:title="Disband Alliance"
+        android:icon="@drawable/ic_disband"
+    app:showAsAction="ifRoom" />
+</menu>
