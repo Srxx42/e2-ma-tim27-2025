@@ -21,6 +21,7 @@ import com.google.auth.oauth2.AccessToken;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -44,19 +45,26 @@ public class InviteService {
     }
 
     public Task<Void> sendInvites(String inviterId, String inviterUsername, Alliance alliance, List<User> friendsToInvite) {
-        Map<String, String> friendIdToInviteIdMap = new HashMap<>();
+        List<AllianceInvite> invitesToSend = new ArrayList<>();
         for (User friend : friendsToInvite) {
-            friendIdToInviteIdMap.put(friend.getUid(), UUID.randomUUID().toString());
+            invitesToSend.add(new AllianceInvite(
+                    alliance.getAllianceId(),
+                    alliance.getName(),
+                    inviterId,
+                    inviterUsername,
+                    friend.getUid()
+            ));
         }
 
-        return inviteRepository.sendInvites(inviterId, inviterUsername, alliance, friendsToInvite, friendIdToInviteIdMap)
+        return inviteRepository.sendInvites(invitesToSend)
                 .onSuccessTask(aVoid -> {
-                    for (User friend : friendsToInvite) {
+                    for (int i = 0; i < friendsToInvite.size(); i++) {
+                        User friend = friendsToInvite.get(i);
+                        AllianceInvite invite = invitesToSend.get(i);
+
                         if (friend.getFcmToken() != null && !friend.getFcmToken().isEmpty()) {
-                            Log.d("InviteService", "Preparing to send notification to: " + friend.getUsername());
-                            Log.d("InviteService", "Target FCM Token: " + friend.getFcmToken());
-                            String inviteId = friendIdToInviteIdMap.get(friend.getUid());
-                            sendFcmNotification(friend.getFcmToken(), inviterUsername, alliance, inviteId);
+                            Log.d(TAG, "Preparing to send notification to: " + friend.getUsername());
+                            sendFcmNotification(friend.getFcmToken(), inviterUsername, alliance, invite.getInviteId());
                         }
                     }
                     return Tasks.forResult(null);

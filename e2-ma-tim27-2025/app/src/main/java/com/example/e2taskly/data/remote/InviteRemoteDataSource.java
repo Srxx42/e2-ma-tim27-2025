@@ -19,23 +19,10 @@ public class InviteRemoteDataSource {
     public InviteRemoteDataSource() {
         db = FirebaseFirestore.getInstance();
     }
-    public Task<Void> sendInvites(String inviterId, String inviterUsername, Alliance alliance, List<User> friends, Map<String, String> friendIdToInviteIdMap) {
+    public Task<Void> sendInvites(List<AllianceInvite> invites) {
         WriteBatch batch = db.batch();
-        for (User friend : friends) {
-            String inviteId = friendIdToInviteIdMap.get(friend.getUid());
-            if (inviteId == null) continue; // Preskoči ako nema ID-a
-
-            DocumentReference inviteRef = db.collection("alliance_invites").document(inviteId); // Koristimo generisani ID
-
-            AllianceInvite invite = new AllianceInvite();
-            invite.setInviteId(inviteId);
-            invite.setAllianceId(alliance.getAllianceId());
-            invite.setAllianceName(alliance.getName());
-            invite.setSenderId(inviterId);
-            invite.setInviterUsername(inviterUsername);
-            invite.setReceiverId(friend.getUid());
-            invite.setStatus(Status.PENDING);
-            invite.setTimestamp(new Date());
+        for (AllianceInvite invite : invites) {
+            DocumentReference inviteRef = db.collection("alliance_invites").document(invite.getInviteId());
             batch.set(inviteRef, invite);
         }
         return batch.commit();

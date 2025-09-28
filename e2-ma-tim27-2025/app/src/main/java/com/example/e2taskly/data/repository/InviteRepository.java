@@ -23,8 +23,14 @@ public class InviteRepository {
         this.remoteDataSource = new InviteRemoteDataSource();
     }
 
-    public Task<Void> sendInvites(String inviterId, String inviterUsername, Alliance alliance, List<User> friends, Map<String, String> friendIdToInviteIdMap) {
-        return remoteDataSource.sendInvites(inviterId, inviterUsername, alliance, friends, friendIdToInviteIdMap);
+    public Task<Void> sendInvites(List<AllianceInvite> invites) {
+        return remoteDataSource.sendInvites(invites)
+                .onSuccessTask(aVoid -> {
+                    return Tasks.call(() -> {
+                        localDataSource.saveOrUpdateInvites(invites);
+                        return null;
+                    });
+                });
     }
     public Task<AllianceInvite> getInvitationById(String inviteId) {
         return remoteDataSource.getInvitationById(inviteId).onSuccessTask(documentSnapshot -> {

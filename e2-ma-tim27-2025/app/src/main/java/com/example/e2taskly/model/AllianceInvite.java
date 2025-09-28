@@ -3,6 +3,7 @@ package com.example.e2taskly.model;
 import com.example.e2taskly.model.enums.Status;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class AllianceInvite {
     private String inviteId;
@@ -24,6 +25,16 @@ public class AllianceInvite {
         this.senderId = senderId;
         this.inviterUsername = inviterUsername;
         this.receiverId = receiverId;
+    }
+    public AllianceInvite(String allianceId, String allianceName, String senderId, String inviterUsername, String receiverId) {
+        this.inviteId = UUID.randomUUID().toString();
+        this.allianceId = allianceId;
+        this.allianceName = allianceName;
+        this.senderId = senderId;
+        this.inviterUsername = inviterUsername;
+        this.receiverId = receiverId;
+        this.status = Status.PENDING;
+        this.timestamp = new Date();
     }
 
     public String getInviteId() {

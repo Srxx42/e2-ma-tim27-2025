@@ -2,6 +2,7 @@ package com.example.e2taskly.data.remote;
 
 import com.example.e2taskly.model.Alliance;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -12,7 +13,9 @@ public class AllianceRemoteDataSource {
         db = FirebaseFirestore.getInstance();
     }
     public Task<Void> createAlliance(Alliance alliance) {
-        return db.collection("alliances").document(alliance.getAllianceId()).set(alliance);
+        DocumentReference allianceRef = db.collection("alliances").document();
+        alliance.setAllianceId(allianceRef.getId());
+        return allianceRef.set(alliance);
     }
     public Task<DocumentSnapshot> getAlliance(String allianceId) {
         return db.collection("alliances").document(allianceId).get();

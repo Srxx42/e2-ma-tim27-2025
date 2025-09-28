@@ -50,4 +50,8 @@
     <string name="no_alliance_message">You are not part of an alliance.</string>
     <string name="create_alliance_button">Create New Alliance</string>
     <string name="invite_members_description">Invite New Members</string>
+    <string name="hint_alliance_name">Enter alliance name</string>
+    <string name="label_invite_friends">Invite friends:</string>
+    <string name="text_no_friends">There are no friends to invite.</string>
+    <string name="checkbox_friend_placeholder">Friend Username</string>
 </resources>

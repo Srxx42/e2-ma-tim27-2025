@@ -37,7 +37,6 @@ public class AllianceService {
             }
 
             Alliance newAlliance = new Alliance();
-            newAlliance.setAllianceId(UUID.randomUUID().toString());
             newAlliance.setName(allianceName);
             newAlliance.setLeaderId(leaderId);
             List<String> members = new ArrayList<>();
