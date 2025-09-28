@@ -10,8 +10,11 @@ import androidx.core.app.NotificationCompat;
 import com.example.e2taskly.R;
 import com.example.e2taskly.broadcast.InviteActionReceiver;
 import com.example.e2taskly.model.AllianceInvite;
+import com.example.e2taskly.presentation.activity.AllianceMessagesActivity;
+
 public class NotificationHelper {
     private static final String CHANNEL_ID = "alliance_invites_channel";
+    private static final String CHANNEL_ID_INFO = "alliance_info_channel";
 
     public static void showInviteNotification(Context context, AllianceInvite invite) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -54,7 +57,7 @@ public class NotificationHelper {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Alliance Notifications", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID_INFO, "Alliance Notifications", NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
         }
 
@@ -66,5 +69,31 @@ public class NotificationHelper {
                 .setAutoCancel(true);
 
         notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+    }
+    public static void showChatMessageNotification(Context context, String title, String message, String allianceId, String allianceName) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID_INFO, "Alliance Notifications", NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        Intent intent = new Intent(context, AllianceMessagesActivity.class);
+        intent.putExtra(AllianceMessagesActivity.EXTRA_ALLIANCE_ID, allianceId);
+        intent.putExtra(AllianceMessagesActivity.EXTRA_ALLIANCE_NAME, allianceName);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, allianceId.hashCode(), intent,
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID_INFO)
+                .setSmallIcon(R.drawable.ic_chat)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        notificationManager.notify(allianceId.hashCode(), builder.build());
     }
 }

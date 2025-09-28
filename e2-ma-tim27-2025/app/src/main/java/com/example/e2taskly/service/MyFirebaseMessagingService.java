@@ -22,6 +22,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 handleInvitation(data);
             } else if ("INVITATION_ACCEPTED".equals(type)) {
                 handleInvitationAccepted(data);
+            } else if ("CHAT_MESSAGE".equals(type)) {
+                handleChatMessage(data, remoteMessage.getNotification());
             }
         }
     }
@@ -47,6 +49,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     memberName + " has joined your alliance '" + allianceName + "'!"
             );
         }
+    }
+    private void handleChatMessage(Map<String, String> data, RemoteMessage.Notification notification) {
+        if (notification == null) return;
+
+        String allianceId = data.get("allianceId");
+        String allianceName = data.get("allianceName");
+
+        NotificationHelper.showChatMessageNotification(
+                this,
+                notification.getTitle(),
+                notification.getBody(),
+                allianceId,
+                allianceName
+        );
     }
     @Override
     public void onNewToken(@NonNull String token) {
