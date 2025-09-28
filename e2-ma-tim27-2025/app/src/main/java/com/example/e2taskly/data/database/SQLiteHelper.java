@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "e2taskly.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     public static final String T_USERS = "users";
 
     public static final String T_CATEGORIES = "taskCategories";
@@ -41,13 +41,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "active_days_streak INTEGER, " +
                 "last_activity_date INTEGER " +
                 ")");
-
-        db.execSQL("create  table " + T_CATEGORIES + " (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "name TEXT NOT NULL UNIQUE," +
-                "colorhex TEXT NOT NULL UNIQUE" +
-                ")");
-
 
     }
 
@@ -110,6 +103,13 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         }
         if (oldVersion < 4) {
 
+            db.execSQL("create  table " + T_CATEGORIES + " (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "creatorId TEXT NOT NULL ," +
+                    "name TEXT NOT NULL ," +
+                    "colorhex TEXT NOT NULL " +
+                    ")");
+
             String createOccurrenceTable = "CREATE TABLE " + T_R_TASK_OCCURRENCE + " (" +
                     "occurrenceId INTEGER PRIMARY KEY, " +
                     "repeatingTaskId INTEGER NOT NULL, " +
@@ -118,8 +118,19 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(repeatingTaskId) REFERENCES " + T_REPEATING_TASKS + "(taskId) on DELETE CASCADE" +
                     ");";
 
-
             db.execSQL(createOccurrenceTable);
+        }
+        if (oldVersion < 5){
+
+            db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
+
+            db.execSQL("create  table " + T_CATEGORIES + " (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "creatorId TEXT NOT NULL ," +
+                    "name TEXT NOT NULL ," +
+                    "colorhex TEXT NOT NULL " +
+                    ")");
+
         }
     }
 }

@@ -73,7 +73,6 @@ public class ManageTaskActivity extends AppCompatActivity {
 
     //Servic-i i jos neophodnih stvari
 
-    private ImageButton deleteButton;
     private TaskType currentTaskType = TaskType.SINGLE;
 
     private UserService userService;
@@ -121,7 +120,6 @@ public class ManageTaskActivity extends AppCompatActivity {
         radioGroupRepeatInterval = findViewById(R.id.radioGroupRepeatInterval);
         saveRepeatingTask = findViewById(R.id.saveRepeatingTask);
 
-        deleteButton = findViewById(R.id.deleteButton);
     }
 
     private void setupSpinners(){
@@ -396,8 +394,9 @@ public class ManageTaskActivity extends AppCompatActivity {
             View colorView = row.findViewById(R.id.colorView);
             TextView nameView = row.findViewById(R.id.categoryName);
 
-            if (deleteButton != null) {
-                deleteButton.setVisibility(View.GONE);
+            ImageButton deleteButtonInRow = row.findViewById(R.id.deleteButton);
+            if (deleteButtonInRow != null) {
+                deleteButtonInRow.setVisibility(View.GONE);
             }
 
             nameView.setText(currentItem.getName());

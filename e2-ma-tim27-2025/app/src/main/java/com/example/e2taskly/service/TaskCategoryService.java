@@ -12,8 +12,11 @@ public class TaskCategoryService {
 
     private  TaskCategoryRepository taskCategoryRepository;
 
+    private UserService userService;
+
     public TaskCategoryService(Context context){
         taskCategoryRepository = new TaskCategoryRepository(context);
+        userService = new UserService(context);
     }
 
     public boolean saveCategory(String name, String colorHex){
@@ -24,6 +27,8 @@ public class TaskCategoryService {
             return false;
         }
         TaskCategory category = new TaskCategory();
+        String currentUserId = userService.getCurrentUserId();
+        category.setCreatorId(currentUserId);
         category.setName(name);
         category.setColorHex(colorHex);
 
@@ -38,7 +43,8 @@ public class TaskCategoryService {
          List<TaskCategory> categories = new ArrayList<>();
          List<String> usedColors = new ArrayList<>();
 
-         categories = taskCategoryRepository.getAllCategories();
+         String currentUserId = userService.getCurrentUserId();
+         categories = taskCategoryRepository.getAllCategories(currentUserId);
 
          for(TaskCategory tc : categories){
              usedColors.add(tc.getColorHex());
@@ -51,7 +57,9 @@ public class TaskCategoryService {
         List<TaskCategory> categories = new ArrayList<>();
         List<String> names = new ArrayList<>();
 
-        categories = taskCategoryRepository.getAllCategories();
+        String currentUserId = userService.getCurrentUserId();
+
+        categories = taskCategoryRepository.getAllCategories(currentUserId);
 
         for(TaskCategory tc : categories){
             names.add(tc.getName());
@@ -61,7 +69,8 @@ public class TaskCategoryService {
     }
 
     public List<TaskCategory> getAllCategories(){
-        return taskCategoryRepository.getAllCategories();
+        String currentUserId = userService.getCurrentUserId();
+        return taskCategoryRepository.getAllCategories(currentUserId);
     }
 
     public TaskCategory getCategoryById(int id){
@@ -69,7 +78,8 @@ public class TaskCategoryService {
     }
 
     public boolean updateCategory(int id, String name, String hexColor){
-        return taskCategoryRepository.updateCategory(id,name,hexColor);
+        String currentUserId = userService.getCurrentUserId();
+        return taskCategoryRepository.updateCategory(id,currentUserId,name,hexColor);
     }
 
     public boolean deleteById(int id){

@@ -24,7 +24,7 @@
             android:id="@+id/task_creation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="80dp"
+            android:layout_marginTop="20dp"
             android:text="Task"
             android:textColor="#F0BC54"
             android:textSize="24sp"
@@ -92,6 +92,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="24dp"
             android:spinnerMode="dropdown"
+            android:dropDownWidth="match_parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/TaskCategory" />
@@ -128,7 +129,7 @@
                 android:text="EASY"
                 android:textColor="#F0BC54"
                 android:textStyle="bold"
-                app:buttonTint="#111" />
+                app:buttonTint="@color/material_dynamic_neutral_variant80" />
 
             <RadioButton
                 android:id="@+id/Normal"
@@ -138,7 +139,7 @@
                 android:text="NORMAL"
                 android:textColor="#F0BC54"
                 android:textStyle="bold"
-                app:buttonTint="#111" />
+                app:buttonTint="@color/material_dynamic_neutral_variant80" />
 
             <RadioButton
                 android:id="@+id/Hard"
@@ -148,7 +149,7 @@
                 android:text="HARD"
                 android:textColor="#F0BC54"
                 android:textStyle="bold"
-                app:buttonTint="#111" />
+                app:buttonTint="@color/material_dynamic_neutral_variant80" />
 
             <RadioButton
                 android:id="@+id/VeryHard"
@@ -158,7 +159,7 @@
                 android:text="EPIC"
                 android:textColor="#F0BC54"
                 android:textStyle="bold"
-                app:buttonTint="#111" />
+                app:buttonTint="@color/material_dynamic_neutral_variant80" />
         </RadioGroup>
 
         <TextView
@@ -193,7 +194,7 @@
                 android:text="NORMAL"
                 android:textColor="#F0BC54"
                 android:textStyle="bold"
-                app:buttonTint="#111" />
+                app:buttonTint="@color/material_dynamic_neutral_variant80"  />
 
             <RadioButton
                 android:id="@+id/ImportanceImportant"
@@ -202,7 +203,7 @@
                 android:text="IMPORTANT"
                 android:textColor="#F0BC54"
                 android:textStyle="bold"
-                app:buttonTint="#111" />
+                app:buttonTint="@color/material_dynamic_neutral_variant80"  />
 
             <RadioButton
                 android:id="@+id/ImportanceUrgent"
@@ -211,7 +212,7 @@
                 android:text="URGENT"
                 android:textColor="#F0BC54"
                 android:textStyle="bold"
-                app:buttonTint="#111" />
+                app:buttonTint="@color/material_dynamic_neutral_variant80"  />
 
             <RadioButton
                 android:id="@+id/ImportanceSpecial"
@@ -220,7 +221,7 @@
                 android:text="SPECIAL"
                 android:textColor="#F0BC54"
                 android:textStyle="bold"
-                app:buttonTint="#111" />
+                app:buttonTint="@color/material_dynamic_neutral_variant80"  />
         </RadioGroup>
 
 
@@ -265,23 +266,25 @@
         <!-- Početak drugog prozora -->
         <Button
             android:id="@+id/btnSingle"
-            android:layout_width="50pt"
+            android:layout_width="55pt"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Single"
             android:textColor="#F0BC54"
             android:textStyle="bold"
+            android:backgroundTint="#46875a"
             app:layout_constraintEnd_toStartOf="@+id/btnRepeating"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textInputTasksDescription" />
 
         <Button
             android:id="@+id/btnRepeating"
-            android:layout_width="50pt"
+            android:layout_width="55pt"
             android:layout_height="wrap_content"
             android:text="Repeating"
             android:textColor="#F0BC54"
             android:textStyle="bold"
+            android:backgroundTint="#46875a"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnSingle"
             app:layout_constraintTop_toTopOf="@id/btnSingle" />
@@ -311,8 +314,8 @@
 
             <DatePicker
                 android:id="@+id/singleDatePicker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:calendarViewShown="true" />
 
@@ -321,7 +324,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="40dp"
+                android:backgroundTint="#46875a"
                 android:text=" Save "
                 android:textColor="#F0BC54"
                 android:textStyle="bold" />
@@ -425,7 +430,7 @@
                     android:text="Daily"
                     android:textColor="#F0BC54"
                     android:textStyle="bold"
-                    app:buttonTint="#111" />
+                    app:buttonTint="@color/material_dynamic_neutral_variant80"  />
 
                 <RadioButton
                     android:id="@+id/repeatWeekly"
@@ -435,7 +440,7 @@
                     android:text="Weekly"
                     android:textColor="#F0BC54"
                     android:textStyle="bold"
-                    app:buttonTint="#111" />
+                    app:buttonTint="@color/material_dynamic_neutral_variant80"  />
             </RadioGroup>
 
             <!-- Interval -->
@@ -453,6 +458,7 @@
                 android:id="@+id/repeatIntervalSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
+                android:background="#80FFFFFF"
                 android:layout_marginStart="24dp"
                 android:layout_marginEnd="24dp" />
 
@@ -466,7 +472,8 @@
                 android:layout_marginBottom="50dp"
                 android:text="Save"
                 android:textColor="#F0BC54"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:backgroundTint="#46875a"/>
         </LinearLayout>
 
 
