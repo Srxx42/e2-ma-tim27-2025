@@ -6,12 +6,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "e2taskly.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 9;
     public static final String T_USERS = "users";
 
     public static final String T_CATEGORIES = "taskCategories";
     public static final String T_ALLIANCES = "alliances";
     public static final String T_ALLIANCE_INVITES = "alliance_invites";
+    public static final String T_MESSAGES = "messages";
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -60,7 +61,20 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "inviter_username TEXT NOT NULL, " +
                 "receiver_id TEXT NOT NULL, " +
                 "timestamp INTEGER NOT NULL, " +
-                "status TEXT NOT NULL" +
+                "status TEXT NOT NULL," +
+                "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY(receiver_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                ")");
+        db.execSQL("CREATE TABLE " + T_MESSAGES + " (" +
+                "id TEXT PRIMARY KEY, " +
+                "alliance_id TEXT NOT NULL, " +
+                "sender_id TEXT NOT NULL, " +
+                "sender_username TEXT NOT NULL, " +
+                "text TEXT NOT NULL, " +
+                "timestamp INTEGER NOT NULL, " +
+                "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ")");
 
     }
@@ -105,6 +119,34 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         }
         if (oldVersion < 7) {
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN fcm_token TEXT");
+        }
+        if (oldVersion < 8) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + T_MESSAGES + " (" +
+                    "id TEXT PRIMARY KEY, " +
+                    "alliance_id TEXT NOT NULL, " +
+                    "sender_id TEXT NOT NULL, " +
+                    "sender_username TEXT NOT NULL, " +
+                    "text TEXT NOT NULL, " +
+                    "timestamp INTEGER NOT NULL, " +
+                    "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                    ")");
+        }
+        if (oldVersion < 9) {
+            db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCE_INVITES);
+            db.execSQL("CREATE TABLE " + T_ALLIANCE_INVITES + " (" +
+                    "id TEXT PRIMARY KEY, " +
+                    "alliance_id TEXT NOT NULL, " +
+                    "alliance_name TEXT NOT NULL, " +
+                    "sender_id TEXT NOT NULL, " +
+                    "inviter_username TEXT NOT NULL, " +
+                    "receiver_id TEXT NOT NULL, " +
+                    "timestamp INTEGER NOT NULL, " +
+                    "status TEXT NOT NULL, " +
+                    "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY(receiver_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                    ")");
         }
     }
 }

@@ -54,4 +54,10 @@
     <string name="label_invite_friends">Invite friends:</string>
     <string name="text_no_friends">There are no friends to invite.</string>
     <string name="checkbox_friend_placeholder">Friend Username</string>
+    <string name="type_a_message">Type a message...</string>
+    <string name="send_message">Send message</string>
+    <string name="alliance_chat_title">Alliance Chat</string>
+    <string name="chat">Chat</string>
+    <string name="leave_alliance">Leave Alliance</string>
+    <string name="disband_alliance">Disband Alliance</string>
 </resources>

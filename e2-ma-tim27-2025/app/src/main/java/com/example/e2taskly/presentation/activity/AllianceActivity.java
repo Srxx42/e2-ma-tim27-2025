@@ -1,5 +1,6 @@
 package com.example.e2taskly.presentation.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -314,9 +315,11 @@ public class AllianceActivity extends AppCompatActivity {
             boolean isLeader = currentUser.getUid().equals(currentAlliance.getLeaderId());
             menu.findItem(R.id.action_leave_alliance).setVisible(!isLeader);
             menu.findItem(R.id.action_disband_alliance).setVisible(isLeader);
+            menu.findItem(R.id.action_chat).setVisible(true);
         } else {
             menu.findItem(R.id.action_leave_alliance).setVisible(false);
             menu.findItem(R.id.action_disband_alliance).setVisible(false);
+            menu.findItem(R.id.action_chat).setVisible(false);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -333,10 +336,22 @@ public class AllianceActivity extends AppCompatActivity {
         } else if (itemId == R.id.action_disband_alliance) {
             showDisbandAllianceDialog();
             return true;
+        }else if (itemId == R.id.action_chat) {
+            openChatActivity();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
+    private void openChatActivity() {
+        if (currentAlliance != null) {
+            Intent intent = new Intent(this, AllianceMessagesActivity.class);
+            intent.putExtra(AllianceMessagesActivity.EXTRA_ALLIANCE_ID, currentAlliance.getAllianceId());
+            intent.putExtra(AllianceMessagesActivity.EXTRA_ALLIANCE_NAME, currentAlliance.getName());
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "You are not in an alliance.", Toast.LENGTH_SHORT).show();
+        }
+    }
     private void showLeaveAllianceDialog() {
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Leave Alliance")

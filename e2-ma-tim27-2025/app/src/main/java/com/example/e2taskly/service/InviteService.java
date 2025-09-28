@@ -37,11 +37,13 @@ public class InviteService {
     private static String accessToken;
     private final RequestQueue requestQueue;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final NotificationSendingService notificationSendingService;
 
     public InviteService(Context context) {
         this.inviteRepository = new InviteRepository(context);
         this.context = context.getApplicationContext();
         this.requestQueue = Volley.newRequestQueue(this.context);
+        notificationSendingService = new NotificationSendingService(context);
     }
 
     public Task<Void> sendInvites(String inviterId, String inviterUsername, Alliance alliance, List<User> friendsToInvite) {
@@ -64,71 +66,34 @@ public class InviteService {
 
                         if (friend.getFcmToken() != null && !friend.getFcmToken().isEmpty()) {
                             Log.d(TAG, "Preparing to send notification to: " + friend.getUsername());
-                            sendFcmNotification(friend.getFcmToken(), inviterUsername, alliance, invite.getInviteId());
+                            sendInviteFcmNotification(friend.getFcmToken(), inviterUsername, alliance, invite.getInviteId());
                         }
                     }
                     return Tasks.forResult(null);
                 });
     }
 
-    private void sendFcmNotification(String receiverToken, String inviterUsername, Alliance alliance, String inviteId) {
-        getAccessToken().addOnSuccessListener(token -> {
-            try {
-                JSONObject notificationJson = new JSONObject();
-                notificationJson.put("title", "Alliance Invitation");
-                notificationJson.put("body", inviterUsername + " has invited you to join " + alliance.getName());
+    private void sendInviteFcmNotification(String receiverToken, String inviterUsername, Alliance alliance, String inviteId) {
+        try {
+            JSONObject notificationJson = new JSONObject();
+            notificationJson.put("title", "Alliance Invitation");
+            notificationJson.put("body", inviterUsername + " has invited you to join " + alliance.getName());
 
-                JSONObject dataJson = new JSONObject();
-                dataJson.put("type", "INVITATION");
-                dataJson.put("inviteId", inviteId);
-                dataJson.put("allianceId", alliance.getAllianceId());
-                dataJson.put("allianceName", alliance.getName());
-                dataJson.put("inviterUsername", inviterUsername);
+            JSONObject dataJson = new JSONObject();
+            dataJson.put("type", "INVITATION");
+            dataJson.put("inviteId", inviteId);
+            dataJson.put("allianceId", alliance.getAllianceId());
+            dataJson.put("allianceName", alliance.getName());
+            dataJson.put("inviterUsername", inviterUsername);
 
-                JSONObject messageJson = new JSONObject();
-                messageJson.put("token", receiverToken);
-                messageJson.put("notification", notificationJson);
-                messageJson.put("data", dataJson);
-
-                JSONObject mainJson = new JSONObject();
-                mainJson.put("message", messageJson);
-
-                sendFcmRequest(mainJson, token);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error creating V1 notification JSON", e);
-            }
-        }).addOnFailureListener(e -> {
-            Log.e(TAG, "Failed to get Access Token for sending notification", e);
-        });
+            notificationSendingService.sendFcmNotification(receiverToken, notificationJson, dataJson);
+        } catch (Exception e) {
+            Log.e("InviteService", "Error creating invite notification JSON", e);
+        }
     }
 
-    private void sendFcmRequest(JSONObject mainBody, String token) {
-        String projectId = "e2taskly-33";
-        String fcmApiUrl = "https://fcm.googleapis.com/v1/projects/" + projectId + "/messages:send";
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, fcmApiUrl, mainBody,
-                response -> Log.d(TAG, "V1 Notification sent successfully: " + response.toString()),
-                error -> {
-                    Log.e(TAG, "V1 Notification send error: " + error.toString());
-                    if (error.networkResponse != null) {
-                        Log.e(TAG, "Error Code: " + error.networkResponse.statusCode);
-                        Log.e(TAG, "Error Data: " + new String(error.networkResponse.data));
-                    }
-                }
-        ) {
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Content-Type", "application/json");
-                headers.put("Authorization", "Bearer " + token);
-                return headers;
-            }
-        };
-        requestQueue.add(request);
-    }
     public void sendAcceptanceNotification(String leaderToken, String newMemberName, String allianceName) {
-        getAccessToken().addOnSuccessListener(token -> {
+        notificationSendingService.getAccessToken().addOnSuccessListener(token -> {
             try {
                 JSONObject notificationJson = new JSONObject();
                 notificationJson.put("title", "Invitation Accepted!");
@@ -149,37 +114,13 @@ public class InviteService {
 
                 mainJson.put("message", messageJson);
 
-                sendFcmRequest(mainJson, token);
+                notificationSendingService.sendFcmRequest(mainJson, token);
 
             } catch (Exception e) {
                 Log.e(TAG, "Error creating acceptance notification JSON", e);
             }
         }).addOnFailureListener(e -> {
             Log.e(TAG, "Failed to get Access Token for acceptance notification", e);
-        });
-    }
-    private Task<String> getAccessToken() {
-        if (accessToken != null) {
-            // TODO: Proveriti da li je token istekao pre nego što ga vratimo
-            return Tasks.forResult(accessToken);
-        }
-
-        return Tasks.call(executor, () -> {
-            try {
-                InputStream serviceAccountStream = context.getResources().openRawResource(R.raw.service_account);
-
-                GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccountStream)
-                        .createScoped(Collections.singleton("https://www.googleapis.com/auth/firebase.messaging"));
-
-                credentials.refreshIfExpired();
-                AccessToken token = credentials.getAccessToken();
-                accessToken = token.getTokenValue();
-                return accessToken;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error generating access token from service account file", e);
-                throw e;
-            }
         });
     }
 
