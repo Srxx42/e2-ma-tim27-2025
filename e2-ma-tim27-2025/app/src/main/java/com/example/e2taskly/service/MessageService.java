@@ -20,7 +20,11 @@ public class MessageService {
     private final AllianceRepository allianceRepository;
     private final UserRepository userRepository;
     private final NotificationSendingService notificationSendingService;
-
+    public interface MessagesCallback {
+        void onInitialMessagesLoaded(List<Message> messages);
+        void onNewMessages(List<Message> messages);
+        void onError(Exception e);
+    }
     public MessageService(Context context) {
         this.messageRepository = new MessageRepository(context);
         this.allianceRepository = new AllianceRepository(context);
@@ -61,8 +65,23 @@ public class MessageService {
             });
         });
     }
-    public void getAndListenForMessages(String allianceId, MessageRepository.MessagesCallback callback) {
-        messageRepository.getAndListenForMessages(allianceId, callback);
+    public void getAndListenForMessages(String allianceId, MessagesCallback callback) {
+        messageRepository.getAndListenForMessages(allianceId, new MessageRepository.MessagesCallback() {
+            @Override
+            public void onInitialMessagesLoaded(List<Message> messages) {
+                callback.onInitialMessagesLoaded(messages);
+            }
+
+            @Override
+            public void onNewMessages(List<Message> messages) {
+                callback.onNewMessages(messages);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
     }
 
     public void stopListening() {

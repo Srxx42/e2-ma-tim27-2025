@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.e2taskly.model.Message;
 
@@ -31,6 +32,52 @@ public class MessageLocalDataSource {
         db.insertWithOnConflict(SQLiteHelper.T_MESSAGES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
     }
+    public void saveMessages(List<Message> messages) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            for (Message message : messages) {
+                ContentValues values = new ContentValues();
+                values.put("id", message.getMessageId());
+                values.put("alliance_id", message.getAllianceId());
+                values.put("sender_id", message.getSenderId());
+                values.put("sender_username", message.getSenderUsername());
+                values.put("text", message.getText());
+                if (message.getTimestamp() != null) {
+                    values.put("timestamp", message.getTimestamp().getTime());
+                }
+                db.insertWithOnConflict(SQLiteHelper.T_MESSAGES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+            }
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("MessageLocalDataSource", "Error saving messages in transaction", e);
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+    }
+    public Date getLastMessageTimestamp(String allianceId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
+                SQLiteHelper.T_MESSAGES,
+                new String[]{"MAX(timestamp)"},
+                "alliance_id = ?",
+                new String[]{allianceId},
+                null, null, null
+        );
+
+        Date lastTimestamp = new Date(0);
+        if (cursor.moveToFirst()) {
+            long timestamp = cursor.getLong(0);
+            if (timestamp > 0) {
+                lastTimestamp = new Date(timestamp);
+            }
+        }
+        cursor.close();
+        db.close();
+        return lastTimestamp;
+    }
+
     public List<Message> getMessagesForAlliance(String allianceId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         List<Message> messages = new ArrayList<>();

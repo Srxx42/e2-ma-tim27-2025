@@ -96,7 +96,6 @@ public class AllianceMessagesActivity extends AppCompatActivity {
     private void loadCurrentUser() {
         userService.getUserProfile(currentUserId).addOnSuccessListener(user -> {
             this.currentUsername = user.getUsername();
-            // Počni sa slušanjem poruka tek kada znamo korisničko ime
             listenForMessages();
         }).addOnFailureListener(e -> {
             Toast.makeText(this, "Failed to load user data.", Toast.LENGTH_SHORT).show();
@@ -105,27 +104,29 @@ public class AllianceMessagesActivity extends AppCompatActivity {
     }
 
     private void listenForMessages() {
-        messageService.getAndListenForMessages(allianceId, new MessageRepository.MessagesCallback() {
+        messageService.getAndListenForMessages(allianceId, new MessageService.MessagesCallback() {
             @Override
             public void onInitialMessagesLoaded(List<Message> messages) {
-                // Pokreni na glavnom UI thread-u radi sigurnosti
                 runOnUiThread(() -> {
                     messageAdapter.setMessages(messages);
-                    // Skroluj na dno da se vide najnovije poruke
                     if (messageAdapter.getItemCount() > 0) {
                         recyclerViewMessages.scrollToPosition(messageAdapter.getItemCount() - 1);
                     }
                 });
             }
             @Override
-            public void onNewMessage(Message message) {
-                messageAdapter.addMessage(message);
-                recyclerViewMessages.scrollToPosition(messageAdapter.getItemCount() - 1);
+            public void onNewMessages(List<Message> messages) {
+                runOnUiThread(() -> {
+                    messageAdapter.addMessages(messages);
+                    recyclerViewMessages.scrollToPosition(messageAdapter.getItemCount() - 1);
+                });
             }
 
             @Override
             public void onError(Exception e) {
-                Toast.makeText(AllianceMessagesActivity.this, "Error fetching messages.", Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> {
+                    Toast.makeText(AllianceMessagesActivity.this, "Error fetching messages.", Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
@@ -135,7 +136,7 @@ public class AllianceMessagesActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(messageText)) {
             return;
         }
-
+        editTextMessage.setText("");
         messageService.sendMessage(messageText, allianceId, currentUserId, currentUsername)
                 .addOnSuccessListener(aVoid -> editTextMessage.setText(""))
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to send message.", Toast.LENGTH_SHORT).show());

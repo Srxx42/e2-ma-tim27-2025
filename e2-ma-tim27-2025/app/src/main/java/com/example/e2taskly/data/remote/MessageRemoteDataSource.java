@@ -9,7 +9,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class MessageRemoteDataSource {
     private final FirebaseFirestore db;
@@ -29,12 +31,12 @@ public class MessageRemoteDataSource {
 
         return newDocRef.set(message);
     }
-    public interface OnNewMessageListener {
-        void onNewMessage(Message message);
+    public interface OnNewMessagesListener {
+        void onNewMessages(List<Message> messages);
         void onError(Exception e);
     }
 
-    public void listenForNewMessages(String allianceId, Date lastSyncTimestamp, OnNewMessageListener listener) {
+    public void listenForNewMessages(String allianceId, Date lastSyncTimestamp, OnNewMessagesListener listener) {
         Query query = getMessagesCollection(allianceId)
                 .whereGreaterThan("timestamp", lastSyncTimestamp)
                 .orderBy("timestamp", Query.Direction.ASCENDING);
@@ -45,10 +47,18 @@ public class MessageRemoteDataSource {
                 return;
             }
 
-            for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                if (dc.getType() == DocumentChange.Type.ADDED) {
-                    Message message = dc.getDocument().toObject(Message.class);
-                    listener.onNewMessage(message);
+            if (snapshots != null) {
+                // PROMJENA 2: Skupljamo sve nove poruke u listu
+                List<Message> newMessages = new ArrayList<>();
+                for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                    if (dc.getType() == DocumentChange.Type.ADDED) {
+                        Message message = dc.getDocument().toObject(Message.class);
+                        newMessages.add(message);
+                    }
+                }
+
+                if (!newMessages.isEmpty()) {
+                    listener.onNewMessages(newMessages);
                 }
             }
         });

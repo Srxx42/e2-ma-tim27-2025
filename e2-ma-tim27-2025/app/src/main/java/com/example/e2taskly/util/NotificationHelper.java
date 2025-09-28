@@ -87,7 +87,7 @@ public class NotificationHelper {
                 PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID_INFO)
-                .setSmallIcon(R.drawable.ic_chat) // Možete koristiti drugu ikonicu za chat
+                .setSmallIcon(R.drawable.ic_chat)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
