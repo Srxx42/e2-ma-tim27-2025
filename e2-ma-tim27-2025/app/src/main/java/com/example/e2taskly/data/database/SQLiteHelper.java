@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "e2taskly.db";
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 10;
     public static final String T_USERS = "users";
 
     public static final String T_CATEGORIES = "taskCategories";
@@ -92,6 +92,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             // Add the new column if it doesn't exist
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN active_days_streak INTEGER DEFAULT 0;");
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN last_activity_date INTEGER DEFAULT 0;");
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN friends_ids TEXT");
 
             // GLAVNA TABELA SA ZAJEDNIČKIM POLJIMA
             String createTaskTable = "CREATE TABLE " + T_TASKS + " (" +
@@ -142,12 +143,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         }
         if (oldVersion < 4) {
 
-            db.execSQL("create  table " + T_CATEGORIES + " (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "creatorId TEXT NOT NULL ," +
-                    "name TEXT NOT NULL ," +
-                    "colorhex TEXT NOT NULL " +
-                    ")");
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN alliance_id  TEXT");
+
 
             String createOccurrenceTable = "CREATE TABLE " + T_R_TASK_OCCURRENCE + " (" +
                     "occurrenceId INTEGER PRIMARY KEY, " +
@@ -170,14 +167,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     "colorhex TEXT NOT NULL " +
                     ")");
 
-        }
-        if (oldVersion < 3) {
-            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN friends_ids TEXT");
-        }
-        if(oldVersion < 4){
-            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN alliance_id  TEXT");
-        }
-        if(oldVersion < 5){
             db.execSQL("CREATE TABLE IF NOT EXISTS " + T_ALLIANCES + " (" +
                     "id TEXT PRIMARY KEY, " +
                     "name TEXT NOT NULL, " +
