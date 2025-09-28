@@ -18,7 +18,8 @@ import com.example.e2taskly.util.SharedPreferencesUtil;
 public class MainActivity extends AppCompatActivity {
     private Button buttonLogout;
     private Button buttonProfile;
-    private Button buttonViewAllUsers;
+
+    private Button buttonAddTask;
     private UserService userService;
     private SharedPreferencesUtil sharedPreferences;
 
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences = new SharedPreferencesUtil(this);
         buttonLogout = findViewById(R.id.buttonLogout);
         buttonProfile = findViewById(R.id.buttonProfile);
+        buttonAddTask = findViewById(R.id.addTask);
         buttonLogout.setOnClickListener(v->handleLogout());
         Button categoryAdd = findViewById(R.id.categoryAdd);
 
@@ -57,6 +59,12 @@ public class MainActivity extends AppCompatActivity {
 
         buttonProfile.setOnClickListener(v->{
             Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
+            startActivity(intent);
+        });
+
+
+        buttonAddTask.setOnClickListener(v ->{
+            Intent intent = new Intent(MainActivity.this,ManageTaskActivity.class);
             startActivity(intent);
         });
 

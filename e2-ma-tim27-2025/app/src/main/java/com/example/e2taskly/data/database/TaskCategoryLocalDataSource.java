@@ -24,6 +24,7 @@ public class TaskCategoryLocalDataSource {
     public long addCategory(TaskCategory category){
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
+        values.put("creatorId", category.getCreatorId());
         values.put("name", category.getName());
         values.put("colorhex",category.getColorHex());
 
@@ -41,19 +42,21 @@ public class TaskCategoryLocalDataSource {
         return newRowId;
     }
 
-    public List<TaskCategory> getAllCategories(){
+    public List<TaskCategory> getAllCategories(String creatorId){
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<TaskCategory> categories = new ArrayList<>();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + SQLiteHelper.T_CATEGORIES,null);
+
+        Cursor cursor = db.query(SQLiteHelper.T_CATEGORIES, null, "creatorId = ?", new String[]{creatorId}, null, null, null);
 
         if(cursor.moveToFirst()){
             do{
                 int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String creatorID = cursor.getString(cursor.getColumnIndexOrThrow("creatorId"));
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 String hexColor = cursor.getString(cursor.getColumnIndexOrThrow("colorhex"));
 
-                TaskCategory category = new TaskCategory(id,hexColor,name);
+                TaskCategory category = new TaskCategory(id,creatorID,hexColor,name);
                 categories.add(category);
             } while (cursor.moveToNext());
         }
@@ -72,10 +75,11 @@ public class TaskCategoryLocalDataSource {
 
         if(cursor.moveToFirst()){
                 int idd = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String creatorId = cursor.getString(cursor.getColumnIndexOrThrow("creatorId"));
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 String hexColor = cursor.getString(cursor.getColumnIndexOrThrow("colorhex"));
 
-                category = new TaskCategory(idd,hexColor,name);
+                category = new TaskCategory(idd,creatorId,hexColor,name);
         }
         cursor.close();
         db.close();
@@ -83,9 +87,10 @@ public class TaskCategoryLocalDataSource {
         return category;
     }
 
-    public boolean updateCategory(int id,String name, String hexColor){
+    public boolean updateCategory(int id,String creatorId,String name, String hexColor){
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
+        values.put("creatorId",creatorId);
         values.put("name", name);
         values.put("colorhex",hexColor);
 

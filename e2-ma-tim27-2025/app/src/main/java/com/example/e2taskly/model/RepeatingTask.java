@@ -21,10 +21,12 @@ public class RepeatingTask extends  Task {
 
     LocalDate finishingDate;
 
-    List<LocalDate> taskDates;
+    List<RepeatingTaskOccurrence> occurrences;
 
 
-    public RepeatingTask(int id, int creatorId, String name, String description, TaskCategory category,
+
+
+    public RepeatingTask(int id, String creatorId, String name, String description, TaskCategory category,
                          TaskType type, TaskStatus status, Importance importance, Difficulty difficulty,
                          int valueXP, boolean deleted, RepeatingType repeatingType,int interval,
                          LocalDate startingDate, LocalDate finishingDate) {
@@ -33,40 +35,15 @@ public class RepeatingTask extends  Task {
         this.interval = interval;
         this.startingDate = startingDate;
         this.finishingDate = finishingDate;
+        this.occurrences = new ArrayList<>();
     }
 
+    public List<RepeatingTaskOccurrence> getOccurrences() {
+        return occurrences;
+    }
 
-    public List<LocalDate> calculateTaskDates(RepeatingType type, int interval, LocalDate startDate, LocalDate finishDate){
-
-        if(this.taskDates == null){
-            this.taskDates = new ArrayList<>();
-        }
-
-        //Zadrzavanje proslih datuma pri azuriranju
-        List<LocalDate> preservedDates = this.taskDates.stream()
-                .filter(d -> d.isBefore(startDate))
-                .collect(Collectors.toList());
-
-        List<LocalDate> newDates = new ArrayList<>();
-
-        LocalDate current = startDate;
-        while(!current.isAfter(finishDate)){
-            newDates.add(current);
-
-            if(type.equals(RepeatingType.DAILY)) {
-                current = current.plusDays(interval);
-            } else if (type.equals(RepeatingType.WEEKLY)){
-                current = current.plusWeeks(interval);
-            } else {
-                throw new UnsupportedOperationException("Unsupported repeating type " + type);
-            }
-        }
-
-        this.taskDates = new ArrayList<>();
-        this.taskDates.addAll(preservedDates);
-        this.taskDates.addAll(newDates);
-
-        return this.taskDates;
+    public void setOccurrences(List<RepeatingTaskOccurrence> occurrences) {
+        this.occurrences = occurrences;
     }
 
     public RepeatingType getRepeatingType() {
@@ -101,11 +78,4 @@ public class RepeatingTask extends  Task {
         this.finishingDate = finishingDate;
     }
 
-    public List<LocalDate> getTaskDates() {
-        return taskDates;
-    }
-
-    public void setTaskDates(List<LocalDate> taskDates) {
-        this.taskDates = taskDates;
-    }
 }

@@ -2,8 +2,8 @@ package com.example.e2taskly.model.enums;
 
 public enum Difficulty {
     EASY,
-    VERY_EASY,
+    NORMAL,
     HARD,
-    VERY_HARD
+    EPIC
 
 }

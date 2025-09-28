@@ -6,7 +6,7 @@ import java.util.List;
 
 public class User {
     private String uid;
-    private  String email;
+    private String email;
     private String username;
     private String avatar;
     private int level;

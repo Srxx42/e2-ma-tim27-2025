@@ -23,16 +23,16 @@ public class TaskCategoryRepository {
         return localDataSource.addCategory(category);
     }
 
-    public List<TaskCategory> getAllCategories(){
-        return localDataSource.getAllCategories();
+    public List<TaskCategory> getAllCategories(String creatorId){
+        return localDataSource.getAllCategories(creatorId);
     }
 
     public TaskCategory getCategoryById(int id){
         return localDataSource.getCategoryById(id);
     }
 
-    public boolean updateCategory(int id,String name, String hexColor){
-        return localDataSource.updateCategory(id,name,hexColor);
+    public boolean updateCategory(int id,String creatorId,String name, String hexColor){
+        return localDataSource.updateCategory(id,creatorId,name,hexColor);
     }
 
     public boolean deleteById(int id){

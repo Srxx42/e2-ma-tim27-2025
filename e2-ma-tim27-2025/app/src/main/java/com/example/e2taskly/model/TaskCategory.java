@@ -2,14 +2,16 @@ package com.example.e2taskly.model;
 
 public class TaskCategory {
      int id;
+     String creatorId;
      String name;
      String colorHex;
 
 
     public TaskCategory() {}
 
-    public TaskCategory(int id, String colorHex, String name) {
+    public TaskCategory(int id,String creatorId ,String colorHex, String name) {
         this.id = id;
+        this.creatorId = creatorId;
         this.colorHex = colorHex;
         this.name = name;
     }
@@ -36,5 +38,13 @@ public class TaskCategory {
 
     public void setColorHex(String colorHex) {
         this.colorHex = colorHex;
+    }
+
+    public String getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(String creatorId) {
+        this.creatorId = creatorId;
     }
 }

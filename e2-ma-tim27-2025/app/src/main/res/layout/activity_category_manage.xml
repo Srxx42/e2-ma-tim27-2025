@@ -80,7 +80,7 @@
             android:textColor="@color/black"
             android:hint="..."/>
 
-        <!--   android:inputType="textEmailAddress"  -->
+
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView

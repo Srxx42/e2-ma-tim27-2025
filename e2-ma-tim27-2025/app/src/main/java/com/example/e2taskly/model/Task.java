@@ -8,7 +8,7 @@ import com.example.e2taskly.model.enums.TaskType;
 public abstract class Task {
 
     int Id;
-    int CreatorId;
+    String CreatorId;
     String name;
     String description;
 
@@ -24,7 +24,7 @@ public abstract class Task {
     boolean deleted;
 
 
-    protected Task(int id, int creatorId, String name, String description, TaskCategory category, TaskType type,
+    protected Task(int id, String creatorId, String name, String description, TaskCategory category, TaskType type,
                 TaskStatus status, Importance importance, Difficulty difficulty, int valueXP, boolean deleted) {
         Id = id;
         CreatorId = creatorId;
@@ -35,6 +35,7 @@ public abstract class Task {
         this.status = status;
         this.importance = importance;
         this.difficulty = difficulty;
+        this.valueXP = valueXP;
         this.deleted = deleted;
     }
 
@@ -47,11 +48,11 @@ public abstract class Task {
         Id = id;
     }
 
-    public int getCreatorId() {
+    public String getCreatorId() {
         return CreatorId;
     }
 
-    public void setCreatorId(int creatorId) {
+    public void setCreatorId(String creatorId) {
         CreatorId = creatorId;
     }
 

@@ -12,9 +12,9 @@ public class SingleTask extends Task {
     LocalDate taskDate;
 
 
-    protected SingleTask(int id, int creatorId, String name, String description, TaskCategory category,
-                         TaskType type, TaskStatus status, Importance importance, Difficulty difficulty, int valueXP,
-                         boolean deleted, LocalDate taskDate) {
+    public SingleTask(int id, String creatorId, String name, String description, TaskCategory category,
+                      TaskType type, TaskStatus status, Importance importance, Difficulty difficulty, int valueXP,
+                      boolean deleted, LocalDate taskDate) {
         super(id, creatorId, name, description, category, type, status, importance, difficulty, valueXP, deleted);
         this.taskDate = taskDate;
     }
