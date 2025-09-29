@@ -32,13 +32,12 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
 
     private ArrayList<Task> aTasks;
 
-    private TaskService taskService;
+    private boolean showDates;
 
-    public TaskListAdapter(@NonNull Context context, @NonNull ArrayList<Task> tasks){
+    public TaskListAdapter(@NonNull Context context, @NonNull ArrayList<Task> tasks,boolean showDatesInView){
         super(context, R.layout.item_task,tasks);
         aTasks = tasks;
-
-        taskService = new TaskService(context);
+        showDates = showDatesInView;
     }
 
     @Override
@@ -87,13 +86,17 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-            if(task.getType().equals(TaskType.SINGLE)){
-                SingleTask sTask = (SingleTask) task;
-                taskDates.setText(sTask.getTaskDate().format(formatter));
-            } else {
-                RepeatingTask rTask = (RepeatingTask) task;
-                String rTaskDates = rTask.getStartingDate().format(formatter)+ " - " + rTask.getFinishingDate().format(formatter);
-                taskDates.setText(rTaskDates);
+            if(showDates) {
+                if (task.getType().equals(TaskType.SINGLE)) {
+                    SingleTask sTask = (SingleTask) task;
+                    taskDates.setText(sTask.getTaskDate().format(formatter));
+                } else {
+                    RepeatingTask rTask = (RepeatingTask) task;
+                    String rTaskDates = rTask.getStartingDate().format(formatter) + " - " + rTask.getFinishingDate().format(formatter);
+                    taskDates.setText(rTaskDates);
+                }
+            } else{
+                taskDates.setText("");
             }
 
         }

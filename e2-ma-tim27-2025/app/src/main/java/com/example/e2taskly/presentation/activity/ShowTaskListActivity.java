@@ -62,10 +62,10 @@ public class ShowTaskListActivity extends AppCompatActivity {
         singleTasks = taskService.getAllSingleTasks();
         repeatingTasks = taskService.getAllRepeatingTasks();
 
-        TaskListAdapter sAdapter = new TaskListAdapter(this, new ArrayList<>(singleTasks));
+        TaskListAdapter sAdapter = new TaskListAdapter(this, new ArrayList<>(singleTasks),true);
         singleTaskListView.setAdapter(sAdapter);
 
-        TaskListAdapter rAdapter = new TaskListAdapter(this, new ArrayList<>(repeatingTasks));
+        TaskListAdapter rAdapter = new TaskListAdapter(this, new ArrayList<>(repeatingTasks),true);
         repeatingTaskListView.setAdapter(rAdapter);
     }
 
@@ -82,10 +82,10 @@ public class ShowTaskListActivity extends AppCompatActivity {
         repeatingTasks = new ArrayList<>();
         repeatingTasks = taskService.getAllRepeatingTasks();
 
-        TaskListAdapter sAdapter = new TaskListAdapter(this, new ArrayList<>(singleTasks));
+        TaskListAdapter sAdapter = new TaskListAdapter(this, new ArrayList<>(singleTasks),true);
         singleTaskListView.setAdapter(sAdapter);
 
-        TaskListAdapter rAdapter = new TaskListAdapter(this, new ArrayList<>(repeatingTasks));
+        TaskListAdapter rAdapter = new TaskListAdapter(this, new ArrayList<>(repeatingTasks),true);
         repeatingTaskListView.setAdapter(rAdapter);
     }
 

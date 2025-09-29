@@ -22,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonAddTask;
 
     private Button buttonShowTaskList;
+
+    private Button buttonShowTaskCalendar;
     private UserService userService;
     private SharedPreferencesUtil sharedPreferences;
 
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         buttonProfile = findViewById(R.id.buttonProfile);
         buttonAddTask = findViewById(R.id.addTask);
         buttonShowTaskList = findViewById(R.id.showTaskList);
+        buttonShowTaskCalendar = findViewById(R.id.showTaskCalendar);
         buttonLogout.setOnClickListener(v->handleLogout());
         Button categoryAdd = findViewById(R.id.categoryAdd);
 
@@ -73,6 +76,11 @@ public class MainActivity extends AppCompatActivity {
 
         buttonShowTaskList.setOnClickListener(v ->{
             Intent intent = new Intent(MainActivity.this,ShowTaskListActivity.class);
+            startActivity(intent);
+        });
+
+        buttonShowTaskCalendar.setOnClickListener(v ->{
+            Intent intent = new Intent(MainActivity.this,ShowTaskCalendarActivity.class);
             startActivity(intent);
         });
 
