@@ -22,12 +22,12 @@ public class TaskRepository {
         return localDataSource.addTask(task);
     }
 
-    public List<RepeatingTask> getAllRepeatingTasks(){
-        return localDataSource.getAllRepeatingTasks();
+    public List<RepeatingTask> getAllRepeatingTasks(String creatorID){
+        return localDataSource.getAllRepeatingTasks(creatorID);
     }
 
-    public List<SingleTask> getAllSingleTasks(){
-        return localDataSource.getAllSingleTasks();
+    public List<SingleTask> getAllSingleTasks(String creatorID){
+        return localDataSource.getAllSingleTasks(creatorID);
     }
 
     public Task getTaskById(int id){

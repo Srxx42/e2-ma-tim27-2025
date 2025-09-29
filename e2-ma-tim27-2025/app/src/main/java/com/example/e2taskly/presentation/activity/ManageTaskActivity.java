@@ -23,10 +23,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.e2taskly.R;
-import com.example.e2taskly.adapters.CategoryListAdapter;
 import com.example.e2taskly.model.RepeatingTask;
 import com.example.e2taskly.model.SingleTask;
-import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.TaskCategory;
 import com.example.e2taskly.model.enums.Difficulty;
 import com.example.e2taskly.model.enums.Importance;
@@ -37,8 +35,6 @@ import com.example.e2taskly.service.TaskCategoryService;
 import com.example.e2taskly.service.TaskService;
 import com.example.e2taskly.service.UserService;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.common.collect.ArrayTable;
-import com.google.type.DateTime;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -368,7 +364,7 @@ public class ManageTaskActivity extends AppCompatActivity {
         private List<TaskCategory> categories;
 
         public CategorySpinnerAdapter(Context context, List<TaskCategory> categories) {
-            super(context, R.layout.category_item, categories);
+            super(context, R.layout.item_category, categories);
             this.context = context;
             this.categories = categories;
         }
@@ -386,7 +382,7 @@ public class ManageTaskActivity extends AppCompatActivity {
         private View getCustomView(int position, View convertView, ViewGroup parent) {
             View row = convertView;
             if (row == null) {
-                row = getLayoutInflater().inflate(R.layout.category_item, parent, false);
+                row = getLayoutInflater().inflate(R.layout.item_category, parent, false);
             }
 
             TaskCategory currentItem = categories.get(position);

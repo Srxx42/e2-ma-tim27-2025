@@ -7,6 +7,7 @@ import android.widget.Toast;
 import com.example.e2taskly.data.repository.TaskRepository;
 import com.example.e2taskly.model.RepeatingTask;
 import com.example.e2taskly.model.RepeatingTaskOccurrence;
+import com.example.e2taskly.model.SingleTask;
 import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.enums.RepeatingType;
 import com.example.e2taskly.model.enums.TaskStatus;
@@ -19,8 +20,12 @@ public class TaskService {
 
     private TaskRepository taskRepository;
 
+    private UserService userService;
+
     public TaskService(Context context) {
+
         taskRepository = new TaskRepository(context);
+        userService = new UserService(context);
     }
 
     public boolean saveTask(Task task){
@@ -58,6 +63,28 @@ public class TaskService {
 
     public List<RepeatingTaskOccurrence> getAllTaskOccurrences(int taskId){
        return  taskRepository.getAllTaskOccurrences(taskId);
+    }
+
+    public List<SingleTask> getAllSingleTasks() {
+        String creatorID =userService.getCurrentUserId();
+        return taskRepository.getAllSingleTasks(creatorID);
+    }
+
+    public List<RepeatingTask> getAllRepeatingTasks(){
+        String creatorID =userService.getCurrentUserId();
+        return taskRepository.getAllRepeatingTasks(creatorID);
+    }
+
+    public Task getTaskById(int id){
+        return taskRepository.getTaskById(id);
+    }
+
+    public boolean updateTask(Task task){
+        return taskRepository.updateTask(task);
+    }
+
+    public boolean deleteById(int id){
+        return taskRepository.deleteById(id);
     }
 
 }

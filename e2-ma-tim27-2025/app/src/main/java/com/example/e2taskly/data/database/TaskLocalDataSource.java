@@ -81,77 +81,87 @@ public class TaskLocalDataSource {
     }
 
     // Tvoja getAllSingleTasks metoda - ostaje nepromenjena, ispravna je
-    public List<SingleTask> getAllSingleTasks() {
+    public List<SingleTask> getAllSingleTasks(String creatorID) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<SingleTask> tasks = new ArrayList<>();
         TaskCategoryLocalDataSource categoryDataSource = new TaskCategoryLocalDataSource(context);
 
         String query = "SELECT * FROM " + SQLiteHelper.T_TASKS + " t " +
-                "INNER JOIN " + SQLiteHelper.T_SINGLE_TASKS + " st ON t.id = st.taskId";
+                "INNER JOIN " + SQLiteHelper.T_SINGLE_TASKS + " rt ON t.id = rt.taskId " +
+                "WHERE creatorId = ?";
 
-        Cursor cursor = db.rawQuery(query, null);
+        String[] selectionArgs = {creatorID};
+        Cursor cursor = db.rawQuery(query, selectionArgs);
 
-        if (cursor.moveToFirst()) {
-            do {
-                TaskCategory category = categoryDataSource.getCategoryById(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
-                SingleTask task = new SingleTask(
-                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("creatorId")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("name")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                        category,
-                        TaskType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("taskType"))),
-                        TaskStatus.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("status"))),
-                        Importance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))),
-                        Difficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("valueXP")),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("deleted")) == 1,
-                        LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("taskDate")))
-                );
-                tasks.add(task);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        db.close();
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    TaskCategory category = categoryDataSource.getCategoryById(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
+                    SingleTask task = new SingleTask(
+                            cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("creatorId")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("description")),
+                            category,
+                            TaskType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("taskType"))),
+                            TaskStatus.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("status"))),
+                            Importance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))),
+                            Difficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("valueXP")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("deleted")) == 1,
+                            LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("taskDate")))
+                    );
+                    tasks.add(task);
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+            db.close();
+         }
         return tasks;
     }
 
-    public List<RepeatingTask> getAllRepeatingTasks() {
+    public List<RepeatingTask> getAllRepeatingTasks(String creatorID) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<RepeatingTask> tasks = new ArrayList<>();
         TaskCategoryLocalDataSource categoryDataSource = new TaskCategoryLocalDataSource(context);
 
         String query = "SELECT * FROM " + SQLiteHelper.T_TASKS + " t " +
-                "INNER JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON t.id = rt.taskId";
+                "INNER JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON t.id = rt.taskId " +
+                "WHERE creatorId = ?";
 
-        Cursor cursor = db.rawQuery(query, null);
+        String[] selectionArgs = { creatorID };
+        Cursor cursor = db.rawQuery(query, selectionArgs);
 
-        if (cursor.moveToFirst()) {
-            do {
-                TaskCategory category = categoryDataSource.getCategoryById(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    TaskCategory category = categoryDataSource.getCategoryById(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
 
-                RepeatingTask task = new RepeatingTask(
-                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("creatorId")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("name")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                        category,
-                        TaskType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("taskType"))),
-                        TaskStatus.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("status"))),
-                        Importance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))),
-                        Difficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("valueXP")),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("deleted")) == 1,
-                        RepeatingType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("repeatingType"))),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("interval")),
-                        LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("startingDate"))),
-                        LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("finishingDate")))
-                );
-                tasks.add(task);
-            } while (cursor.moveToNext());
+                    RepeatingTask task = new RepeatingTask(
+                            cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("creatorId")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("description")),
+                            category,
+                            TaskType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("taskType"))),
+                            TaskStatus.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("status"))),
+                            Importance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))),
+                            Difficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("valueXP")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("deleted")) == 1,
+                            RepeatingType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("repeatingType"))),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("interval")),
+                            LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("startingDate"))),
+                            LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("finishingDate")))
+                    );
+                    tasks.add(task);
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+            db.close();
         }
-        cursor.close();
-        db.close();
         return tasks;
     }
 
