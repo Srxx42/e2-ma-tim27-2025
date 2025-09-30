@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background_stones">
+
+        <include
+            android:id="@+id/includeToolbar"
+            layout="@layout/toolbar"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/btnDeleteTask"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/delete_bin"
+            app:layout_constraintBottom_toBottomOf="@+id/task_info_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/task_info_title"
+            android:contentDescription="Delete Task"
+            android:scaleType="centerCrop"/>
+
+        <ImageButton
+            android:id="@+id/btnEditTask"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginEnd="1dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/edit_feather"
+            app:layout_constraintBottom_toBottomOf="@+id/btnDeleteTask"
+            app:layout_constraintEnd_toStartOf="@+id/btnDeleteTask"
+            app:layout_constraintTop_toTopOf="@+id/btnDeleteTask"
+            android:contentDescription="Edit Task"
+            android:scaleType="centerCrop"  />
+
+        <TextView
+            android:id="@+id/task_info_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Task Details"
+            android:textColor="#F0BC54"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/includeToolbar" />
+
+        <!-- Task Name -->
+        <TextView
+            android:id="@+id/labelTaskName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:text="Task Name:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/task_info_title" />
+
+        <TextView
+            android:id="@+id/tvTaskName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="24dp"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/labelTaskName"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/labelTaskName"
+            tools:text="My Awesome Task" />
+
+        <!-- Category -->
+        <TextView
+            android:id="@+id/labelCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Category:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/labelTaskName"
+            app:layout_constraintTop_toBottomOf="@id/labelTaskName" />
+
+        <TextView
+            android:id="@+id/tvCategory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/labelCategory"
+            app:layout_constraintEnd_toEndOf="@+id/tvTaskName"
+            app:layout_constraintStart_toStartOf="@+id/tvTaskName"
+            tools:text="Work" />
+
+        <!-- Difficulty -->
+        <TextView
+            android:id="@+id/labelDifficulty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Difficulty:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/labelCategory"
+            app:layout_constraintTop_toBottomOf="@id/labelCategory" />
+
+        <TextView
+            android:id="@+id/tvDifficulty"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/labelDifficulty"
+            app:layout_constraintEnd_toEndOf="@+id/tvCategory"
+            app:layout_constraintStart_toStartOf="@+id/tvCategory"
+            tools:text="HARD" />
+
+        <!-- Importance -->
+        <TextView
+            android:id="@+id/labelImportance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Importance:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/labelDifficulty"
+            app:layout_constraintTop_toBottomOf="@id/labelDifficulty" />
+
+        <TextView
+            android:id="@+id/tvImportance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/labelImportance"
+            app:layout_constraintEnd_toEndOf="@+id/tvDifficulty"
+            app:layout_constraintStart_toStartOf="@+id/tvDifficulty"
+            tools:text="URGENT" />
+
+        <!-- TotalXp -->
+        <TextView
+            android:id="@+id/labelTotalXp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Total XP:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/labelImportance"
+            app:layout_constraintTop_toBottomOf="@id/labelImportance" />
+
+        <TextView
+            android:id="@+id/tvTotalXP"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/labelTotalXp"
+            app:layout_constraintEnd_toEndOf="@+id/tvImportance"
+            app:layout_constraintStart_toStartOf="@+id/tvImportance"
+            tools:text="30XP" />
+
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/labelDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Description:"
+            android:textColor="#F0BC54"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/labelTotalXp"
+            app:layout_constraintTop_toBottomOf="@id/labelTotalXp" />
+
+        <TextView
+            android:id="@+id/tvDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="#4DFFFFFF"
+            android:padding="12dp"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/tvImportance"
+            app:layout_constraintStart_toStartOf="@+id/labelDescription"
+            app:layout_constraintTop_toBottomOf="@id/labelDescription"
+            tools:text="This is a very long description of the task to check how the text wraps and how the layout behaves with more content." />
+
+        <!-- SINGLE Task Layout -->
+        <LinearLayout
+            android:id="@+id/layoutSingleInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/tvDescription"
+            app:layout_constraintStart_toStartOf="@+id/tvDescription"
+            app:layout_constraintTop_toBottomOf="@id/tvDescription"
+            tools:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date:"
+                android:textColor="#F0BC54"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSingleDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                tools:text="2025-12-25" />
+        </LinearLayout>
+
+        <!-- REPEATING Task Layout -->
+        <LinearLayout
+            android:id="@+id/layoutRepeatingInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/tvDescription"
+            app:layout_constraintStart_toStartOf="@+id/tvDescription"
+            app:layout_constraintTop_toBottomOf="@id/tvDescription"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Starting Date:"
+                    android:textColor="#F0BC54"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvStartDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    tools:text="2025-10-01" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Finishing Date:"
+                    android:textColor="#F0BC54"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvEndDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    tools:text="2025-11-01" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Repeats:"
+                    android:textColor="#F0BC54"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvRepeatInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="35dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    tools:text="Weekly on Monday" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/info_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="layoutSingleInfo,layoutRepeatingInfo" />
+
+        <!-- Status -->
+        <TextView
+            android:id="@+id/labelStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Status:"
+            android:textColor="#F0BC54"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/tvDescription"
+            app:layout_constraintTop_toBottomOf="@+id/info_barrier" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:paddingStart="12dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#23a"
+            app:layout_constraintBaseline_toBaselineOf="@+id/labelStatus"
+            app:layout_constraintStart_toEndOf="@+id/labelStatus"
+            tools:text="ACTIVE" />
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:id="@+id/layoutActionButtons"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingTop="24dp"
+            android:paddingBottom="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/labelStatus">
+
+            <Button
+                android:id="@+id/btnComplete"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:backgroundTint="#46875a"
+                android:text="Complete"
+                android:textColor="#F0BC54" />
+
+            <Button
+                android:id="@+id/btnPause"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="12dp"
+                android:backgroundTint="#DAA520"
+                android:text="Pause"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/btnCancel"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:backgroundTint="#B22222"
+                android:text="Cancel"
+                android:textColor="#FFFFFF" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

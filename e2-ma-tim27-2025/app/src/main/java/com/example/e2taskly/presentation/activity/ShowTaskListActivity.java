@@ -18,6 +18,7 @@ import com.example.e2taskly.service.TaskCategoryService;
 import com.example.e2taskly.service.TaskService;
 import com.example.e2taskly.service.UserService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,9 +59,14 @@ public class ShowTaskListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        LocalDate today = LocalDate.now();
+
 
         singleTasks = taskService.getAllSingleTasks();
+        singleTasks.removeIf(s -> s.getTaskDate().isBefore(today));
+
         repeatingTasks = taskService.getAllRepeatingTasks();
+        repeatingTasks.removeIf(r -> r.getFinishingDate().isBefore(today));
 
         TaskListAdapter sAdapter = new TaskListAdapter(this, new ArrayList<>(singleTasks),true);
         singleTaskListView.setAdapter(sAdapter);
@@ -76,11 +82,17 @@ public class ShowTaskListActivity extends AppCompatActivity {
         singleTaskListView = findViewById(R.id.singleTaskListView);
         repeatingTaskListView = findViewById(R.id.repeatingTaskListView);
 
+        LocalDate today = LocalDate.now();
+
         singleTasks = new ArrayList<>();
         singleTasks = taskService.getAllSingleTasks();
 
+        singleTasks.removeIf(s -> s.getTaskDate().isBefore(today));
+
         repeatingTasks = new ArrayList<>();
         repeatingTasks = taskService.getAllRepeatingTasks();
+
+        repeatingTasks.removeIf(r -> r.getFinishingDate().isBefore(today));
 
         TaskListAdapter sAdapter = new TaskListAdapter(this, new ArrayList<>(singleTasks),true);
         singleTaskListView.setAdapter(sAdapter);
@@ -108,8 +120,6 @@ public class ShowTaskListActivity extends AppCompatActivity {
             repeatingTaskListView.setVisibility(View.VISIBLE);
         }
     }
-
-
 
 
 

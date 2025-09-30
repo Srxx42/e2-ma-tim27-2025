@@ -13,6 +13,7 @@ import com.example.e2taskly.model.enums.RepeatingType;
 import com.example.e2taskly.model.enums.TaskStatus;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,9 @@ public class TaskService {
 
     public void createRepeatingTaskOccurrences(RepeatingTask task){
         LocalDate current = task.getStartingDate();
+        deleteFutureOccurrences(task.getId());
+
+
         LocalDate finish = task.getFinishingDate();
 
         boolean success = false;
@@ -53,11 +57,11 @@ public class TaskService {
             } else {
                 throw new UnsupportedOperationException("Unsupported repeating type " + task.getType());
             }
-
             success = taskRepository.saveTaskOccurrence(occurrence);
 
             if(success)  Log.d("TaskService", "Occurrence successfully saved.");
             else Log.e("TaskService", "Error saving occurrence.");
+
         }
     }
 
@@ -85,6 +89,14 @@ public class TaskService {
 
     public boolean deleteById(int id){
         return taskRepository.deleteById(id);
+    }
+
+    public boolean deleteFutureOccurrences(int repeatingTaskId) {
+        return taskRepository.deleteFutureOccurrences(repeatingTaskId);
+    }
+
+    public boolean deleteAllOccurrences(int repeatingTaskId){
+        return taskRepository.deleteAllOccurrences(repeatingTaskId);
     }
 
 }

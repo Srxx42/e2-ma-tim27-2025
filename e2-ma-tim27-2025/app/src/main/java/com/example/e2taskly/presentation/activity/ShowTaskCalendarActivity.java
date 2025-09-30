@@ -59,6 +59,20 @@ public class ShowTaskCalendarActivity extends AppCompatActivity {
         updateTaskListForDate(LocalDate.now());
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        loadAndProcessTasks();
+
+        CalendarDay selectedDay = taskCalendarView.getSelectedDate();
+        LocalDate dateToDisplay = (selectedDay != null) ?
+                LocalDate.of(selectedDay.getYear(), selectedDay.getMonth() + 1, selectedDay.getDay()) :
+                LocalDate.now(); // Ako nista nije selektovano, prikazi za danas
+
+        updateTaskListForDate(dateToDisplay);
+    }
+
     private void initViews(){
 
         tasksCalendarListView = findViewById(R.id.tasksCalendarListView);
@@ -71,6 +85,9 @@ public class ShowTaskCalendarActivity extends AppCompatActivity {
     }
 
     private void loadAndProcessTasks(){
+
+        taskCalendarView.removeDecorators();
+
         tasksByDateMap = new HashMap<>();
 
         List<SingleTask> sTasks = taskService.getAllSingleTasks();
@@ -146,14 +163,14 @@ public class ShowTaskCalendarActivity extends AppCompatActivity {
 
     private void updateTaskListForDate(LocalDate date) {
         List<Task> tasksForSelectedDate = tasksByDateMap.get(date);
-        currentlyDisplayedTasks.clear();
+
+        taskListAdapter.clear();
 
         if (tasksForSelectedDate != null) {
-            currentlyDisplayedTasks.addAll(tasksForSelectedDate);
+            taskListAdapter.addAll(tasksForSelectedDate);
         }
 
-        taskListAdapter = new TaskListAdapter(this, new ArrayList<>(currentlyDisplayedTasks),false);
-        tasksCalendarListView.setAdapter(taskListAdapter);
+        taskListAdapter.notifyDataSetChanged();
     }
 
 

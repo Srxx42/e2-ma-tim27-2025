@@ -23,6 +23,7 @@ import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.TaskCategory;
 import com.example.e2taskly.model.enums.TaskType;
 import com.example.e2taskly.presentation.activity.ManageCategoryActivity;
+import com.example.e2taskly.presentation.activity.ShowTaskInfoActivity;
 import com.example.e2taskly.service.TaskService;
 
 import java.time.format.DateTimeFormatter;
@@ -100,14 +101,13 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
             }
 
         }
-       /* KOD ZA PRIKAZ TASKA
 
        taskCard.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), ManageCategoryActivity.class);
-            intent.putExtra("CATEGORY_ID",task.getId());
+            Intent intent = new Intent(getContext(), ShowTaskInfoActivity.class);
+            intent.putExtra("TASK_ID",task.getId());
             getContext().startActivity(intent);
 
-        }); */
+        });
 
 
         return converView;

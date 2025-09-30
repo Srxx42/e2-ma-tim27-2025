@@ -265,6 +265,18 @@ public class TaskLocalDataSource {
                     repeatingValues.put("startingDate", repeatingTask.getStartingDate().toString());
                     repeatingValues.put("finishingDate", repeatingTask.getFinishingDate().toString());
                     db.update(SQLiteHelper.T_REPEATING_TASKS, repeatingValues, "taskId = ?", new String[]{String.valueOf(task.getId())});
+
+                    if (repeatingTask.getOccurrences() != null) {
+                        for (RepeatingTaskOccurrence occurrence : repeatingTask.getOccurrences()) {
+                            ContentValues occurrenceValues = new ContentValues();
+                            occurrenceValues.put("occurrenceStatus", occurrence.getOccurrenceStatus().name());
+                            occurrenceValues.put("occurrenceDate", occurrence.getOccurrenceDate().toString());
+                            db.update(SQLiteHelper.T_R_TASK_OCCURRENCE,
+                                    occurrenceValues,
+                                    "occurrenceId = ?",
+                                    new String[]{String.valueOf(occurrence.getId())});
+                        }
+                    }
                 }
             }
 
@@ -344,6 +356,57 @@ public class TaskLocalDataSource {
         db.close();
         return occurrences;
     }
+
+    public boolean deleteFutureOccurrences(int repeatingTaskId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        boolean success = false;
+
+        db.beginTransaction();
+        try {
+            String today = LocalDate.now().toString();
+
+            int deletedRows = db.delete(SQLiteHelper.T_R_TASK_OCCURRENCE,
+                    "repeatingTaskId = ? AND occurrenceDate > ?",
+                    new String[]{String.valueOf(repeatingTaskId), today});
+
+            Log.d("DB_DELETE", "Obrisano " + deletedRows + " budućih instanci.");
+
+            db.setTransactionSuccessful();
+            success = true;
+
+        } catch (Exception e) {
+            Log.e("DB_ERROR", "Greška pri otkazivanju budućih taskova", e);
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+        return success;
+    }
+
+    public boolean deleteAllOccurrences(int repeatingTaskId){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        boolean success = false;
+
+        db.beginTransaction();
+        try {
+            int deletedRows = db.delete(SQLiteHelper.T_R_TASK_OCCURRENCE,
+                    "repeatingTaskId = ?",
+                    new String[]{String.valueOf(repeatingTaskId)});
+
+            Log.d("DB_DELETE", "Obrisano " + deletedRows + " budućih instanci.");
+
+            db.setTransactionSuccessful();
+            success = true;
+
+        } catch (Exception e) {
+            Log.e("DB_ERROR", "Greška pri otkazivanju budućih taskova", e);
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+        return success;
+    }
+
 
 
 

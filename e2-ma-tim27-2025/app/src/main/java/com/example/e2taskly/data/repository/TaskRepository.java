@@ -48,5 +48,13 @@ public class TaskRepository {
         return localDataSource.getAllTaskOccurrences(taskId);
     }
 
+    public boolean deleteFutureOccurrences(int repeatingTaskId){
+        return localDataSource.deleteFutureOccurrences(repeatingTaskId);
+    }
+
+    public boolean deleteAllOccurrences(int repeatingTaskId) {
+     return localDataSource.deleteAllOccurrences(repeatingTaskId);
+    }
+
 
 }
