@@ -17,27 +17,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-
-    <Button
-        android:id="@+id/buttonProfile"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/main_profile_button"
-        app:layout_constraintBottom_toTopOf="@id/buttonLogout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="16dp"/>
-    <Button
-        android:id="@+id/buttonLogout"
-        android:layout_width="364dp"
-        android:layout_height="42dp"
-        android:layout_marginBottom="72dp"
-        android:text="@string/main_logout_button"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.51"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <Button
         android:id="@+id/categoryAdd"
         android:layout_width="150dp"

@@ -187,4 +187,22 @@ public class UserRepository {
         localDataSource.updateUserFcmToken(uid, token);
         return remoteDataSource.updateUserFcmToken(uid, token);
     }
+    public Task<User> getUserLocallyFirst(String uid) {
+        User localUser = localDataSource.getUser(uid);
+
+        if (localUser != null) {
+            return Tasks.forResult(localUser);
+        } else {
+            return remoteDataSource.getUserDetails(uid).onSuccessTask(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    User remoteUser = documentSnapshot.toObject(User.class);
+                    if (remoteUser != null) {
+                        localDataSource.addUser(remoteUser);
+                        return Tasks.forResult(remoteUser);
+                    }
+                }
+                return Tasks.forException(new Exception("Korisnik nije pronađen."));
+            });
+        }
+    }
 }

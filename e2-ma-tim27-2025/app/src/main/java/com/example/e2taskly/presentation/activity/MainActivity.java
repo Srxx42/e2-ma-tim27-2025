@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,11 +25,10 @@ import com.example.e2taskly.workers.TaskStatusWorker;
 
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity {
-    private Button buttonLogout;
-    private Button buttonProfile;
+public class MainActivity extends BaseActivity {
 
     private Button buttonAddTask;
+    private ImageView menuButton;
 
     private Button buttonShowTaskList;
 
@@ -42,22 +43,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         userService = new UserService(this);
 
-        Toolbar toolbar =findViewById(R.id.customToolbar);
-        setSupportActionBar(toolbar);
+        setupToolbar();
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
+
         scheduleDailyTaskStatusCheck();
 
         sharedPreferences = new SharedPreferencesUtil(this);
-        buttonLogout = findViewById(R.id.buttonLogout);
-        buttonProfile = findViewById(R.id.buttonProfile);
         buttonAddTask = findViewById(R.id.addTask);
         buttonShowTaskList = findViewById(R.id.showTaskList);
         buttonShowTaskCalendar = findViewById(R.id.showTaskCalendar);
-        buttonLogout.setOnClickListener(v->handleLogout());
+
+        menuButton = findViewById(R.id.menuButton);
         Button categoryAdd = findViewById(R.id.categoryAdd);
 
         categoryAdd.setOnClickListener(v -> {
@@ -69,12 +69,6 @@ public class MainActivity extends AppCompatActivity {
 
         showCategories.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, ShowCategoriesActivity.class);
-            startActivity(intent);
-        });
-
-
-        buttonProfile.setOnClickListener(v->{
-            Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
             startActivity(intent);
         });
 
@@ -101,14 +95,22 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         checkUserActivityStreak();
     }
-    private void handleLogout() {
-        userService.logoutUser();
-        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+
+    @Override
+    protected int getMenuResourceId() {
+        return R.menu.main_menu;
     }
 
+    @Override
+    protected boolean handleMenuItemClick(MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_profile) {
+            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return false;
+    }
     private void checkUserActivityStreak(){
         String uid = sharedPreferences.getActiveUserUid();
         if (uid == null || uid.isEmpty()) {

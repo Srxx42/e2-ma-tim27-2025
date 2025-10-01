@@ -5,18 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".presentation.activity.ProfileActivity"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:background="@drawable/background5">
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Profile" />
+        <include layout="@layout/toolbar" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -32,7 +30,8 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:layout_marginHorizontal="16dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imageViewAvatar"
@@ -55,6 +54,7 @@
             android:layout_marginTop="16dp"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:textColor="#F0BC54"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/imageViewAvatar"
@@ -67,6 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textSize="18sp"
+            android:textColor="#F0BC54"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textViewUsername"
@@ -96,11 +97,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="15"
+                    android:textColor="#F0BC54"
                     android:textStyle="bold"
                     android:textSize="20sp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#F0BC54"
                     android:text="@string/profile_level_label"/>
             </LinearLayout>
             <!-- XP -->
@@ -114,11 +117,14 @@
                     android:id="@+id/textViewXp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="7500" android:textStyle="bold"
+                    tools:text="7500"
+                    android:textColor="#F0BC54"
+                    android:textStyle="bold"
                     android:textSize="20sp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#F0BC54"
                     android:text="@string/profile_xp_label"/>
             </LinearLayout>
             <!-- Power -->
@@ -134,11 +140,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="150"
+                    android:textColor="#F0BC54"
                     android:textStyle="bold"
                     android:textSize="20sp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#F0BC54"
                     android:text="@string/profile_pp_label"/>
             </LinearLayout>
             <!-- Coins -->
@@ -154,11 +162,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="1200"
+                    android:textColor="#F0BC54"
                     android:textStyle="bold"
                     android:textSize="20sp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#F0BC54"
                     android:text="@string/profile_coins_label"/>
             </LinearLayout>
         </LinearLayout>
@@ -169,6 +179,7 @@
             android:layout_marginTop="24dp"
             android:text="@string/profile_level_progress"
             android:textStyle="bold"
+            android:textColor="#F0BC54"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/statsContainer" />
 
@@ -178,6 +189,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:progressTint="#F0BC54"
             app:layout_constraintTop_toBottomOf="@id/labelLevelProgress"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -189,6 +201,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="@id/progressBarXp"
             app:layout_constraintTop_toBottomOf="@id/progressBarXp"
+            android:textColor="#F0BC54"
             tools:text="1500 / 2500 XP" />
         <!-- QR Code -->
         <TextView
@@ -197,6 +210,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:text="@string/profile_your_qr_code_label"
+            android:textColor="#F0BC54"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/progressBarXp" />
@@ -257,16 +271,8 @@
             android:text="@string/profile_change_password_button"
             app:layout_constraintTop_toBottomOf="@id/imageViewQrCode"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-        <Button
-            android:id="@+id/buttonMyFriends"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/button_my_friends"
-            app:layout_constraintTop_toBottomOf="@id/buttonChangePassword"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

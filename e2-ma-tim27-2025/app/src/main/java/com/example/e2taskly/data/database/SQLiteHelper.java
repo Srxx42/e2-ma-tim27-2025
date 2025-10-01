@@ -53,7 +53,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "name TEXT NOT NULL, " +
                 "leader_id TEXT NOT NULL, " +
                 "member_ids TEXT, " +
-                "mission_started TEXT NOT NULL," +
+                "mission_status TEXT NOT NULL," +
                 "current_mission_id TEXT," +
                 "FOREIGN KEY(leader_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ")");
@@ -168,7 +168,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             db.execSQL(createOccurrenceTable);
         }
         if (oldVersion < 5){
-
 
             db.execSQL("CREATE TABLE IF NOT EXISTS " + T_ALLIANCES + " (" +
                     "id TEXT PRIMARY KEY, " +

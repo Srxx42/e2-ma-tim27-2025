@@ -34,11 +34,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseActivity {
     public static final String EXTRA_USER_ID = "com.example.e2taskly.USER_ID";
     private ImageView imageViewAvatar, imageViewQrCode;
     private TextView textViewUsername, textViewTitle, textViewLevel, textViewXp, textViewPower, textViewCoins,textViewXpProgress;
-    private Button buttonAddFriend, buttonRemoveFriend, buttonMyFriends;
+    private Button buttonAddFriend, buttonRemoveFriend;
     private Button buttonChangePassword;
     private ProgressBar progressBar,progressBarXp;
     private LinearLayout powerLayout,coinsLayout;
@@ -49,6 +49,7 @@ public class ProfileActivity extends AppCompatActivity {
     private User currentUserObject;
     private User profileUserObject;
     private SharedPreferencesUtil sharedPreferences;
+    private ImageView menuButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,8 +57,7 @@ public class ProfileActivity extends AppCompatActivity {
         sharedPreferences = new SharedPreferencesUtil(this);
         setContentView(R.layout.activity_profile);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setupToolbar();
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -99,21 +99,40 @@ public class ProfileActivity extends AppCompatActivity {
         textViewXpProgress = findViewById(R.id.textViewXpProgress);
         buttonAddFriend = findViewById(R.id.buttonAddFriend);
         buttonRemoveFriend = findViewById(R.id.buttonRemoveFriend);
-        buttonMyFriends = findViewById(R.id.buttonMyFriends);
         buttonChangePassword = findViewById(R.id.buttonChangePassword);
         progressBar = findViewById(R.id.progressBar);
         progressBarXp = findViewById(R.id.progressBarXp);
+        menuButton = findViewById(R.id.menuButton);
 
         powerLayout = findViewById(R.id.powerLayout);
         coinsLayout = findViewById(R.id.coinsLayout);
         textViewPower = findViewById(R.id.textViewPower);
         textViewCoins = findViewById(R.id.textViewCoins);
-        buttonMyFriends.setOnClickListener(v -> {
-            // Navigate to the FriendsListActivity
-            Intent intent = new Intent(ProfileActivity.this, FriendsListActivity.class);
-            // You can pass extra information like current user's ID if needed
+    }
+    @Override
+    protected int getMenuResourceId() {
+        return R.menu.profile_menu;
+    }
+
+    @Override
+    protected boolean handleMenuItemClick(MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_statistics) {
+            Intent intent = new Intent(ProfileActivity.this, StatisticsActivity.class);
             startActivity(intent);
-        });
+            return true;
+        } else if (itemId == R.id.action_my_friends) {
+            Intent intent = new Intent(ProfileActivity.this, FriendsListActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (itemId == R.id.action_logout) {
+            userService.logoutUser();
+            Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        }
+        return false;
     }
     private void loadUserProfile() {
         progressBar.setVisibility(View.VISIBLE);
@@ -161,16 +180,16 @@ public class ProfileActivity extends AppCompatActivity {
             powerLayout.setVisibility(View.VISIBLE);
             coinsLayout.setVisibility(View.VISIBLE);
             buttonChangePassword.setVisibility(View.VISIBLE);
+            menuButton.setVisibility(View.VISIBLE);
             textViewPower.setText(String.valueOf(user.getPowerPoints()));
             textViewCoins.setText(String.valueOf(user.getCoins()));
-            buttonMyFriends.setVisibility(View.VISIBLE);
             buttonAddFriend.setVisibility(View.GONE);
             buttonRemoveFriend.setVisibility(View.GONE);
         }else{
             powerLayout.setVisibility(View.GONE);
             coinsLayout.setVisibility(View.GONE);
             buttonChangePassword.setVisibility(View.GONE);
-            buttonMyFriends.setVisibility(View.GONE);
+            menuButton.setVisibility(View.GONE);
             updateFriendshipButtons();
         }
         displayProgress(user);
