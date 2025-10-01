@@ -170,7 +170,7 @@ public class StatisticsActivity extends AppCompatActivity {
             i++;
         }
 
-        LineDataSet dataSet = new LineDataSet(entries, "Prosečan XP težine");
+        LineDataSet dataSet = new LineDataSet(entries, "Average XP difficulty");
         dataSet.setValueTextColor(Color.WHITE);
         dataSet.setLineWidth(2f);
         dataSet.setValueTextSize(10f);
@@ -198,6 +198,8 @@ public class StatisticsActivity extends AppCompatActivity {
 
         LineDataSet dataSet = new LineDataSet(entries, "Earned XP");
         dataSet.setValueTextColor(Color.WHITE);
+        dataSet.setLineWidth(2f);
+        dataSet.setValueTextSize(10f);
 //        dataSet.setColor(ContextCompat.getColor(this, R.color.design_default_color_primary));
 //        dataSet.setValueTextColor(ContextCompat.getColor(this, R.color.design_default_color_secondary));
 

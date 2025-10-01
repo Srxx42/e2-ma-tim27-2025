@@ -34,7 +34,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseActivity {
     public static final String EXTRA_USER_ID = "com.example.e2taskly.USER_ID";
     private ImageView imageViewAvatar, imageViewQrCode;
     private TextView textViewUsername, textViewTitle, textViewLevel, textViewXp, textViewPower, textViewCoins,textViewXpProgress;
@@ -56,8 +56,7 @@ public class ProfileActivity extends AppCompatActivity {
         sharedPreferences = new SharedPreferencesUtil(this);
         setContentView(R.layout.activity_profile);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setupToolbar();
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -119,6 +118,25 @@ public class ProfileActivity extends AppCompatActivity {
             Intent intent = new Intent(ProfileActivity.this, StatisticsActivity.class);
             startActivity(intent);
         });
+    }
+    @Override
+    protected int getMenuResourceId() {
+        return R.menu.profile_menu; // Vraća ID vašeg menija
+    }
+
+    @Override
+    protected boolean handleMenuItemClick(MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_statistics) {
+            Intent intent = new Intent(ProfileActivity.this, StatisticsActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (itemId == R.id.action_my_friends) {
+            Intent intent = new Intent(ProfileActivity.this, FriendsListActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return false;
     }
     private void loadUserProfile() {
         progressBar.setVisibility(View.VISIBLE);
