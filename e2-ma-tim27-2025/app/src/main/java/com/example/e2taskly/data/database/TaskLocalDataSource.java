@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
+import android.util.Pair;
 
 import com.example.e2taskly.model.RepeatingTask;
 import com.example.e2taskly.model.RepeatingTaskOccurrence;
@@ -17,7 +18,10 @@ import com.example.e2taskly.model.enums.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TaskLocalDataSource {
@@ -334,7 +338,152 @@ public class TaskLocalDataSource {
         db.close();
         return occurrences;
     }
+//    Za Statistiku lazar
 
+    public Map<String, Integer> getTaskStatusCounts(String userId) {
+        Map<String, Integer> counts = new HashMap<>();
+        counts.put("created", 0);
+        counts.put("completed", 0);
+        counts.put("not_completed", 0);
+        counts.put("canceled", 0);
 
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        Cursor createdCursor = db.rawQuery("SELECT COUNT(*) FROM " + SQLiteHelper.T_TASKS + " WHERE creatorId = ?", new String[]{userId});
+        if (createdCursor.moveToFirst()) {
+            counts.put("created", createdCursor.getInt(0));
+        }
+        createdCursor.close();
+
+        String singleTaskQuery = "SELECT status, COUNT(*) FROM " + SQLiteHelper.T_TASKS +
+                " WHERE creatorId = ? AND taskType = 'SINGLE' GROUP BY status";
+        Cursor singleCursor = db.rawQuery(singleTaskQuery, new String[]{userId});
+        while (singleCursor.moveToNext()) {
+            TaskStatus status = TaskStatus.valueOf(singleCursor.getString(0));
+            int count = singleCursor.getInt(1);
+            updateCountsMap(counts, status, count);
+        }
+        singleCursor.close();
+
+        String repeatingTaskQuery = "SELECT ro.occurrenceStatus, COUNT(*) FROM " + SQLiteHelper.T_R_TASK_OCCURRENCE + " ro" +
+                " JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON ro.repeatingTaskId = rt.taskId" +
+                " JOIN " + SQLiteHelper.T_TASKS + " t ON rt.taskId = t.id" +
+                " WHERE t.creatorId = ? GROUP BY ro.occurrenceStatus";
+        Cursor repeatingCursor = db.rawQuery(repeatingTaskQuery, new String[]{userId});
+        while (repeatingCursor.moveToNext()) {
+            TaskStatus status = TaskStatus.valueOf(repeatingCursor.getString(0));
+            int count = repeatingCursor.getInt(1);
+            updateCountsMap(counts, status, count);
+        }
+        repeatingCursor.close();
+
+        db.close();
+        return counts;
+    }
+    private void updateCountsMap(Map<String, Integer> counts, TaskStatus status, int count) {
+        switch (status) {
+            case COMPLETED:
+                counts.put("completed", counts.get("completed") + count);
+                break;
+            case FAILED:
+                counts.put("not_completed", counts.get("not_completed") + count);
+                break;
+            case CANCELED:
+                counts.put("canceled", counts.get("canceled") + count);
+                break;
+        }
+    }
+    public List<Pair<String, String>> getAllTaskEventsForStreak(String userId) {
+        List<Pair<String, String>> events = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String query = "SELECT date, status FROM (" +
+                "SELECT st.taskDate as date, t.status as status FROM " + SQLiteHelper.T_TASKS + " t JOIN " + SQLiteHelper.T_SINGLE_TASKS + " st ON t.id = st.taskId WHERE t.creatorId = ? AND (t.status = ? OR t.status = ?) " +
+                "UNION ALL " +
+                "SELECT ro.occurrenceDate as date, ro.occurrenceStatus as status FROM " + SQLiteHelper.T_TASKS + " t JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON t.id = rt.taskId JOIN " + SQLiteHelper.T_R_TASK_OCCURRENCE + " ro ON rt.taskId = ro.repeatingTaskId WHERE t.creatorId = ? AND (ro.occurrenceStatus = ? OR ro.occurrenceStatus = ?)" +
+                ") AS all_events ORDER BY date ASC";
+
+        String completedStatus = TaskStatus.COMPLETED.name();
+        String failedStatus = TaskStatus.FAILED.name();
+
+        Cursor cursor = db.rawQuery(query, new String[]{userId, completedStatus, failedStatus, userId, completedStatus, failedStatus});
+        while (cursor.moveToNext()) {
+            events.add(new Pair<>(cursor.getString(0), cursor.getString(1)));
+        }
+        cursor.close();
+        db.close();
+        return events;
+    }
+
+    public Map<String, Integer> getCompletedTasksCountByCategory(String userId) {
+        Map<String, Integer> categoryCounts = new HashMap<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String completedStatus = TaskStatus.COMPLETED.toString();
+        String query = "SELECT c.name, COUNT(*) FROM " + SQLiteHelper.T_CATEGORIES + " c JOIN (" +
+                "SELECT categoryId FROM " + SQLiteHelper.T_TASKS + " t WHERE t.creatorId = ? AND t.taskType = 'SINGLE' AND t.status = ? " +
+                "UNION ALL " +
+                "SELECT t.categoryId FROM " + SQLiteHelper.T_TASKS + " t " +
+                "JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON t.id = rt.taskId " +
+                "JOIN " + SQLiteHelper.T_R_TASK_OCCURRENCE + " ro ON rt.taskId = ro.repeatingTaskId " +
+                "WHERE t.creatorId = ? AND ro.occurrenceStatus = ?" +
+                ") AS completed_tasks ON c.id = completed_tasks.categoryId GROUP BY c.name";
+
+        Cursor cursor = db.rawQuery(query, new String[]{userId, completedStatus, userId, completedStatus});
+        while (cursor.moveToNext()) {
+            categoryCounts.put(cursor.getString(0), cursor.getInt(1));
+        }
+        cursor.close();
+        db.close();
+        return categoryCounts;
+    }
+    public Map<String, Double> getAverageDifficultyXpOverTime(String userId) {
+        Map<String, Double> avgXpPerDay = new LinkedHashMap<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String completedStatus = TaskStatus.COMPLETED.name();
+
+        String difficultyCaseStatement = "CASE t.difficulty " +
+                "WHEN '" + Difficulty.EASY.name()   + "' THEN 1 " +
+                "WHEN '" + Difficulty.NORMAL.name() + "' THEN 3 " +
+                "WHEN '" + Difficulty.HARD.name()   + "' THEN 7 " +
+                "WHEN '" + Difficulty.EPIC.name()   + "' THEN 20 " +
+                "ELSE 0 END";
+
+        String query = "SELECT date, AVG(difficulty_xp) FROM (" +
+                "SELECT st.taskDate as date, " + difficultyCaseStatement + " as difficulty_xp FROM " + SQLiteHelper.T_TASKS + " t JOIN " + SQLiteHelper.T_SINGLE_TASKS + " st ON t.id = st.taskId WHERE t.creatorId = ? AND t.status = ? " +
+                "UNION ALL " +
+                "SELECT ro.occurrenceDate as date, " + difficultyCaseStatement + " as difficulty_xp FROM " + SQLiteHelper.T_TASKS + " t JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON t.id = rt.taskId JOIN " + SQLiteHelper.T_R_TASK_OCCURRENCE + " ro ON rt.taskId = ro.repeatingTaskId WHERE t.creatorId = ? AND ro.occurrenceStatus = ?" +
+                ") AS xp_data GROUP BY date ORDER BY date ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{userId, completedStatus, userId, completedStatus});
+        while (cursor.moveToNext()) {
+            avgXpPerDay.put(cursor.getString(0), cursor.getDouble(1));
+        }
+        cursor.close();
+        db.close();
+
+        Log.d("Statistics_AvgDifficulty", "Prosečna težina po danu (prilagođeno): " + avgXpPerDay.toString());
+        return avgXpPerDay;
+    }
+    public Map<String, Integer> getXpEarnedLast7Days(String userId) {
+        Map<String, Integer> xpPerDay = new LinkedHashMap<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String sevenDaysAgo = LocalDate.now().minusDays(7).toString();
+        String completedStatus = TaskStatus.COMPLETED.name();
+
+        String query = "SELECT date, SUM(valueXP) FROM (" +
+                "SELECT st.taskDate as date, t.valueXP FROM " + SQLiteHelper.T_TASKS + " t JOIN " + SQLiteHelper.T_SINGLE_TASKS + " st ON t.id = st.taskId WHERE t.creatorId = ? AND t.status = ? AND st.taskDate >= ? " +
+                "UNION ALL " +
+                "SELECT ro.occurrenceDate as date, t.valueXP FROM " + SQLiteHelper.T_TASKS + " t JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON t.id = rt.taskId JOIN " + SQLiteHelper.T_R_TASK_OCCURRENCE + " ro ON rt.taskId = ro.repeatingTaskId WHERE t.creatorId = ? AND ro.occurrenceStatus = ? AND ro.occurrenceDate >= ?" +
+                ") AS xp_data GROUP BY date ORDER BY date ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{userId, completedStatus, sevenDaysAgo, userId, completedStatus, sevenDaysAgo});
+        while (cursor.moveToNext()) {
+            xpPerDay.put(cursor.getString(0), cursor.getInt(1));
+        }
+        cursor.close();
+        db.close();
+        Log.e("Test",xpPerDay.toString());
+        return xpPerDay;
+    }
 
 }

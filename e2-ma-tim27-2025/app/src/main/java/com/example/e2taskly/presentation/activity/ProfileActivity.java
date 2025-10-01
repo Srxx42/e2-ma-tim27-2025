@@ -39,7 +39,7 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageView imageViewAvatar, imageViewQrCode;
     private TextView textViewUsername, textViewTitle, textViewLevel, textViewXp, textViewPower, textViewCoins,textViewXpProgress;
     private Button buttonAddFriend, buttonRemoveFriend, buttonMyFriends;
-    private Button buttonChangePassword;
+    private Button buttonChangePassword,buttonStatistics;;
     private ProgressBar progressBar,progressBarXp;
     private LinearLayout powerLayout,coinsLayout;
     private UserService userService;
@@ -101,6 +101,7 @@ public class ProfileActivity extends AppCompatActivity {
         buttonRemoveFriend = findViewById(R.id.buttonRemoveFriend);
         buttonMyFriends = findViewById(R.id.buttonMyFriends);
         buttonChangePassword = findViewById(R.id.buttonChangePassword);
+        buttonStatistics = findViewById(R.id.buttonStatistics);
         progressBar = findViewById(R.id.progressBar);
         progressBarXp = findViewById(R.id.progressBarXp);
 
@@ -112,6 +113,10 @@ public class ProfileActivity extends AppCompatActivity {
             // Navigate to the FriendsListActivity
             Intent intent = new Intent(ProfileActivity.this, FriendsListActivity.class);
             // You can pass extra information like current user's ID if needed
+            startActivity(intent);
+        });
+        buttonStatistics.setOnClickListener(v -> {
+            Intent intent = new Intent(ProfileActivity.this, StatisticsActivity.class);
             startActivity(intent);
         });
     }
@@ -164,6 +169,7 @@ public class ProfileActivity extends AppCompatActivity {
             textViewPower.setText(String.valueOf(user.getPowerPoints()));
             textViewCoins.setText(String.valueOf(user.getCoins()));
             buttonMyFriends.setVisibility(View.VISIBLE);
+            buttonStatistics.setVisibility(View.VISIBLE);
             buttonAddFriend.setVisibility(View.GONE);
             buttonRemoveFriend.setVisibility(View.GONE);
         }else{
@@ -171,6 +177,8 @@ public class ProfileActivity extends AppCompatActivity {
             coinsLayout.setVisibility(View.GONE);
             buttonChangePassword.setVisibility(View.GONE);
             buttonMyFriends.setVisibility(View.GONE);
+            buttonStatistics.setVisibility(View.GONE);
+
             updateFriendshipButtons();
         }
         displayProgress(user);

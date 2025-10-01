@@ -257,16 +257,28 @@
             android:text="@string/profile_change_password_button"
             app:layout_constraintTop_toBottomOf="@id/imageViewQrCode"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone"/>
+        <Button
+            android:id="@+id/buttonStatistics"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Statistics"
+            app:layout_constraintTop_toBottomOf="@id/buttonChangePassword"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone"/>
         <Button
             android:id="@+id/buttonMyFriends"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/button_my_friends"
-            app:layout_constraintTop_toBottomOf="@id/buttonChangePassword"
+            app:layout_constraintTop_toBottomOf="@id/buttonStatistics"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

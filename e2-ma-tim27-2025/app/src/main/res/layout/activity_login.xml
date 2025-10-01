@@ -49,6 +49,7 @@
             android:id="@+id/editTextEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
             android:background="#80FFFFFF"
             android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -72,6 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#80FFFFFF"
+            android:textColor="@color/black"
             android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 

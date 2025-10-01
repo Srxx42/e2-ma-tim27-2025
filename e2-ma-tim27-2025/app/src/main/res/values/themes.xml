@@ -6,4 +6,13 @@
     </style>
 
     <style name="Theme.E2Taskly" parent="Base.Theme.E2Taskly" />
+
+    <style name="Theme.E2Taskly.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.E2Taskly.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.E2Taskly.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>
