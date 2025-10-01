@@ -11,4 +11,10 @@
         android:icon="@drawable/ic_friends"
         android:title="@string/button_my_friends"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="@string/button_logout"
+        app:showAsAction="ifRoom"
+        />
 </menu>

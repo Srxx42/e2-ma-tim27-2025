@@ -9,6 +9,8 @@ import android.text.TextUtils;
 import com.example.e2taskly.model.User;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 public class UserLocalDataSource {
@@ -177,5 +179,54 @@ public class UserLocalDataSource {
         values.put("fcm_token", token);
         db.update(SQLiteHelper.T_USERS, values, "id = ?", new String[]{uid});
         db.close();
+    }
+    public User getUser(String uid) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(SQLiteHelper.T_USERS,
+                null, // Sve kolone
+                "id = ?",
+                new String[]{uid},
+                null, null, null);
+
+        User user = null;
+        if (cursor != null && cursor.moveToFirst()) {
+            user = new User();
+            user.setUid(cursor.getString(cursor.getColumnIndexOrThrow("id")));
+            user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow("email")));
+            user.setUsername(cursor.getString(cursor.getColumnIndexOrThrow("username")));
+            user.setAvatar(cursor.getString(cursor.getColumnIndexOrThrow("avatar")));
+            user.setLevel(cursor.getInt(cursor.getColumnIndexOrThrow("level")));
+            user.setXp(cursor.getInt(cursor.getColumnIndexOrThrow("xp")));
+            user.setActivated(cursor.getInt(cursor.getColumnIndexOrThrow("is_activated")) == 1);
+            user.setRegistrationTime(new Date(cursor.getLong(cursor.getColumnIndexOrThrow("registration_time"))));
+            user.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
+            user.setPowerPoints(cursor.getInt(cursor.getColumnIndexOrThrow("power_points")));
+            user.setCoins(cursor.getInt(cursor.getColumnIndexOrThrow("coins")));
+
+            String badgesStr = cursor.getString(cursor.getColumnIndexOrThrow("badges"));
+            if (badgesStr != null && !badgesStr.isEmpty()) {
+                user.setBadges(new ArrayList<>(Arrays.asList(badgesStr.split(","))));
+            }
+
+            String equipmentStr = cursor.getString(cursor.getColumnIndexOrThrow("equipment"));
+            if (equipmentStr != null && !equipmentStr.isEmpty()) {
+                user.setEquipment(new ArrayList<>(Arrays.asList(equipmentStr.split(","))));
+            }
+
+            user.setActiveDaysStreak(cursor.getInt(cursor.getColumnIndexOrThrow("active_days_streak")));
+            user.setLastActivityDate(new Date(cursor.getLong(cursor.getColumnIndexOrThrow("last_activity_date"))));
+
+            String friendIdsStr = cursor.getString(cursor.getColumnIndexOrThrow("friends_ids"));
+            if (friendIdsStr != null && !friendIdsStr.isEmpty()) {
+                user.setFriendIds(new ArrayList<>(Arrays.asList(friendIdsStr.split(","))));
+            }
+
+            user.setAllianceId(cursor.getString(cursor.getColumnIndexOrThrow("alliance_id")));
+            user.setFcmToken(cursor.getString(cursor.getColumnIndexOrThrow("fcm_token")));
+
+            cursor.close();
+        }
+        db.close();
+        return user;
     }
 }

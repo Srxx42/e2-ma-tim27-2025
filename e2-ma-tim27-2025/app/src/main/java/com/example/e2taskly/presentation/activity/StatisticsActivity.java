@@ -99,7 +99,7 @@ public class StatisticsActivity extends AppCompatActivity {
                 setupWeeklyXpChart(weeklyXp);
             });
 
-            userService.getUserProfile(currentUserId).addOnSuccessListener(user -> {
+            userService.getUserLocallyFirst(currentUserId).addOnSuccessListener(user -> {
                 if (user != null) {
                     textViewActiveDays.setText(user.getActiveDaysStreak() + " days");
                 }
