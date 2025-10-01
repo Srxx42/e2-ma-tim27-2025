@@ -333,6 +333,36 @@ public class TaskLocalDataSource {
         return newRowId != -1;
     }
 
+    public boolean updateOccurrence(RepeatingTaskOccurrence occurrence){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int rowsAffected  = -1;
+
+        db.beginTransaction();
+        try{
+            ContentValues occurrenceValues = new ContentValues();
+            occurrenceValues.put("repeatingTaskId", occurrence.getRepeatingTaskId());
+            occurrenceValues.put("occurrenceStatus", occurrence.getOccurrenceStatus().name());
+            occurrenceValues.put("occurrenceDate", occurrence.getOccurrenceDate().toString());
+            rowsAffected = db.update(SQLiteHelper.T_R_TASK_OCCURRENCE,
+                    occurrenceValues,
+                    "occurrenceId = ?",
+                    new String[]{String.valueOf(occurrence.getId())});
+
+            if (rowsAffected > 0) {
+                db.setTransactionSuccessful(); // Potvrdi promene
+                Log.d("DB_SUCCESS", "Occurrence updated successfully for ID: " + occurrence.getId());
+            }
+
+        } catch (Exception e) {
+            Log.e("DB_ERROR", "Failed to insert occurrence: " + e.getMessage());
+            rowsAffected = -1;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+        return rowsAffected != -1;
+    }
+
     public List<RepeatingTaskOccurrence> getAllTaskOccurrences(int taskId){
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<RepeatingTaskOccurrence> occurrences = new ArrayList<>();
@@ -405,6 +435,172 @@ public class TaskLocalDataSource {
             db.close();
         }
         return success;
+    }
+
+    public boolean pauseAllOccurrences(int taskId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        boolean success = false;
+        int rowsAffected = 0;
+
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("occurrenceStatus", TaskStatus.PAUSED.toString());
+
+            String whereClause = "repeatingTaskId = ? AND occurrenceStatus = ?";
+
+            String[] whereArgs = {
+                    String.valueOf(taskId),
+                    TaskStatus.ACTIVE.toString()
+            };
+
+            rowsAffected = db.update(
+                    SQLiteHelper.T_R_TASK_OCCURRENCE,
+                    values,
+                    whereClause,
+                    whereArgs
+            );
+
+            db.setTransactionSuccessful();
+            success = true;
+
+        } catch (Exception e) {
+            Log.e("DB_ERROR", "Greška pri pauziranju taskova za task ID: " + taskId, e);
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+
+        Log.d("DB_UPDATE", "Pauzirano " + rowsAffected + " aktivnih taskova.");
+        return success;
+    }
+
+    public boolean unpauseAllOccurrences(int taskId){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        boolean success = false;
+        int rowsAffected = 0;
+
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("occurrenceStatus", TaskStatus.ACTIVE.toString());
+
+            String whereClause = "repeatingTaskId = ? AND occurrenceStatus = ?";
+
+            String[] whereArgs = {
+                    String.valueOf(taskId),
+                    TaskStatus.PAUSED.toString()
+            };
+
+            rowsAffected = db.update(
+                    SQLiteHelper.T_R_TASK_OCCURRENCE,
+                    values,
+                    whereClause,
+                    whereArgs
+            );
+
+            db.setTransactionSuccessful();
+            success = true;
+
+        } catch (Exception e) {
+            Log.e("DB_ERROR", "Greška pri pauziranju taskova za task ID: " + taskId, e);
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+
+        Log.d("DB_UPDATE", "Pauzirano " + rowsAffected + " aktivnih taskova.");
+        return success;
+    }
+
+
+
+
+
+    //KOD ZA WORKER-a
+    // Metoda koja vraća SVE single taskove
+    public List<SingleTask> getAllSingleTasksForAllUsers() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<SingleTask> tasks = new ArrayList<>();
+        TaskCategoryLocalDataSource categoryDataSource = new TaskCategoryLocalDataSource(context);
+
+        // Upit je isti, samo bez WHERE dela
+        String query = "SELECT * FROM " + SQLiteHelper.T_TASKS + " t " +
+                "INNER JOIN " + SQLiteHelper.T_SINGLE_TASKS + " st ON t.id = st.taskId";
+
+        Cursor cursor = db.rawQuery(query, null); // Nema selectionArgs
+
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    // ... (ceo kod za parsiranje kursora je isti kao u tvojoj getAllSingleTasks metodi)
+                    TaskCategory category = categoryDataSource.getCategoryById(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
+                    SingleTask task = new SingleTask(
+                            cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("creatorId")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("description")),
+                            category,
+                            TaskType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("taskType"))),
+                            TaskStatus.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("status"))),
+                            Importance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))),
+                            Difficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("valueXP")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("deleted")) == 1,
+                            LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("taskDate")))
+                    );
+                    tasks.add(task);
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+            db.close();
+        }
+        return tasks;
+    }
+
+    // Metoda koja vraća SVE repeating taskove
+    public List<RepeatingTask> getAllRepeatingTasksForAllUsers() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<RepeatingTask> tasks = new ArrayList<>();
+        TaskCategoryLocalDataSource categoryDataSource = new TaskCategoryLocalDataSource(context);
+
+        // Upit je isti, samo bez WHERE dela
+        String query = "SELECT * FROM " + SQLiteHelper.T_TASKS + " t " +
+                "INNER JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON t.id = rt.taskId";
+
+        Cursor cursor = db.rawQuery(query, null); // Nema selectionArgs
+
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    // ... (ceo kod za parsiranje kursora je isti kao u tvojoj getAllRepeatingTasks metodi)
+                    TaskCategory category = categoryDataSource.getCategoryById(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
+                    RepeatingTask task = new RepeatingTask(
+                            cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("creatorId")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("description")),
+                            category,
+                            TaskType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("taskType"))),
+                            TaskStatus.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("status"))),
+                            Importance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))),
+                            Difficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("valueXP")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("deleted")) == 1,
+                            RepeatingType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("repeatingType"))),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("interval")),
+                            LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("startingDate"))),
+                            LocalDate.parse(cursor.getString(cursor.getColumnIndexOrThrow("finishingDate")))
+                    );
+                    tasks.add(task);
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+            db.close();
+        }
+        return tasks;
     }
 
 

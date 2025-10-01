@@ -9,12 +9,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.e2taskly.R;
-import com.example.e2taskly.adapters.CategoryListAdapter;
-import com.example.e2taskly.adapters.TaskListAdapter;
+import com.example.e2taskly.presentation.adapter.TaskListAdapter;
 import com.example.e2taskly.model.RepeatingTask;
 import com.example.e2taskly.model.SingleTask;
-import com.example.e2taskly.model.enums.TaskType;
-import com.example.e2taskly.service.TaskCategoryService;
 import com.example.e2taskly.service.TaskService;
 import com.example.e2taskly.service.UserService;
 

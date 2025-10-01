@@ -5,15 +5,23 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
+import com.example.e2taskly.workers.TaskStatusWorker;
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private Button buttonLogout;
@@ -40,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
+
+        scheduleDailyTaskStatusCheck();
 
         sharedPreferences = new SharedPreferencesUtil(this);
         buttonLogout = findViewById(R.id.buttonLogout);
@@ -113,5 +123,17 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("MainActivity", "Failed to get user profile for streak check.", task.getException());
                     }
                 });
+    }
+
+    private void scheduleDailyTaskStatusCheck() {
+        PeriodicWorkRequest dailyWorkRequest =
+                new PeriodicWorkRequest.Builder(TaskStatusWorker.class, 1, TimeUnit.DAYS)
+                        .build();
+
+        WorkManager.getInstance(getApplicationContext()).enqueueUniquePeriodicWork(
+                "DailyTaskStatusCheck", // Jedinstveno ime za ovaj posao
+                ExistingPeriodicWorkPolicy.KEEP,
+                dailyWorkRequest
+        );
     }
 }

@@ -1,4 +1,4 @@
-package com.example.e2taskly.adapters;
+package com.example.e2taskly.presentation.adapter;
 
 import static androidx.core.content.ContextCompat.getDrawable;
 
@@ -20,11 +20,8 @@ import com.example.e2taskly.R;
 import com.example.e2taskly.model.RepeatingTask;
 import com.example.e2taskly.model.SingleTask;
 import com.example.e2taskly.model.Task;
-import com.example.e2taskly.model.TaskCategory;
 import com.example.e2taskly.model.enums.TaskType;
-import com.example.e2taskly.presentation.activity.ManageCategoryActivity;
 import com.example.e2taskly.presentation.activity.ShowTaskInfoActivity;
-import com.example.e2taskly.service.TaskService;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;

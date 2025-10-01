@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.e2taskly.R;
-import com.example.e2taskly.adapters.CategoryListAdapter;
+import com.example.e2taskly.presentation.adapter.CategoryListAdapter;
 import com.example.e2taskly.model.TaskCategory;
 import com.example.e2taskly.service.TaskCategoryService;
 

@@ -3,15 +3,13 @@ package com.example.e2taskly.presentation.activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.CalendarView;
 import android.widget.ListView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.e2taskly.R;
-import com.example.e2taskly.adapters.TaskListAdapter;
+import com.example.e2taskly.presentation.adapter.TaskListAdapter;
 import com.example.e2taskly.decorator.EventDecorator;
 import com.example.e2taskly.decorator.MultiLineSpan;
 import com.example.e2taskly.model.RepeatingTask;
@@ -19,7 +17,6 @@ import com.example.e2taskly.model.RepeatingTaskOccurrence;
 import com.example.e2taskly.model.SingleTask;
 import com.example.e2taskly.model.Task;
 import com.example.e2taskly.service.TaskService;
-import com.example.e2taskly.service.UserService;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 

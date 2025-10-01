@@ -56,5 +56,25 @@ public class TaskRepository {
      return localDataSource.deleteAllOccurrences(repeatingTaskId);
     }
 
+    public boolean updateOccurrence(RepeatingTaskOccurrence occurrence){
+        return localDataSource.updateOccurrence(occurrence);
+    }
+
+    public boolean pauseAllOccurrences(int taskId){
+        return localDataSource.pauseAllOccurrences(taskId);
+    }
+
+    public boolean unpauseAllOccurrences(int taskId){
+        return localDataSource.unpauseAllOccurrences(taskId);
+    }
+
+    public List<SingleTask> getAllSingleTasksForAllUsers() {
+        return localDataSource.getAllSingleTasksForAllUsers();
+    }
+
+    public List<RepeatingTask> getAllRepeatingTasksForAllUsers() {
+        return localDataSource.getAllRepeatingTasksForAllUsers();
+    }
+
 
 }

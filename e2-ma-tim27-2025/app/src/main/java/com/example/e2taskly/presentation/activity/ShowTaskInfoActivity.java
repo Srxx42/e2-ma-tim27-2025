@@ -3,17 +3,20 @@ package com.example.e2taskly.presentation.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.example.e2taskly.R;
+import com.example.e2taskly.presentation.adapter.OccurrenceListAdapter;
+import com.example.e2taskly.presentation.adapter.OnOccurrenceUpdateListener;
 import com.example.e2taskly.model.RepeatingTask;
 import com.example.e2taskly.model.RepeatingTaskOccurrence;
 import com.example.e2taskly.model.SingleTask;
@@ -22,13 +25,17 @@ import com.example.e2taskly.model.enums.RepeatingType;
 import com.example.e2taskly.model.enums.TaskStatus;
 import com.example.e2taskly.model.enums.TaskType;
 import com.example.e2taskly.service.TaskService;
+import com.example.e2taskly.service.UserService;
+import com.example.e2taskly.util.SharedPreferencesUtil;
+import com.example.e2taskly.util.XpCounterManager;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ShowTaskInfoActivity extends AppCompatActivity {
+public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurrenceUpdateListener {
 
     // UI Komponente
     private TextView tvTaskName, tvCategory, tvDifficulty, tvImportance,tvTotalXP, tvDescription, tvStatus;
@@ -37,7 +44,12 @@ public class ShowTaskInfoActivity extends AppCompatActivity {
     private Button btnComplete, btnPause, btnCancel;
     private LinearLayout layoutSingleInfo, layoutRepeatingInfo;
     private TaskService taskService;
+
+    private UserService userService;
     private Task currentTask;
+    private ListView rTaskOccurrencesListView;
+    private OccurrenceListAdapter occurrencesListAdapter;
+    private SharedPreferencesUtil sharedPreferencesUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +57,9 @@ public class ShowTaskInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_task_info);
 
         taskService = new TaskService(this);
+        userService = new UserService(this);
+
+        sharedPreferencesUtil = new SharedPreferencesUtil(this);
 
         initViews();
 
@@ -99,6 +114,8 @@ public class ShowTaskInfoActivity extends AppCompatActivity {
         tvStartDate = findViewById(R.id.tvStartDate);
         tvEndDate = findViewById(R.id.tvEndDate);
         tvRepeatInfo = findViewById(R.id.tvRepeatInfo);
+        rTaskOccurrencesListView = findViewById(R.id.occurrencesListView);
+
 
 
         btnEditTask = findViewById(R.id.btnEditTask);
@@ -151,6 +168,11 @@ public class ShowTaskInfoActivity extends AppCompatActivity {
             }
             String repeatText = String.format("Every %d %s", repeatingTask.getInterval(), type);
             tvRepeatInfo.setText(repeatText);
+
+            List<RepeatingTaskOccurrence> occurrences = taskService.getAllTaskOccurrences(repeatingTask.getId());
+
+            occurrencesListAdapter = new OccurrenceListAdapter(this,new ArrayList<>(occurrences),this);
+            rTaskOccurrencesListView.setAdapter(occurrencesListAdapter);
         }
 
         setupButtonsVisibility();
@@ -205,6 +227,19 @@ public class ShowTaskInfoActivity extends AppCompatActivity {
         btnComplete.setOnClickListener(v -> {
             Toast.makeText(this, "Complete clicked", Toast.LENGTH_SHORT).show();
             if(currentTask.getType().equals(TaskType.SINGLE)) {
+
+                String currentUserId = sharedPreferencesUtil.getActiveUserUid();
+                XpCounterManager xpManager = new XpCounterManager(this, currentUserId);
+
+                int xpToAward = xpManager.calculateXpToAward(currentTask);
+
+                if (xpToAward > 0) {
+                    userService.addXpToUser(currentTask.getCreatorId(), xpToAward);
+                    xpManager.recordXpAward(currentTask); // Zabeleži da je XP dodeljen
+                    Toast.makeText(this, "Dodeljeno " + xpToAward + " XP poena!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Dostignut je limit za XP za ovu vrstu zadatka.", Toast.LENGTH_LONG).show();
+                }
                 currentTask.setStatus(TaskStatus.COMPLETED);
                 taskService.updateTask(currentTask);
                 updateStatusUI(TaskStatus.COMPLETED);
@@ -214,22 +249,28 @@ public class ShowTaskInfoActivity extends AppCompatActivity {
 
         btnPause.setOnClickListener(v -> {
             if (currentTask.getStatus().equals(TaskStatus.PAUSED)) {
-                if(currentTask.getType().equals(TaskType.SINGLE)) {
-                    Toast.makeText(this, "Task Unpaused", Toast.LENGTH_SHORT).show();
-                    currentTask.setStatus(TaskStatus.ACTIVE);
-                    taskService.updateTask(currentTask);
-                    updateStatusUI(TaskStatus.ACTIVE);
-                    setupButtonsVisibility();
+                currentTask.setStatus(TaskStatus.ACTIVE);
+                taskService.updateTask(currentTask);
+
+                if(currentTask.getType().equals(TaskType.REPEATING)) {
+                    taskService.unpauseAllOccurrences(currentTask.getId());
                 }
 
+                updateStatusUI(TaskStatus.ACTIVE);
+                setupButtonsVisibility();
+                populateUI();
+                Toast.makeText(this, "Task Unpaused", Toast.LENGTH_SHORT).show();
+
             } else if (currentTask.getStatus().equals(TaskStatus.ACTIVE)) {
-                if(currentTask.getType().equals(TaskType.SINGLE)) {
-                    Toast.makeText(this, "Task Paused", Toast.LENGTH_SHORT).show();
-                    currentTask.setStatus(TaskStatus.PAUSED);
-                    taskService.updateTask(currentTask);
-                    updateStatusUI(TaskStatus.PAUSED);
-                    setupButtonsVisibility();
+                currentTask.setStatus(TaskStatus.PAUSED);
+                taskService.updateTask(currentTask);
+                if(currentTask.getType().equals(TaskType.REPEATING)) {
+                    taskService.pauseAllOccurrences(currentTask.getId());
                 }
+                updateStatusUI(TaskStatus.PAUSED);
+                setupButtonsVisibility();
+                populateUI();
+                Toast.makeText(this, "Task Paused", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -301,12 +342,19 @@ public class ShowTaskInfoActivity extends AppCompatActivity {
                 break;
 
             case ACTIVE:
+                if(currentTask.getType().equals(TaskType.REPEATING)){
+                    btnEditTask.setVisibility(View.VISIBLE);
+                    btnDeleteTask.setVisibility(View.VISIBLE);
+                    btnComplete.setVisibility(View.GONE);
+                    btnPause.setVisibility(View.VISIBLE);
+                    btnCancel.setVisibility(View.GONE);
+                }else{
                 btnEditTask.setVisibility(View.VISIBLE);
                 btnDeleteTask.setVisibility(View.VISIBLE);
                 btnComplete.setVisibility(View.VISIBLE);
                 btnPause.setVisibility(View.VISIBLE);
                 btnCancel.setVisibility(View.VISIBLE);
-
+                }
 
                 btnPause.setText("Pause");
                 break;
@@ -330,5 +378,16 @@ public class ShowTaskInfoActivity extends AppCompatActivity {
                 btnCancel.setVisibility(View.GONE);
                 break;
         }
+    }
+
+    @Override
+    public void onOccurrenceUpdated() {
+
+        int taskId = currentTask.getId();
+        currentTask = taskService.getTaskById(taskId);
+
+        populateUI();
+
+        Log.d("TaskUpdate", "UI je osvežen nakon promene occurrence-a.");
     }
 }

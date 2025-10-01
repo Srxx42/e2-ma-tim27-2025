@@ -99,4 +99,24 @@ public class TaskService {
         return taskRepository.deleteAllOccurrences(repeatingTaskId);
     }
 
+    public boolean updateOccurrence(RepeatingTaskOccurrence occurrence){
+        return taskRepository.updateOccurrence(occurrence);
+    }
+
+    public boolean pauseAllOccurrences(int taskId){
+        return taskRepository.pauseAllOccurrences(taskId);
+    }
+
+    public boolean unpauseAllOccurrences(int taskId){
+        return taskRepository.unpauseAllOccurrences(taskId);
+    }
+
+    public List<SingleTask> getAllSingleTasksForAllUsers() {
+        return taskRepository.getAllSingleTasksForAllUsers();
+    }
+
+    public List<RepeatingTask> getAllRepeatingTasksForAllUsers() {
+        return taskRepository.getAllRepeatingTasksForAllUsers();
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.example.e2taskly.adapters;
+package com.example.e2taskly.presentation.adapter;
 
 
 
