@@ -5,7 +5,9 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.activity.FriendsListActivity">
+    tools:context=".presentation.activity.FriendsListActivity"
+    android:fitsSystemWindows="true"
+    android:background="@drawable/background7">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"

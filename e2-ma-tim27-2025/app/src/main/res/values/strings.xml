@@ -60,4 +60,13 @@
     <string name="chat">Chat</string>
     <string name="leave_alliance">Leave Alliance</string>
     <string name="disband_alliance">Disband Alliance</string>
+    <string name="statistics">Statistic</string>
+    <string name="active_days_in_streak">Active days in streak</string>
+    <string name="longest_streak_of_completed_tasks">Longest streak of completed tasks</string>
+    <string name="task_overview">Task overview</string>
+    <string name="completed_tasks_by_category">Completed tasks by category</string>
+    <string name="average_task_difficulty">Average task difficulty</string>
+    <string name="xp_earned_last_7_days">XP earned in the last 7 days</string>
+    <string name="button_logout">Logout</string>
+    <string name="menu_profile">Profile</string>
 </resources>

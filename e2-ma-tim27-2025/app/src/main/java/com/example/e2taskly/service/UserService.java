@@ -302,4 +302,10 @@ public class UserService {
     public Task<Void> updateUserFcmToken(String uid, String token) {
         return userRepository.updateUserFcmToken(uid, token);
     }
+    public Task<User> getUserLocallyFirst(String uid){
+        if (uid == null || uid.isEmpty()) {
+            return Tasks.forException(new Exception("No user is currently logged in."));
+        }
+        return userRepository.getUserLocallyFirst(uid);
+    }
 }
