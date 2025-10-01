@@ -455,6 +455,9 @@ public class TaskLocalDataSource {
                 "SELECT ro.occurrenceDate as date, ro.occurrenceStatus as status FROM " + SQLiteHelper.T_TASKS + " t JOIN " + SQLiteHelper.T_REPEATING_TASKS + " rt ON t.id = rt.taskId JOIN " + SQLiteHelper.T_R_TASK_OCCURRENCE + " ro ON rt.taskId = ro.repeatingTaskId WHERE t.creatorId = ? AND (ro.occurrenceStatus = ? OR ro.occurrenceStatus = ?)" +
                 ") AS all_events ORDER BY date ASC";
 
+        String completedStatus = TaskStatus.COMPLETED.name();
+        String failedStatus = TaskStatus.FAILED.name();
+
         Cursor cursor = db.rawQuery(query, new String[]{userId, completedStatus, failedStatus, userId, completedStatus, failedStatus});
         while (cursor.moveToNext()) {
             events.add(new Pair<>(cursor.getString(0), cursor.getString(1)));
