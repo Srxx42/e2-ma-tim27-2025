@@ -7,20 +7,32 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
+import com.example.e2taskly.workers.TaskStatusWorker;
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends BaseActivity {
 
     private Button buttonAddTask;
     private ImageView menuButton;
+
+    private Button buttonShowTaskList;
+
+    private Button buttonShowTaskCalendar;
     private UserService userService;
     private SharedPreferencesUtil sharedPreferences;
 
@@ -37,8 +49,14 @@ public class MainActivity extends BaseActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
+
+        scheduleDailyTaskStatusCheck();
+
         sharedPreferences = new SharedPreferencesUtil(this);
         buttonAddTask = findViewById(R.id.addTask);
+        buttonShowTaskList = findViewById(R.id.showTaskList);
+        buttonShowTaskCalendar = findViewById(R.id.showTaskCalendar);
+
         menuButton = findViewById(R.id.menuButton);
         Button categoryAdd = findViewById(R.id.categoryAdd);
 
@@ -53,10 +71,20 @@ public class MainActivity extends BaseActivity {
             Intent intent = new Intent(MainActivity.this, ShowCategoriesActivity.class);
             startActivity(intent);
         });
-        
+
 
         buttonAddTask.setOnClickListener(v ->{
             Intent intent = new Intent(MainActivity.this,ManageTaskActivity.class);
+            startActivity(intent);
+        });
+
+        buttonShowTaskList.setOnClickListener(v ->{
+            Intent intent = new Intent(MainActivity.this,ShowTaskListActivity.class);
+            startActivity(intent);
+        });
+
+        buttonShowTaskCalendar.setOnClickListener(v ->{
+            Intent intent = new Intent(MainActivity.this,ShowTaskCalendarActivity.class);
             startActivity(intent);
         });
 
@@ -97,5 +125,17 @@ public class MainActivity extends BaseActivity {
                         Log.e("MainActivity", "Failed to get user profile for streak check.", task.getException());
                     }
                 });
+    }
+
+    private void scheduleDailyTaskStatusCheck() {
+        PeriodicWorkRequest dailyWorkRequest =
+                new PeriodicWorkRequest.Builder(TaskStatusWorker.class, 1, TimeUnit.DAYS)
+                        .build();
+
+        WorkManager.getInstance(getApplicationContext()).enqueueUniquePeriodicWork(
+                "DailyTaskStatusCheck", // Jedinstveno ime za ovaj posao
+                ExistingPeriodicWorkPolicy.KEEP,
+                dailyWorkRequest
+        );
     }
 }

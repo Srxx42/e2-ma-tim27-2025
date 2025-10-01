@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/occurrenceItem"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:orientation="horizontal"
+    android:background="@drawable/papirus"
+    android:alpha="0.8"
+    android:padding="8dp"
+    android:gravity="center_vertical">
+
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/occurrenceDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3pt"
+            android:text="10/03/2025"
+            android:textSize="8pt"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/occurrenceStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3pt"
+            android:text="OccurrStatus"
+            android:textSize="7pt"
+            android:textColor="#212121"/>
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/completeButton"
+        android:layout_width="20pt"
+        android:layout_height="20pt"
+        android:layout_marginEnd="28dp"
+        android:background="@drawable/green_circle_check"
+        android:contentDescription="complete"
+        android:scaleType="centerCrop"/>
+
+    <ImageButton
+        android:id="@+id/cancelButton"
+        android:layout_width="20pt"
+        android:layout_height="20pt"
+        android:background="@drawable/red_circle_x"
+        android:contentDescription="cancel"
+        android:scaleType="center"/>
+
+</LinearLayout>

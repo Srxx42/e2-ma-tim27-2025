@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/forest"
+    android:background="@drawable/background_forest"
     tools:context=".presentation.activity.RegistrationActivity">
 
 

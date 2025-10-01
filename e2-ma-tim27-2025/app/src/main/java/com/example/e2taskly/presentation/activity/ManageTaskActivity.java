@@ -23,7 +23,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.e2taskly.R;
-import com.example.e2taskly.adapters.CategoryListAdapter;
 import com.example.e2taskly.model.RepeatingTask;
 import com.example.e2taskly.model.SingleTask;
 import com.example.e2taskly.model.Task;
@@ -37,8 +36,6 @@ import com.example.e2taskly.service.TaskCategoryService;
 import com.example.e2taskly.service.TaskService;
 import com.example.e2taskly.service.UserService;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.common.collect.ArrayTable;
-import com.google.type.DateTime;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -78,11 +75,12 @@ public class ManageTaskActivity extends AppCompatActivity {
     private UserService userService;
     private TaskCategoryService  categoryService;
     private TaskService taskService;
+    private int editingTaskId;
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault());
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         userService = new UserService(this);
@@ -94,7 +92,55 @@ public class ManageTaskActivity extends AppCompatActivity {
         setupSpinners();
         initListeners();
 
-        updateFormVisibility();
+        editingTaskId = getIntent().getIntExtra("TASK_ID", -1);
+        if (editingTaskId != -1) {
+            Task taskToEdit = taskService.getTaskById(editingTaskId);
+
+            if (taskToEdit != null) {
+                currentTaskType = taskToEdit.getType();
+                updateFormVisibility();
+                editTaskName.setText(taskToEdit.getName());
+                editTaskDescription.setText(taskToEdit.getDescription());
+
+
+                if (taskToEdit.getCategory() != null) {
+                    CategorySpinnerAdapter categoryAdapter = (CategorySpinnerAdapter) categorySpinner.getAdapter();
+                    for (int i = 0; i < categoryAdapter.getCount(); i++) {
+                        if (categoryAdapter.getItem(i).getId() == taskToEdit.getCategory().getId()) {
+                            categorySpinner.setSelection(i);
+                            break;
+                        }
+                    }
+                }
+
+                setDifficultySelection(taskToEdit.getDifficulty());
+                setImportanceSelection(taskToEdit.getImportance());
+
+                if (taskToEdit instanceof SingleTask) {
+                    SingleTask sTask = (SingleTask) taskToEdit;
+                    LocalDate taskDate = sTask.getTaskDate();
+
+                    singleDatePicker.updateDate(taskDate.getYear(), taskDate.getMonthValue() - 1, taskDate.getDayOfMonth());
+
+                } else if (taskToEdit instanceof RepeatingTask) {
+                    RepeatingTask rTask = (RepeatingTask) taskToEdit;
+
+                    editStartDate.setText(rTask.getStartingDate().format(dateFormatter));
+                    editEndDate.setText(rTask.getFinishingDate().format(dateFormatter));
+
+                    ArrayAdapter<Integer> intervalAdapter = (ArrayAdapter<Integer>) repeatIntervalSpinner.getAdapter();
+                    int intervalPosition = intervalAdapter.getPosition(rTask.getInterval());
+                    repeatIntervalSpinner.setSelection(intervalPosition);
+
+
+                    setRepeatingTypeSelection(rTask.getRepeatingType());
+                }
+
+
+                btnSingle.setEnabled(false);
+                btnRepeating.setEnabled(false);
+            }
+        }
     }
 
     private void initViews(){
@@ -202,8 +248,18 @@ public class ManageTaskActivity extends AppCompatActivity {
         int id = -1;
         String creatorId = userService.getCurrentUserId();
         TaskStatus status = TaskStatus.ACTIVE;
-        int valueXP = caluclateTaskXP(difficulty,importance);
         boolean deleted = false;
+
+        if(editingTaskId != -1) {
+            Task taskToEdit = taskService.getTaskById(editingTaskId);
+
+            id = editingTaskId;
+            creatorId = taskToEdit.getCreatorId();
+            status = taskToEdit.getStatus();
+            deleted = taskToEdit.isDeleted();
+        }
+
+         int valueXP = caluclateTaskXP(difficulty, importance);
 
         //Krairanje task objekta - SINGLE
         if(currentTaskType == TaskType.SINGLE){
@@ -213,7 +269,12 @@ public class ManageTaskActivity extends AppCompatActivity {
             LocalDate taskDate = LocalDate.of(year,month,day);
 
             SingleTask task = new SingleTask(id,creatorId,name,description,category,TaskType.SINGLE,status,importance,difficulty,valueXP,deleted,taskDate);
-           success = taskService.saveTask(task);
+
+            if(editingTaskId == -1) {
+                success = taskService.saveTask(task);
+            }else{
+                success = taskService.updateTask(task);
+            }
         }
         //Kreiranje task objekta - REPEATING
         else{
@@ -244,6 +305,12 @@ public class ManageTaskActivity extends AppCompatActivity {
                 Toast.makeText(this, "Datum završetka ne može biti pre datuma početka.", Toast.LENGTH_SHORT).show();
                 return;
             }
+            if(editingTaskId == -1) {
+                if (startDate.isBefore(LocalDate.now())) {
+                    Toast.makeText(this, "Datum pocetka novog taska ne moze biti u proslosti.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
 
             if (radioGroupRepeatInterval.getCheckedRadioButtonId() == -1) {
                 Toast.makeText(this, "Morate izabrati tip ponavljanja.", Toast.LENGTH_SHORT).show();
@@ -255,8 +322,11 @@ public class ManageTaskActivity extends AppCompatActivity {
             int interval = (int) repeatIntervalSpinner.getSelectedItem();
             RepeatingTask task = new RepeatingTask(id, creatorId, name, description, category, TaskType.REPEATING,
                     status, importance, difficulty, valueXP, deleted, repeatingType, interval, startDate, endDate);
-
-           success = taskService.saveTask(task);
+            if(editingTaskId == -1) {
+                success = taskService.saveTask(task);
+            } else{
+                success = taskService.updateTask(task);
+            }
            if(success) taskService.createRepeatingTaskOccurrences(task);
         }
 
@@ -266,6 +336,7 @@ public class ManageTaskActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Error occured while saving task.", Toast.LENGTH_SHORT).show();
         }
+
     }
 
 
@@ -368,7 +439,7 @@ public class ManageTaskActivity extends AppCompatActivity {
         private List<TaskCategory> categories;
 
         public CategorySpinnerAdapter(Context context, List<TaskCategory> categories) {
-            super(context, R.layout.category_item, categories);
+            super(context, R.layout.item_category, categories);
             this.context = context;
             this.categories = categories;
         }
@@ -386,7 +457,7 @@ public class ManageTaskActivity extends AppCompatActivity {
         private View getCustomView(int position, View convertView, ViewGroup parent) {
             View row = convertView;
             if (row == null) {
-                row = getLayoutInflater().inflate(R.layout.category_item, parent, false);
+                row = getLayoutInflater().inflate(R.layout.item_category, parent, false);
             }
 
             TaskCategory currentItem = categories.get(position);
@@ -403,6 +474,54 @@ public class ManageTaskActivity extends AppCompatActivity {
             colorView.setBackgroundColor(Color.parseColor(currentItem.getColorHex()));
 
             return row;
+        }
+    }
+
+    private void setDifficultySelection(Difficulty difficulty) {
+        if (difficulty == null) return;
+        switch (difficulty) {
+            case EASY:
+                radioGroupDifficulty.check(R.id.Easy);
+                break;
+            case NORMAL:
+                radioGroupDifficulty.check(R.id.Normal);
+                break;
+            case HARD:
+                radioGroupDifficulty.check(R.id.Hard);
+                break;
+            case EPIC:
+                radioGroupDifficulty.check(R.id.VeryHard); // Pazi na ID, ako si ga menjao
+                break;
+        }
+    }
+
+    private void setImportanceSelection(Importance importance) {
+        if (importance == null) return;
+        switch (importance) {
+            case NORMAL:
+                radioGroupImportance.check(R.id.ImportanceNormal);
+                break;
+            case IMPORTANT:
+                radioGroupImportance.check(R.id.ImportanceImportant);
+                break;
+            case URGENT:
+                radioGroupImportance.check(R.id.ImportanceUrgent);
+                break;
+            case SPECIAL:
+                radioGroupImportance.check(R.id.ImportanceSpecial);
+                break;
+        }
+    }
+
+    private void setRepeatingTypeSelection(RepeatingType repeatingType) {
+        if (repeatingType == null) return;
+        switch (repeatingType) {
+            case DAILY:
+                radioGroupRepeatInterval.check(R.id.repeatDaily);
+                break;
+            case WEEKLY:
+                radioGroupRepeatInterval.check(R.id.repeatWeekly);
+                break;
         }
     }
 }

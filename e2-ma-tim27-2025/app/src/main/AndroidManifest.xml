@@ -50,6 +50,15 @@
             android:name=".presentation.activity.ManageTaskActivity"
             android:exported="false" />
         <activity
+            android:name=".presentation.activity.ShowTaskListActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".presentation.activity.ShowTaskCalendarActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".presentation.activity.ShowTaskInfoActivity"
+            android:exported="false"/>
+        <activity
             android:name=".presentation.activity.ShowCategoriesActivity"
             android:exported="false" />
         <activity

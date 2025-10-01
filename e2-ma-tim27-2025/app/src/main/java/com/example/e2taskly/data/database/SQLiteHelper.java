@@ -80,6 +80,17 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(alliance_id) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE, " +
                 "FOREIGN KEY(sender_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ")");
+
+
+        db.execSQL("create  table " + T_CATEGORIES + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "creatorId TEXT NOT NULL ," +
+                "name TEXT NOT NULL ," +
+                "colorhex TEXT NOT NULL " +
+                ")");
+
+
+        // GLAVNA TABELA SA ZAJEDNIČKIM POLJIMA
         String createTaskTable = "CREATE TABLE " + T_TASKS + " (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "creatorId TEXT, " +
@@ -111,15 +122,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "finishingDate TEXT NOT NULL, " +
                 "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE" +
                 ");";
-        db.execSQL(createTaskTable);
-        db.execSQL(createSingleTaskTable);
-        db.execSQL(createRepeatingTaskTable);
-        db.execSQL("create  table " + T_CATEGORIES + " (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "creatorId TEXT NOT NULL ," +
-                "name TEXT NOT NULL ," +
-                "colorhex TEXT NOT NULL " +
-                ")");
+
+        //TABELA ZA OCCURRENCES REPEATING TASKA
         String createOccurrenceTable = "CREATE TABLE " + T_R_TASK_OCCURRENCE + " (" +
                 "occurrenceId INTEGER PRIMARY KEY, " +
                 "repeatingTaskId INTEGER NOT NULL, " +
@@ -128,7 +132,12 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(repeatingTaskId) REFERENCES " + T_REPEATING_TASKS + "(taskId) on DELETE CASCADE" +
                 ");";
 
+
+        db.execSQL(createTaskTable);
+        db.execSQL(createSingleTaskTable);
+        db.execSQL(createRepeatingTaskTable);
         db.execSQL(createOccurrenceTable);
+
     }
 
     @Override
@@ -142,52 +151,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN last_activity_date INTEGER DEFAULT 0;");
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN friends_ids TEXT");
 
-            // GLAVNA TABELA SA ZAJEDNIČKIM POLJIMA
-            String createTaskTable = "CREATE TABLE " + T_TASKS + " (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "creatorId TEXT, " +
-                    "name TEXT NOT NULL, " +
-                    "description TEXT, " +
-                    "categoryId INTEGER, " +
-                    "taskType TEXT NOT NULL, " +
-                    "status TEXT, " +
-                    "importance TEXT, " +
-                    "difficulty TEXT, " +
-                    "valueXP INTEGER, " +
-                    "deleted INTEGER DEFAULT 0, " +
-                    "FOREIGN KEY(categoryId) REFERENCES " + T_CATEGORIES + "(id)" +
-                    ");";
-
-            // TABELA SAMO ZA SINGLE TASK POLJA
-            String createSingleTaskTable = "CREATE TABLE " + T_SINGLE_TASKS + " (" +
-                    "taskId INTEGER PRIMARY KEY, " +
-                    "taskDate TEXT NOT NULL, " +
-                    "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE" +
-                    ");";
-
-            // TABELA SAMO ZA REPEATING TASK POLJA
-            String createRepeatingTaskTable = "CREATE TABLE " + T_REPEATING_TASKS + " (" +
-                    "taskId INTEGER PRIMARY KEY, " +
-                    "repeatingType TEXT, " +
-                    "interval INTEGER, " +
-                    "startingDate TEXT NOT NULL, " +
-                    "finishingDate TEXT NOT NULL, " +
-                    "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE" +
-                    ");";
-
-            //TABELA ZA OCCURRENCES REPEATING TASKA
-            String createOccurrenceTable = "CREATE TABLE " + T_R_TASK_OCCURRENCE + " (" +
-                    "occurrenceId INTEGER PRIMARY KEY, " +
-                    "repeatingTaskId INTEGER NOT NULL, " +
-                    "occurrenceDate TEXT NOT NULL, "+
-                    "occurrenceStatus TEXT NOT NULL, " +
-                    "FOREIGN KEY(repeatingTaskId) REFERENCES " + T_REPEATING_TASKS + "(taskId) on DELETE CASCADE" +
-                    ");";
-
-
-            db.execSQL(createTaskTable);
-            db.execSQL(createSingleTaskTable);
-            db.execSQL(createRepeatingTaskTable);
         }
         if (oldVersion < 4) {
 
@@ -205,15 +168,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             db.execSQL(createOccurrenceTable);
         }
         if (oldVersion < 5){
-
-            db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
-
-            db.execSQL("create  table " + T_CATEGORIES + " (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "creatorId TEXT NOT NULL ," +
-                    "name TEXT NOT NULL ," +
-                    "colorhex TEXT NOT NULL " +
-                    ")");
 
             db.execSQL("CREATE TABLE IF NOT EXISTS " + T_ALLIANCES + " (" +
                     "id TEXT PRIMARY KEY, " +

@@ -25,12 +25,12 @@ public class TaskRepository {
         return localDataSource.addTask(task);
     }
 
-    public List<RepeatingTask> getAllRepeatingTasks(){
-        return localDataSource.getAllRepeatingTasks();
+    public List<RepeatingTask> getAllRepeatingTasks(String creatorID){
+        return localDataSource.getAllRepeatingTasks(creatorID);
     }
 
-    public List<SingleTask> getAllSingleTasks(){
-        return localDataSource.getAllSingleTasks();
+    public List<SingleTask> getAllSingleTasks(String creatorID){
+        return localDataSource.getAllSingleTasks(creatorID);
     }
 
     public Task getTaskById(int id){
@@ -85,5 +85,33 @@ public class TaskRepository {
     public Map<String, Integer> getXpEarnedLast7Days(String userId) {
         return localDataSource.getXpEarnedLast7Days(userId);
     }
+    public boolean deleteFutureOccurrences(int repeatingTaskId){
+        return localDataSource.deleteFutureOccurrences(repeatingTaskId);
+    }
+
+    public boolean deleteAllOccurrences(int repeatingTaskId) {
+     return localDataSource.deleteAllOccurrences(repeatingTaskId);
+    }
+
+    public boolean updateOccurrence(RepeatingTaskOccurrence occurrence){
+        return localDataSource.updateOccurrence(occurrence);
+    }
+
+    public boolean pauseAllOccurrences(int taskId){
+        return localDataSource.pauseAllOccurrences(taskId);
+    }
+
+    public boolean unpauseAllOccurrences(int taskId){
+        return localDataSource.unpauseAllOccurrences(taskId);
+    }
+
+    public List<SingleTask> getAllSingleTasksForAllUsers() {
+        return localDataSource.getAllSingleTasksForAllUsers();
+    }
+
+    public List<RepeatingTask> getAllRepeatingTasksForAllUsers() {
+        return localDataSource.getAllRepeatingTasksForAllUsers();
+    }
+
 
 }

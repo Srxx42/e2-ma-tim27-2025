@@ -1,4 +1,4 @@
-package com.example.e2taskly.adapters;
+package com.example.e2taskly.presentation.adapter;
 
 
 
@@ -33,7 +33,7 @@ public class CategoryListAdapter extends ArrayAdapter<TaskCategory> {
     private TaskCategoryService taskCategoryService;
 
     public CategoryListAdapter(@NonNull Context context, @NonNull ArrayList<TaskCategory> categories) {
-        super(context, R.layout.category_item, categories);
+        super(context, R.layout.item_category, categories);
         aCategories = categories;
 
         taskCategoryService = new TaskCategoryService(context);
@@ -60,7 +60,7 @@ public class CategoryListAdapter extends ArrayAdapter<TaskCategory> {
     public View getView(int position, @Nullable View converView, @NonNull ViewGroup parent) {
         TaskCategory category = getItem(position);
         if (converView == null) {
-            converView = LayoutInflater.from(getContext()).inflate(R.layout.category_item,
+            converView = LayoutInflater.from(getContext()).inflate(R.layout.item_category,
                     parent, false);
         }
         LinearLayout categoryCard = converView.findViewById(R.id.categoryItem);
