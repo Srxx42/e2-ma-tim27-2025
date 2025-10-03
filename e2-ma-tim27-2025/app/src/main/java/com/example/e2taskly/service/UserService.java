@@ -308,4 +308,18 @@ public class UserService {
         }
         return userRepository.getUserLocallyFirst(uid);
     }
+
+    public int getUserLevel(){
+        String userUid = "";
+        FirebaseUser firebaseUser = userRepository.getCurrentUser();
+        if(firebaseUser != null){
+            userUid = firebaseUser.getUid();
+        }
+
+        if(!userUid.isEmpty()) {
+           Task<User> user = userRepository.getUserProfile(userUid);
+           return user.getResult().getLevel();
+        }
+        return -1;
+    }
 }

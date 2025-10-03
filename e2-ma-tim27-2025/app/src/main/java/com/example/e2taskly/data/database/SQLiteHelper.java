@@ -22,6 +22,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String T_SINGLE_TASKS = "single_tasks";
     public static final String T_REPEATING_TASKS = "repeating_tasks";
     public static final String T_R_TASK_OCCURRENCE = "r_task_occurrences";
+    public static final String T_BOSS = "boss";
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -132,7 +133,19 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(repeatingTaskId) REFERENCES " + T_REPEATING_TASKS + "(taskId) on DELETE CASCADE" +
                 ");";
 
+        //TABELA ZA BOSS-a
+        String createBossTabel = "CREATE TABLE " + T_BOSS + " (" +
+                "bossId INTEGER PRIMARY KEY, " +
+                "enemyId TEXT NOT NULL, " +
+                "bossLevel INTEGER NOT NULL, " +
+                "bossHp FLOAT NOT NULL, " +
+                "bossGold FLOAT NOT NULL, " +
+                "isBossBeaten INTEGER DEFAULT 0 NOT NULL, " +
+                "isAllianceBoss INTEGER DEFAULT 0 NOT NULL," +
+                "bossAppearanceDate TEXT " +
+                ");";
 
+        db.execSQL(createBossTabel);
         db.execSQL(createTaskTable);
         db.execSQL(createSingleTaskTable);
         db.execSQL(createRepeatingTaskTable);

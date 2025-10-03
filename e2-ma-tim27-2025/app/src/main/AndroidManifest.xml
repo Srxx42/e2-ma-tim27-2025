@@ -65,6 +65,9 @@
             android:name=".presentation.activity.ManageCategoryActivity"
             android:exported="false" />
         <activity
+            android:name=".presentation.activity.BossBattleActivity"
+            android:exported="false"/>
+        <activity
             android:name=".presentation.activity.MainActivity"
             android:exported="false"
             android:windowFullscreen="true" />
