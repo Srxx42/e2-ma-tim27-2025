@@ -10,6 +10,8 @@ import com.example.e2taskly.model.SingleTask;
 import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.enums.TaskStatus;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -111,6 +113,10 @@ public class TaskRepository {
 
     public List<RepeatingTask> getAllRepeatingTasksForAllUsers() {
         return localDataSource.getAllRepeatingTasksForAllUsers();
+    }
+
+    public int getUserTaskCountByStatus(Date startDate, Date endDate, TaskStatus status, String userUid){
+        return localDataSource.getUserTaskCountByStatus(startDate,endDate,status,userUid);
     }
 
 

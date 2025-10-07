@@ -6,6 +6,7 @@ import android.util.Log;
 import android.util.Patterns;
 
 import com.example.e2taskly.data.repository.UserRepository;
+import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.util.SharedPreferencesUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -15,22 +16,36 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class UserService {
     private final UserRepository userRepository;
     private final SharedPreferencesUtil sharedPreferences;
     private final LevelingService levelingService;
+
+    private TaskService taskService;
+
+    private BossService bossService;
+
     public UserService(Context context){
 
         userRepository = new UserRepository(context);
         sharedPreferences = new SharedPreferencesUtil(context);
         levelingService = new LevelingService();
+        bossService = new BossService(context);
     }
+    public void setTaskService(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
     public Task<AuthResult> registerUser(String email, String username, String password, String confirmPassword, String selectedAvatar){
         String validationError = validateRegistrationInput(email, username, password, confirmPassword, selectedAvatar);
         if(validationError != null){
@@ -59,6 +74,8 @@ public class UserService {
                     newUser.setCoins(0);
                     newUser.setActiveDaysStreak(0);
                     newUser.setLastActivityDate(new Date());
+                    newUser.setLevelUpDate(new Date());
+                    newUser.setAttackChance(0);
 
                     return userRepository.registerUser(email, password, newUser);
                 })
@@ -229,15 +246,36 @@ public class UserService {
                Log.e("addXpToUser","Failed to get user profile.",getTask.getException());
                return;
            }
+
            User user = getTask.getResult();
            user.setXp(user.getXp() + xpToAdd);
+
            int xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel()+1);
+
 
            while(user.getXp()>=xpNeededForNextLevel){
                user.setLevel(user.getLevel()+1);
+
+               if(user.getLevel() == 2){
+                   bossService.createBoss(user.getUid(),false,0);
+               } else {
+                  Boss boss = bossService.getByEnemyId(user.getUid(),false);
+                  if(boss.getBossLevel() < user.getLevel() && boss.isBossBeaten()){
+                      bossService.levelUpBoss(boss);
+                  }
+
+               }
+
+               Date lastLevelUpDate = user.getLevelUpDate();
+               Date now = new Date();
+               int attChance = taskService.calculateTaskCompletionPercent(lastLevelUpDate,now);
+               user.setAttackChance(attChance);
+
                int ppGained = levelingService.getPowerPointsForLevel(user.getLevel());
+               user.setLevelUpDate(now);
                user.setPowerPoints(user.getPowerPoints() + ppGained);
                user.setTitle(levelingService.getTitleForLevel(user.getLevel()));
+
                xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel()+1);
 //               updateTaskXpForUser(user.getUid(), user.getLevel());
            }
@@ -309,17 +347,4 @@ public class UserService {
         return userRepository.getUserLocallyFirst(uid);
     }
 
-    public int getUserLevel(){
-        String userUid = "";
-        FirebaseUser firebaseUser = userRepository.getCurrentUser();
-        if(firebaseUser != null){
-            userUid = firebaseUser.getUid();
-        }
-
-        if(!userUid.isEmpty()) {
-           Task<User> user = userRepository.getUserProfile(userUid);
-           return user.getResult().getLevel();
-        }
-        return -1;
-    }
 }

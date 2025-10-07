@@ -24,6 +24,8 @@ public class User {
     private List<String> friendIds;
     private String allianceId;
     private String fcmToken;
+    private Date levelUpDate;
+    private int attackChance;
 
 
     public User() {
@@ -44,7 +46,7 @@ public class User {
         this.registrationTime = registrationTime;
     }
 
-    public User(String uid, String email, String username, String avatar, int level, int xp, boolean isActivated, Date registrationTime, String title, int powerPoints, int coins) {
+    public User(String uid, String email, String username, String avatar, int level, int xp, boolean isActivated, Date registrationTime, String title, int powerPoints, int coins,Date levelUpDate,int attackChance) {
         this.uid = uid;
         this.email = email;
         this.username = username;
@@ -56,6 +58,24 @@ public class User {
         this.title = title;
         this.powerPoints = powerPoints;
         this.coins = coins;
+        this.levelUpDate = levelUpDate;
+        this.attackChance = attackChance;
+    }
+
+    public Integer getAttackChance() {
+        return attackChance;
+    }
+
+    public void setAttackChance(Integer attackChance) {
+        this.attackChance = attackChance;
+    }
+
+        public Date getLevelUpDate() {
+        return levelUpDate;
+    }
+
+    public void setLevelUpDate(Date levelUpDate) {
+        this.levelUpDate = levelUpDate;
     }
 
     public String getUid() {

@@ -12,12 +12,9 @@ public class BossService {
 
     private BossRepository bossRepository;
 
-    private UserService userService;
-
     public BossService(Context context){
 
         bossRepository = new BossRepository(context);
-        userService = new UserService(context);
     }
 
     public void createBoss(String enemyId,boolean isAlliance,int allianceMembers){
@@ -35,17 +32,15 @@ public class BossService {
 
     }
 
-    public boolean beatBoss(Boss boss){
+    public boolean beatBoss(Boss boss,int userLvl){
 
         if(boss.isAllianceBoss()){
             boss.setBossBeaten(true);
             return bossRepository.updateBoss(boss);
         }
 
-        int userLevel = userService.getUserLevel();
-
-        if(userLevel != -1) {
-            if (userLevel > boss.getBossLevel()){
+        if(userLvl != -1) {
+            if (userLvl > boss.getBossLevel()){
                 return levelUpBoss(boss);
             } else{
                 boss.setBossBeaten(true);
@@ -70,7 +65,7 @@ public class BossService {
         boss.setBossHp(newHp);
         boss.setBossGold(newGold);
         boss.setBossAppearanceDate(newAppearanceDate);
-
+        boss.setBossBeaten(false);
         return bossRepository.updateBoss(boss);
 
      }

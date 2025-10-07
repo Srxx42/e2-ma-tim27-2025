@@ -15,12 +15,17 @@ import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.TaskCategory;
 import com.example.e2taskly.model.enums.*;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -390,7 +395,70 @@ public class TaskLocalDataSource {
         db.close();
         return occurrences;
     }
-//    Za Statistiku lazar
+
+    public int getUserTaskCountByStatus(Date startDate, Date endDate, TaskStatus status, String userUid) {
+        int totalCount = 0;
+
+        if(startDate == null){
+            LocalDate specificLocalDate = LocalDate.of(2024, 8, 1);
+            startDate = Date.from(specificLocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String startDateString = sdf.format(startDate);
+        String endDateString = sdf.format(endDate);
+
+        String statusString = status.toString();
+
+
+        String countTasksQuery = "SELECT " +
+                "(SELECT COUNT(st.taskId) FROM " + SQLiteHelper.T_SINGLE_TASKS + " AS st " +
+                "JOIN " + SQLiteHelper.T_TASKS + " AS t ON st.taskId = t.id " +
+                "WHERE t.creatorId = ? AND t.status = ? AND st.taskDate BETWEEN ? AND ?) AS singleTaskCount, " +
+                "(SELECT COUNT(o.occurrenceId) FROM " + SQLiteHelper.T_R_TASK_OCCURRENCE + " AS o " +
+                "JOIN " + SQLiteHelper.T_REPEATING_TASKS + " AS rt ON o.repeatingTaskId = rt.taskId " +
+                "JOIN " + SQLiteHelper.T_TASKS + " AS t ON rt.taskId = t.id " +
+                "WHERE t.creatorId = ? AND o.occurrenceStatus = ? AND o.occurrenceDate BETWEEN ? AND ?) AS occurrenceCount;";
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+
+        try {
+
+            String[] selectionArgs = {
+                    userUid,
+                    statusString,
+                    startDateString,
+                    endDateString,
+                    userUid,
+                    statusString,
+                    startDateString,
+                    endDateString
+            };
+
+            cursor = db.rawQuery(countTasksQuery, selectionArgs);
+
+
+            if (cursor != null && cursor.moveToFirst()) {
+                int singleTaskCount = cursor.getInt(0);
+                int occurrenceCount = cursor.getInt(1);
+
+                totalCount = singleTaskCount + occurrenceCount;
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+
+        return totalCount;
+    }
+
+
+//  ============================= LAKI STATISIKA ===============================================
 
     public Map<String, Integer> getTaskStatusCounts(String userId) {
         Map<String, Integer> counts = new HashMap<>();

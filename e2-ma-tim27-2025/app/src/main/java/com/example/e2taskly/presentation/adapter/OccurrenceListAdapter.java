@@ -115,6 +115,7 @@ public class OccurrenceListAdapter extends ArrayAdapter<RepeatingTaskOccurrence>
             int xpToAward = xpManager.calculateXpToAward(task);
 
             if (xpToAward > 0) {
+                userService.setTaskService(taskService);
                 userService.addXpToUser(task.getCreatorId(), xpToAward);
                 xpManager.recordXpAward(task);
                 Toast.makeText(getContext(), "Dodeljeno " + xpToAward + " XP poena!", Toast.LENGTH_SHORT).show();

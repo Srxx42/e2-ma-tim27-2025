@@ -1,11 +1,13 @@
 package com.example.e2taskly.presentation.activity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.service.BossService;
+import com.example.e2taskly.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,7 @@ import java.util.List;
 public class BossBattleActivity extends AppCompatActivity {
 
     private BossService bossService;
+    private UserService userService;
     private Boss currentBoss;
 
     // UI Elementi
@@ -33,9 +37,15 @@ public class BossBattleActivity extends AppCompatActivity {
     private ImageButton btnAttack;
     private List<ImageView> swordIcons;
 
+    //UI Layouts
+    private RelativeLayout battle_ui_container;
+    private LinearLayout llBossBeatenMessage, lost_boss_message;
+
     private int attacksLeft = 5;
-    private final int ATTACK_CHANCE_PERCENTAGE = 63; // Primer procenta, ovo bi trebalo doći iz korisničkih podataka
-    private final int USER_POWER_POINTS = 80; // Primer PP, takođe treba doći iz korisničkih podataka
+    private  int attackChance ;
+    private  int userPP ;
+    private int userLvl;
+
     private float maxBossHp;
     private boolean isDragon;
     private boolean isAttackInProgress = false; // Sprečava višestruke brze klikove
@@ -46,28 +56,38 @@ public class BossBattleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_boss_fight);
 
         bossService = new BossService(this);
+        userService = new UserService(this);
 
-        // TODO: Dohvatiti pravog bossa, npr. preko Intenta
-        // Primer kreiranja bossa za testiranje
-        // currentBoss = bossService.getByEnemyId("nekiUserId", false);
-        // if (currentBoss == null) {
-        //     bossService.createBoss("nekiUserId", false, 1);
-        //     currentBoss = bossService.getByEnemyId("nekiUserId", false);
-        // }
-
-        // Hardkodovan boss za demonstraciju
-        currentBoss = new Boss(1, "userId1", 5, 1000, 500, false, false, null);
-
+        String userId = userService.getCurrentUserId();
+        currentBoss = bossService.getByEnemyId(userId,false);
 
         initializeUI();
-        setupInitialState();
+        loadUserStats(userId);
 
-        btnAttack.setOnClickListener(v -> performAttack());
     }
 
-    /**
-     * Inicijalizuje sve UI komponente sa layout-a.
-     */
+    private void loadUserStats(String userId){
+        userService.getUserProfile(userId)
+                .addOnSuccessListener(user -> {
+                    if (user == null) {
+                        Toast.makeText(this, "User data not found.", Toast.LENGTH_SHORT).show();
+                        finish();
+                        return;
+                    }
+
+                    this.attackChance = user.getAttackChance();
+                    this.userPP = user.getPowerPoints();
+                    this.userLvl = user.getLevel();
+
+                    setupInitialState();
+                    btnAttack.setOnClickListener(v -> performAttack());
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    finish();
+                });
+    }
+
     private void initializeUI() {
         rootLayout = findViewById(R.id.boss_battle_root);
         ivBackground = findViewById(R.id.iv_background);
@@ -79,6 +99,10 @@ public class BossBattleActivity extends AppCompatActivity {
         tvAttackChance = findViewById(R.id.tv_attack_chance);
         btnAttack = findViewById(R.id.btn_attack);
 
+        battle_ui_container = findViewById(R.id.battle_ui_container);
+        llBossBeatenMessage = findViewById(R.id.ll_boss_beaten_message);
+        lost_boss_message = findViewById(R.id.lost_boss_message);
+
         swordIcons = new ArrayList<>();
         swordIcons.add(findViewById(R.id.iv_sword1));
         swordIcons.add(findViewById(R.id.iv_sword2));
@@ -87,9 +111,6 @@ public class BossBattleActivity extends AppCompatActivity {
         swordIcons.add(findViewById(R.id.iv_sword5));
     }
 
-    /**
-     * Postavlja početno stanje ekrana na osnovu podataka o bossu.
-     */
     private void setupInitialState() {
         if (currentBoss == null) {
             Toast.makeText(this, "Boss not found!", Toast.LENGTH_SHORT).show();
@@ -97,10 +118,19 @@ public class BossBattleActivity extends AppCompatActivity {
             return;
         }
 
-        // Provera da li je boss zmaj
+        if (currentBoss.isBossBeaten()) {
+            // Boss je pobeđen
+            battle_ui_container.setVisibility(View.GONE);
+            llBossBeatenMessage.setVisibility(View.VISIBLE);
+            lost_boss_message.setVisibility(View.GONE);
+            ivBoss.setVisibility(View.GONE); // Sakrij i sliku bossa koja je van kontejnera
+        } else {
+
+
+        //Da li je boss zmaj?
         isDragon = currentBoss.getBossLevel() % 5 == 0;
 
-        // Postavljanje pozadine i idle slike bossa
+
         if (isDragon) {
             ivBackground.setImageResource(R.drawable.dragon_cave);
             ivBoss.setImageResource(R.drawable.dragon_idle_nb);
@@ -109,47 +139,43 @@ public class BossBattleActivity extends AppCompatActivity {
             ivBoss.setImageResource(R.drawable.goblin_idle_nb);
         }
 
-        // Postavljanje HP bara
+
         maxBossHp = currentBoss.getBossHp();
         pbBossHp.setMax(100);
         updateHpUI();
 
-        // Postavljanje ostalih informacija
-        tvUserPp.setText(String.format("%d PP", USER_POWER_POINTS));
-        tvGoldAmount.setText(String.valueOf((int)currentBoss.getBossGold()));
-        tvAttackChance.setText(String.format("%d%%", ATTACK_CHANCE_PERCENTAGE));
+        tvGoldAmount.setText(String.valueOf((int) currentBoss.getBossGold()));
+        tvAttackChance.setText(String.format("%d%%", attackChance));
+        tvUserPp.setText(String.valueOf((int) userPP));
 
         // TODO: Implementirati logiku za prikaz mogućih i trenutnih itema
+        }
     }
 
-    /**
-     * Izvršava logiku napada kada korisnik klikne na dugme.
-     */
     private void performAttack() {
-        if (attacksLeft <= 0 || isAttackInProgress || currentBoss.isBossBeaten()) {
-            return; // Nema više napada, napad je u toku ili je boss pobeđen
+        if (isAttackInProgress) {
+            return;
         }
 
         isAttackInProgress = true;
         attacksLeft--;
         updateSwordVisibility();
 
-        boolean isSuccess = bossService.isAttackSuccessful(ATTACK_CHANCE_PERCENTAGE);
+        boolean isSuccess = bossService.isAttackSuccessful(attackChance);
 
         if (isSuccess) {
-            // Smanji HP bossa
-            float newHp = currentBoss.getBossHp() - USER_POWER_POINTS;
+
+            float newHp = currentBoss.getBossHp() - userPP;
             currentBoss.setBossHp(newHp > 0 ? newHp : 0);
             updateHpUI();
 
-            // Pusti "hurt" animaciju
             ivBoss.setImageResource(isDragon ? R.drawable.dragon_hurt_nb : R.drawable.goblin_hurt_nb);
 
             if (currentBoss.getBossHp() <= 0) {
-                handleBossDefeated();
+                handleBossDefeated(userLvl);
             }
         } else {
-            // Pusti "attack" animaciju
+
             ivBoss.setImageResource(isDragon ? R.drawable.dragon_attack_nb : R.drawable.goblin_attack_nb);
         }
 
@@ -160,11 +186,16 @@ public class BossBattleActivity extends AppCompatActivity {
             }
             isAttackInProgress = false;
         }, 1500);
+
+        if(currentBoss.getBossHp() > 0 && attacksLeft <= 0) {
+            lost_boss_message.setVisibility(View.VISIBLE);
+            btnAttack.setEnabled(false);
+        }
+
     }
 
-    /**
-     * Ažurira prikaz HP-a (i progress bar i tekst).
-     */
+
+    @SuppressLint("DefaultLocale")
     private void updateHpUI() {
         tvBossHp.setText(String.format("%.0f/%.0f", currentBoss.getBossHp(), maxBossHp));
         int progress = (int) ((currentBoss.getBossHp() / maxBossHp) * 100);
@@ -181,18 +212,14 @@ public class BossBattleActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Upravlja logikom kada je boss pobeđen.
-     */
-    private void handleBossDefeated() {
-        // Ažuriraj status bossa u bazi
-        // bossService.beatBoss(currentBoss);
+    private void handleBossDefeated(int userLvl) {
+
+        currentBoss.setBossHp(maxBossHp);
+        bossService.beatBoss(currentBoss,userLvl);
         Toast.makeText(this, "Boss defeated!", Toast.LENGTH_LONG).show();
 
         // TODO: Implementirati logiku za dodavanje nagrada korisniku
 
-        // Onemogući dalje napade
         btnAttack.setEnabled(false);
-        // Ovde možeš dodati i animaciju nestajanja bossa ili prelazak na drugi ekran
     }
 }

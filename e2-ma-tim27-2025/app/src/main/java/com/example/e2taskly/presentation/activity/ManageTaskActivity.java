@@ -375,6 +375,7 @@ public class ManageTaskActivity extends AppCompatActivity {
                 xp = 20;
                 break;
         }
+
         switch (importance){
             case NORMAL:
                 xp += 1;
@@ -389,6 +390,7 @@ public class ManageTaskActivity extends AppCompatActivity {
                 xp += 100;
                 break;
         }
+
         return xp;
     }
 

@@ -15,6 +15,7 @@ import com.example.e2taskly.model.enums.TaskStatus;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TaskService {
@@ -117,6 +118,24 @@ public class TaskService {
 
     public List<RepeatingTask> getAllRepeatingTasksForAllUsers() {
         return taskRepository.getAllRepeatingTasksForAllUsers();
+    }
+
+    public int calculateTaskCompletionPercent(Date startDate, Date endDate){
+        String creatorID =userService.getCurrentUserId();
+        int completedTaskCount = taskRepository.getUserTaskCountByStatus(startDate,endDate,TaskStatus.COMPLETED,creatorID);
+        int failedTaskCount = taskRepository.getUserTaskCountByStatus(startDate,endDate,TaskStatus.FAILED,creatorID);
+        int activeTaskCount = taskRepository.getUserTaskCountByStatus(startDate,endDate,TaskStatus.ACTIVE,creatorID);
+
+        int totalTasks = completedTaskCount + failedTaskCount + activeTaskCount;
+
+        if (totalTasks == 0) {
+            return 0;
+        }
+
+        double percentage = ((double) completedTaskCount / totalTasks) * 100.0;
+
+        return (int) Math.round(percentage);
+
     }
 
 }

@@ -20,13 +20,19 @@
         android:id="@+id/includeToolbar"
         layout="@layout/toolbar" />
 
+    <!-- Kontejner za sve UI elemente borbe -->
+    <RelativeLayout
+        android:id="@+id/battle_ui_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/includeToolbar">
+
     <!-- Health Bar Bossa (crveni) -->
     <ProgressBar
         android:id="@+id/pb_boss_hp"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="25dp"
-        android:layout_below="@id/includeToolbar"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="16dp"
         android:progressDrawable="@drawable/red_progress_bar"
@@ -158,6 +164,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
         android:padding="16dp">
 
         <!-- Mačevi koji predstavljaju broj napada -->
@@ -237,3 +244,77 @@
     </RelativeLayout>
 
 </RelativeLayout>
+
+<LinearLayout
+android:id="@+id/ll_boss_beaten_message"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_centerInParent="true"
+android:gravity="center"
+android:orientation="vertical"
+android:visibility="gone"
+tools:visibility="visible">
+
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="BOSS IS BEATEN"
+    android:textColor="@android:color/holo_green_dark"
+    android:textSize="34sp"
+    android:textStyle="bold"
+    android:shadowColor="@android:color/black"
+    android:shadowDx="2"
+    android:shadowDy="2"
+    android:shadowRadius="3"/>
+
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:text="(level up to encounter next one)"
+    android:textColor="@android:color/white"
+    android:textSize="18sp"
+    android:shadowColor="@android:color/black"
+    android:shadowDx="1"
+    android:shadowDy="1"
+    android:shadowRadius="2"/>
+
+</LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/lost_boss_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="YOU LOST !"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            android:shadowColor="@android:color/black"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="3"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="(Reenter page to try again)"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:shadowColor="@android:color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"/>
+
+    </LinearLayout>
+
+    </RelativeLayout>

@@ -234,6 +234,7 @@ public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurre
                 int xpToAward = xpManager.calculateXpToAward(currentTask);
 
                 if (xpToAward > 0) {
+                    userService.setTaskService(taskService);
                     userService.addXpToUser(currentTask.getCreatorId(), xpToAward);
                     xpManager.recordXpAward(currentTask); // Zabeleži da je XP dodeljen
                     Toast.makeText(this, "Dodeljeno " + xpToAward + " XP poena!", Toast.LENGTH_SHORT).show();
