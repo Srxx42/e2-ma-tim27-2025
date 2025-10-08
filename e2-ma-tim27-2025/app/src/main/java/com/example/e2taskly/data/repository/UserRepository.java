@@ -205,4 +205,9 @@ public class UserRepository {
             });
         }
     }
+    public Task<Void> updateUserCoins(String uid, int newCoinAmount) {
+        return remoteDataSource.updateUserCoins(uid, newCoinAmount).addOnSuccessListener(aVoid -> {
+            localDataSource.updateUserCoins(uid, newCoinAmount);
+        });
+    }
 }

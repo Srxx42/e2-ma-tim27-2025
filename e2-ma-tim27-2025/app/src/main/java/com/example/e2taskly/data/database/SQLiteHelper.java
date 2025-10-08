@@ -10,7 +10,8 @@ import java.time.LocalDate;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "e2taskly.db";
-    private static final int DATABASE_VERSION = 12;
+    private static final int DATABASE_VERSION = 13;
+
     public static final String T_USERS = "users";
 
     public static final String T_CATEGORIES = "taskCategories";
@@ -23,6 +24,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String T_REPEATING_TASKS = "repeating_tasks";
     public static final String T_R_TASK_OCCURRENCE = "r_task_occurrences";
     public static final String T_BOSS = "boss";
+    public static final String T_EQUIPMENT_TEMPLATES = "equipment_templates";
+    public static final String T_USER_INVENTORY = "user_inventory";
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -153,7 +156,23 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         db.execSQL(createSingleTaskTable);
         db.execSQL(createRepeatingTaskTable);
         db.execSQL(createOccurrenceTable);
-
+        db.execSQL("CREATE TABLE " + T_EQUIPMENT_TEMPLATES + " (" +
+                "id TEXT PRIMARY KEY," +
+                "name TEXT," +
+                "description TEXT," +
+                "type TEXT," +
+                "bonus_type TEXT," +
+                "bonus_value REAL," +
+                "duration_in_fights INTEGER," +
+                "cost_percentage INTEGER," +
+                "upgrade_cost_percentage INTEGER)");
+        db.execSQL("CREATE TABLE " + T_USER_INVENTORY + " (" +
+                "inventory_id TEXT PRIMARY KEY," +
+                "user_id TEXT," +
+                "template_id TEXT," +
+                "is_activated INTEGER," +
+                "fights_remaining INTEGER," +
+                "current_bonus_value REAL)");
     }
 
     @Override
@@ -312,5 +331,26 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN attack_chance INTEGER");
         }
 
+        if(oldVersion<12){
+            db.execSQL("DROP TABLE IF EXISTS " + T_EQUIPMENT_TEMPLATES);
+            db.execSQL("DROP TABLE IF EXISTS " + T_USER_INVENTORY);
+            db.execSQL("CREATE TABLE " + T_EQUIPMENT_TEMPLATES + " (" +
+                    "id TEXT PRIMARY KEY," +
+                    "name TEXT," +
+                    "description TEXT," +
+                    "type TEXT," +
+                    "bonus_type TEXT," +
+                    "bonus_value REAL," +
+                    "duration_in_fights INTEGER," +
+                    "cost_percentage INTEGER," +
+                    "upgrade_cost_percentage INTEGER)");
+            db.execSQL("CREATE TABLE " + T_USER_INVENTORY + " (" +
+                    "inventory_id TEXT PRIMARY KEY," +
+                    "user_id TEXT," +
+                    "template_id TEXT," +
+                    "is_activated INTEGER," +
+                    "fights_remaining INTEGER," +
+                    "current_bonus_value REAL)");
+        }
     }
 }

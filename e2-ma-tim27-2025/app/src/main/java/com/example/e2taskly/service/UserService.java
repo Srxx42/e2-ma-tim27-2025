@@ -364,6 +364,14 @@ public class UserService {
         }
         return userRepository.getUserLocallyFirst(uid);
     }
-
-
+    public Task<Void> updateUserCoins(String uid, int newCoinAmount) {
+        if (uid == null || uid.isEmpty()) {
+            return Tasks.forException(new Exception("User ID cannot be null."));
+        }
+        if (newCoinAmount < 0) {
+            return Tasks.forException(new Exception("Coin amount cannot be negative."));
+        }
+        // Pozivamo metodu iz Repository-ja (koju ćemo sada kreirati)
+        return userRepository.updateUserCoins(uid, newCoinAmount);
+    }
 }

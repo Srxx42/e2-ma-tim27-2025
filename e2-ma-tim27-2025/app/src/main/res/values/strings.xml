@@ -69,4 +69,10 @@
     <string name="xp_earned_last_7_days">XP earned in the last 7 days</string>
     <string name="button_logout">Logout</string>
     <string name="menu_profile">Profile</string>
+
+    <string name="item_name_placeholder">Single-use strength potion +20%</string>
+    <string name="item_description_placeholder">Increases strength (PP) by 20% in the next boss fight.</string>
+    <string name="item_price_placeholder">Price: 100 coins</string>
+    <string name="purchase">Purchase</string>
+    <string name="item_image_description">Image of the shop item</string>
 </resources>

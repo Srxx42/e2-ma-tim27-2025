@@ -61,7 +61,7 @@ public class ProfileActivity extends BaseActivity {
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -110,6 +110,11 @@ public class ProfileActivity extends BaseActivity {
         textViewCoins = findViewById(R.id.textViewCoins);
     }
     @Override
+    protected void onResume() {
+        super.onResume();
+        loadUserProfile();
+    }
+    @Override
     protected int getMenuResourceId() {
         return R.menu.profile_menu;
     }
@@ -131,6 +136,9 @@ public class ProfileActivity extends BaseActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
+        } else if(itemId == R.id.action_shop){
+            Intent intent = new Intent(ProfileActivity.this, ShopActivity.class);
+            startActivity(intent);
         }
         return false;
     }
