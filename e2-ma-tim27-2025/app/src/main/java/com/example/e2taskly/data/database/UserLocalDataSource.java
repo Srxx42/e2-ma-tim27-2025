@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import com.example.e2taskly.model.User;
 
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -42,6 +43,8 @@ public class UserLocalDataSource {
         values.put("active_days_streak",user.getActiveDaysStreak());
         values.put("last_activity_date",user.getLastActivityDate().getTime());
         values.put("friends_ids",TextUtils.join(",", user.getFriendIds()));
+        values.put("level_up_date", user.getLevelUpDate().toString().trim());
+        values.put("attack_chance", user.getAttackChance());
         long newRowId = db.insert(SQLiteHelper.T_USERS, null, values);
         db.close();
         return newRowId;
@@ -90,6 +93,12 @@ public class UserLocalDataSource {
         values.put("active_days_streak",user.getActiveDaysStreak());
         values.put("last_activity_date",user.getLastActivityDate().getTime());
         values.put("alliance_id", user.getAllianceId());
+        if (user.getLevelUpDate() != null) {
+            values.put("level_up_date", user.getLevelUpDate().toString().trim());
+        } else {
+            values.putNull("level_up_date");
+        }
+        values.put("attack_chance", user.getAttackChance());
         db.update(SQLiteHelper.T_USERS,values,"id"+" = ?",new String[]{user.getUid()});
     }
     public int updateUserAllianceId(String uid, String allianceId) {
@@ -223,6 +232,9 @@ public class UserLocalDataSource {
 
             user.setAllianceId(cursor.getString(cursor.getColumnIndexOrThrow("alliance_id")));
             user.setFcmToken(cursor.getString(cursor.getColumnIndexOrThrow("fcm_token")));
+
+            user.setLevelUpDate(new Date(cursor.getLong(cursor.getColumnIndexOrThrow("level_up_date"))));
+            user.setAttackChance(cursor.getInt(cursor.getColumnIndexOrThrow("attack_chance")));
 
             cursor.close();
         }

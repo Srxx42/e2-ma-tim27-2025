@@ -33,6 +33,8 @@ public class MainActivity extends BaseActivity {
     private Button buttonShowTaskList;
 
     private Button buttonShowTaskCalendar;
+
+    private Button buttonShowBossFight;
     private UserService userService;
     private SharedPreferencesUtil sharedPreferences;
 
@@ -56,6 +58,7 @@ public class MainActivity extends BaseActivity {
         buttonAddTask = findViewById(R.id.addTask);
         buttonShowTaskList = findViewById(R.id.showTaskList);
         buttonShowTaskCalendar = findViewById(R.id.showTaskCalendar);
+        buttonShowBossFight = findViewById(R.id.showBossFight);
 
         menuButton = findViewById(R.id.menuButton);
         Button categoryAdd = findViewById(R.id.categoryAdd);
@@ -85,6 +88,11 @@ public class MainActivity extends BaseActivity {
 
         buttonShowTaskCalendar.setOnClickListener(v ->{
             Intent intent = new Intent(MainActivity.this,ShowTaskCalendarActivity.class);
+            startActivity(intent);
+        });
+
+        buttonShowBossFight.setOnClickListener(v ->{
+            Intent intent = new Intent(MainActivity.this,BossBattleActivity.class);
             startActivity(intent);
         });
 
@@ -129,7 +137,7 @@ public class MainActivity extends BaseActivity {
 
     private void scheduleDailyTaskStatusCheck() {
         PeriodicWorkRequest dailyWorkRequest =
-                new PeriodicWorkRequest.Builder(TaskStatusWorker.class, 1, TimeUnit.DAYS)
+                new PeriodicWorkRequest.Builder(TaskStatusWorker.class, 2, TimeUnit.MINUTES)
                         .build();
 
         WorkManager.getInstance(getApplicationContext()).enqueueUniquePeriodicWork(

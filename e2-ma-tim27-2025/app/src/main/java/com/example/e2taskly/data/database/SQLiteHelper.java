@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "e2taskly.db";
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 12;
     public static final String T_USERS = "users";
 
     public static final String T_CATEGORIES = "taskCategories";
@@ -22,6 +22,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String T_SINGLE_TASKS = "single_tasks";
     public static final String T_REPEATING_TASKS = "repeating_tasks";
     public static final String T_R_TASK_OCCURRENCE = "r_task_occurrences";
+    public static final String T_BOSS = "boss";
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -45,7 +46,9 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "last_activity_date INTEGER, " +
                 "friends_ids TEXT," +
                 "alliance_id TEXT," +
-                "fcm_token TEXT" +
+                "fcm_token TEXT, " +
+                "level_up_date INTEGER, " +
+                "attack_chance INTEGER " +
                 ")");
 
         db.execSQL("CREATE TABLE " + T_ALLIANCES + " (" +
@@ -132,7 +135,20 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(repeatingTaskId) REFERENCES " + T_REPEATING_TASKS + "(taskId) on DELETE CASCADE" +
                 ");";
 
+        //TABELA ZA BOSS-a
+        String createBossTabel = "CREATE TABLE " + T_BOSS + " (" +
+                "bossId INTEGER PRIMARY KEY, " +
+                "enemyId TEXT NOT NULL, " +
+                "bossLevel INTEGER NOT NULL, " +
+                "bossHp FLOAT NOT NULL, " +
+                "bossGold FLOAT NOT NULL, " +
+                "isBossBeaten INTEGER DEFAULT 0 NOT NULL, " +
+                "didUserFightIt INTEGER DEFAULT 0 NOT NULL, " +
+                "isAllianceBoss INTEGER DEFAULT 0 NOT NULL," +
+                "bossAppearanceDate TEXT " +
+                ");";
 
+        db.execSQL(createBossTabel);
         db.execSQL(createTaskTable);
         db.execSQL(createSingleTaskTable);
         db.execSQL(createRepeatingTaskTable);
@@ -142,11 +158,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-//        db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
-//        db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
-//        onCreate(db);
         if (oldVersion < 3) {
-            // Add the new column if it doesn't exist
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN active_days_streak INTEGER DEFAULT 0;");
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN last_activity_date INTEGER DEFAULT 0;");
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN friends_ids TEXT");
@@ -156,16 +168,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
             db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN alliance_id  TEXT");
 
-
-            String createOccurrenceTable = "CREATE TABLE " + T_R_TASK_OCCURRENCE + " (" +
-                    "occurrenceId INTEGER PRIMARY KEY, " +
-                    "repeatingTaskId INTEGER NOT NULL, " +
-                    "occurrenceDate TEXT NOT NULL, "+
-                    "occurrenceStatus TEXT NOT NULL, " +
-                    "FOREIGN KEY(repeatingTaskId) REFERENCES " + T_REPEATING_TASKS + "(taskId) on DELETE CASCADE" +
-                    ");";
-
-            db.execSQL(createOccurrenceTable);
         }
         if (oldVersion < 5){
 
@@ -222,5 +224,93 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(receiver_id) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                     ")");
         }
+
+        if(oldVersion < 10){
+            db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
+            db.execSQL("DROP TABLE IF EXISTS " + T_TASKS);
+            db.execSQL("DROP TABLE IF EXISTS " + T_SINGLE_TASKS);
+            db.execSQL("DROP TABLE IF EXISTS " + T_REPEATING_TASKS);
+            db.execSQL("DROP TABLE IF EXISTS " + T_R_TASK_OCCURRENCE);
+            db.execSQL("DROP TABLE IF EXISTS " + T_BOSS);
+
+            db.execSQL("create  table " + T_CATEGORIES + " (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "creatorId TEXT NOT NULL ," +
+                    "name TEXT NOT NULL ," +
+                    "colorhex TEXT NOT NULL " +
+                    ")");
+
+            // GLAVNA TABELA SA ZAJEDNIČKIM POLJIMA
+            String createTaskTable = "CREATE TABLE " + T_TASKS + " (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "creatorId TEXT, " +
+                    "name TEXT NOT NULL, " +
+                    "description TEXT, " +
+                    "categoryId INTEGER, " +
+                    "taskType TEXT NOT NULL, " +
+                    "status TEXT, " +
+                    "importance TEXT, " +
+                    "difficulty TEXT, " +
+                    "valueXP INTEGER, " +
+                    "deleted INTEGER DEFAULT 0, " +
+                    "FOREIGN KEY(categoryId) REFERENCES " + T_CATEGORIES + "(id)" +
+                    ");";
+
+            // TABELA SAMO ZA SINGLE TASK POLJA
+            String createSingleTaskTable = "CREATE TABLE " + T_SINGLE_TASKS + " (" +
+                    "taskId INTEGER PRIMARY KEY, " +
+                    "taskDate TEXT NOT NULL, " +
+                    "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE" +
+                    ");";
+
+            // TABELA SAMO ZA REPEATING TASK POLJA
+            String createRepeatingTaskTable = "CREATE TABLE " + T_REPEATING_TASKS + " (" +
+                    "taskId INTEGER PRIMARY KEY, " +
+                    "repeatingType TEXT, " +
+                    "interval INTEGER, " +
+                    "startingDate TEXT NOT NULL, " +
+                    "finishingDate TEXT NOT NULL, " +
+                    "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE" +
+                    ");";
+
+            //TABELA ZA OCCURRENCES REPEATING TASKA
+            String createOccurrenceTable = "CREATE TABLE " + T_R_TASK_OCCURRENCE + " (" +
+                    "occurrenceId INTEGER PRIMARY KEY, " +
+                    "repeatingTaskId INTEGER NOT NULL, " +
+                    "occurrenceDate TEXT NOT NULL, "+
+                    "occurrenceStatus TEXT NOT NULL, " +
+                    "FOREIGN KEY(repeatingTaskId) REFERENCES " + T_REPEATING_TASKS + "(taskId) on DELETE CASCADE" +
+                    ");";
+
+            //TABELA ZA BOSS-a
+            String createBossTabel = "CREATE TABLE " + T_BOSS + " (" +
+                    "bossId INTEGER PRIMARY KEY, " +
+                    "enemyId TEXT NOT NULL, " +
+                    "bossLevel INTEGER NOT NULL, " +
+                    "bossHp FLOAT NOT NULL, " +
+                    "bossGold FLOAT NOT NULL, " +
+                    "isBossBeaten INTEGER DEFAULT 0 NOT NULL, " +
+                    "didUserFightIt INTEGER DEFAULT 0 NOT NULL, " +
+                    "isAllianceBoss INTEGER DEFAULT 0 NOT NULL," +
+                    "bossAppearanceDate TEXT " +
+                    ");";
+
+            db.execSQL(createBossTabel);
+            db.execSQL(createTaskTable);
+            db.execSQL(createSingleTaskTable);
+            db.execSQL(createRepeatingTaskTable);
+            db.execSQL(createOccurrenceTable);
+
+        } if (oldVersion < 11){
+
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN title TEXT DEFAULT 'Rookie'");
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN power_points INTEGER DEFAULT 0");
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN coins INTEGER DEFAULT 0");
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN badges TEXT");
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN equipment TEXT");
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN level_up_date INTEGER");
+            db.execSQL("ALTER TABLE " + T_USERS + " ADD COLUMN attack_chance INTEGER");
+        }
+
     }
 }
