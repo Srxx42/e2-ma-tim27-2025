@@ -119,5 +119,9 @@ public class TaskRepository {
         return localDataSource.getUserTaskCountByStatus(startDate,endDate,status,userUid);
     }
 
+    public boolean isThereTaskWithCategory(int categoryId){
+        return localDataSource.isThereTaskWithCategory(categoryId);
+    }
+
 
 }

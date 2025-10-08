@@ -268,6 +268,11 @@ public class ManageTaskActivity extends AppCompatActivity {
             int year = singleDatePicker.getYear();
             LocalDate taskDate = LocalDate.of(year,month,day);
 
+            if(taskDate.isBefore(LocalDate.now())  && editingTaskId == -1){
+                Toast.makeText(this,"Ne mozete kreirati zadatak u proslosti. ",Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             SingleTask task = new SingleTask(id,creatorId,name,description,category,TaskType.SINGLE,status,importance,difficulty,valueXP,deleted,taskDate);
 
             if(editingTaskId == -1) {

@@ -457,6 +457,36 @@ public class TaskLocalDataSource {
         return totalCount;
     }
 
+    public boolean isThereTaskWithCategory(int categoryId){
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        boolean taskExists = false;
+
+        try {
+            String query = "SELECT 1 FROM " + SQLiteHelper.T_TASKS +
+                    " WHERE categoryId = ? LIMIT 1";
+
+            String[] selectionArgs = { String.valueOf(categoryId) };
+
+            cursor = db.rawQuery(query, selectionArgs);
+
+            if (cursor != null && cursor.getCount() > 0) {
+                taskExists = true;
+            }
+        } catch (SQLiteException e) {
+            Log.e("DB_ERROR", "Greška prilikom provere postojanja taska za kategoriju: " + categoryId, e);
+        } finally {
+
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        return taskExists;
+    }
+
 
 //  ============================= LAKI STATISIKA ===============================================
 

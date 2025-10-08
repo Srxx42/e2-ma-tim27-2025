@@ -240,6 +240,20 @@ public class UserService {
         userRepository.logout();
         sharedPreferences.clearUserSession();
     }
+
+    public void addCoinsToUser(String uid, int coins){
+        userRepository.getUserProfile(uid).addOnCompleteListener(getTask-> {
+            if (!getTask.isSuccessful() || getTask.getResult() == null) {
+                Log.e("addXpToUser", "Failed to get user profile.", getTask.getException());
+                return;
+            }
+            User user = getTask.getResult();
+            int totalCoins = user.getCoins() + coins;
+            user.setCoins(totalCoins);
+
+            userRepository.updateUser(user);
+        });
+    }
     public void addXpToUser(String uid,int xpToAdd){
         userRepository.getUserProfile(uid).addOnCompleteListener(getTask->{
            if(!getTask.isSuccessful() || getTask.getResult() == null){
@@ -262,8 +276,12 @@ public class UserService {
                   Boss boss = bossService.getByEnemyId(user.getUid(),false);
                   if(boss.getBossLevel() < user.getLevel() && boss.isBossBeaten()){
                       bossService.levelUpBoss(boss);
+                  } else {
+                      if(boss.isDidUserFightIt()){
+                          boss.setDidUserFightIt(false);
+                          bossService.updateBoss(boss);
+                      }
                   }
-
                }
 
                Date lastLevelUpDate = user.getLevelUpDate();
@@ -346,5 +364,6 @@ public class UserService {
         }
         return userRepository.getUserLocallyFirst(uid);
     }
+
 
 }

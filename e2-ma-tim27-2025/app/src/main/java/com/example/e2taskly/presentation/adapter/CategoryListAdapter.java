@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +25,7 @@ import com.example.e2taskly.R;
 import com.example.e2taskly.model.TaskCategory;
 import com.example.e2taskly.presentation.activity.ManageCategoryActivity;
 import com.example.e2taskly.service.TaskCategoryService;
+import com.example.e2taskly.service.TaskService;
 
 import java.util.ArrayList;
 
@@ -32,11 +34,18 @@ public class CategoryListAdapter extends ArrayAdapter<TaskCategory> {
 
     private TaskCategoryService taskCategoryService;
 
+    private TaskService taskService;
+
+    private Context context;
+
     public CategoryListAdapter(@NonNull Context context, @NonNull ArrayList<TaskCategory> categories) {
         super(context, R.layout.item_category, categories);
         aCategories = categories;
 
         taskCategoryService = new TaskCategoryService(context);
+        taskService = new TaskService(context);
+
+        this.context = context;
     }
 
     @Override
@@ -77,9 +86,13 @@ public class CategoryListAdapter extends ArrayAdapter<TaskCategory> {
             categoryColor.setBackground(drawable);
 
             deleteButton.setOnClickListener(v -> {
-                taskCategoryService.deleteById(category.getId());
-                aCategories.remove(category);
-                this.notifyDataSetChanged();
+                if(taskService.isThereTaskWithCategory(category.getId())){
+                    Toast.makeText(context, "Pre nego što obrišete kategoriju, promenite sve njene taskove!", Toast.LENGTH_LONG).show();
+                }else {
+                    taskCategoryService.deleteById(category.getId());
+                    aCategories.remove(category);
+                    this.notifyDataSetChanged();
+                }
             });
 
 

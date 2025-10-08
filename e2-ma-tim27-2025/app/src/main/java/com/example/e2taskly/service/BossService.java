@@ -23,9 +23,9 @@ public class BossService {
         Boss boss = new Boss();
         if(isAlliance){
             float bossHp = allianceMembers * 100;
-             boss = new Boss(id,enemyId,1,bossHp,0,false,isAlliance,bossApperience);
+             boss = new Boss(id,enemyId,1,bossHp,0,false,false,isAlliance,bossApperience);
         } else{
-             boss = new Boss(id,enemyId,2,200,200,false,isAlliance,bossApperience);
+             boss = new Boss(id,enemyId,2,200,200,false,false,isAlliance,bossApperience);
         }
 
         bossRepository.createBoss(boss);
@@ -66,6 +66,7 @@ public class BossService {
         boss.setBossGold(newGold);
         boss.setBossAppearanceDate(newAppearanceDate);
         boss.setBossBeaten(false);
+        boss.setDidUserFightIt(false);
         return bossRepository.updateBoss(boss);
 
      }
@@ -80,5 +81,10 @@ public class BossService {
         int randomNumber = random.nextInt(100);
 
         return randomNumber < successPercentage;
+    }
+
+    public boolean updateBoss(Boss boss){
+
+        return bossRepository.updateBoss(boss);
     }
 }

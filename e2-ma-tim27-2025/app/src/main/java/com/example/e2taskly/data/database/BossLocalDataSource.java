@@ -30,6 +30,7 @@ public class BossLocalDataSource {
         values.put("bossHp",boss.getBossHp());
         values.put("bossGold",boss.getBossGold());
         values.put("isBossBeaten",boss.isBossBeaten() ? 1 : 0);
+        values.put("didUserFightIt", boss.isDidUserFightIt() ? 1 : 0);
         values.put("isAllianceBoss",boss.isAllianceBoss() ? 1 : 0);
         if (boss.getBossAppearanceDate() != null) {
             values.put("bossAppearanceDate", boss.getBossAppearanceDate().format(formatter));
@@ -60,6 +61,7 @@ public class BossLocalDataSource {
             float bossHp = cursor.getFloat(cursor.getColumnIndexOrThrow("bossHp"));
             float bossGold = cursor.getFloat(cursor.getColumnIndexOrThrow("bossGold"));
             boolean isBossBeaten = cursor.getInt(cursor.getColumnIndexOrThrow("isBossBeaten")) == 1;
+            boolean didUserFightIt = cursor.getInt(cursor.getColumnIndexOrThrow("didUserFightIt")) == 1;
             boolean isAllianceBoss = cursor.getInt(cursor.getColumnIndexOrThrow("isAllianceBoss")) == 1;
             String bossAppearanceDateStr = cursor.getString(cursor.getColumnIndexOrThrow("bossAppearanceDate"));
             LocalDate bossAppearanceDate = null;
@@ -67,7 +69,7 @@ public class BossLocalDataSource {
                 bossAppearanceDate = LocalDate.parse(bossAppearanceDateStr, formatter);
             }
 
-            boss = new Boss(id,enemyId,bossLevel,bossHp,bossGold,isBossBeaten,isAllianceBoss,bossAppearanceDate);
+            boss = new Boss(id,enemyId,bossLevel,bossHp,bossGold,isBossBeaten,didUserFightIt,isAllianceBoss,bossAppearanceDate);
         }
 
         cursor.close();
@@ -90,6 +92,7 @@ public class BossLocalDataSource {
             float bossHp = cursor.getFloat(cursor.getColumnIndexOrThrow("bossHp"));
             float bossGold = cursor.getFloat(cursor.getColumnIndexOrThrow("bossGold"));
             boolean isBossBeaten = cursor.getInt(cursor.getColumnIndexOrThrow("isBossBeaten")) == 1;
+            boolean didUserFightIt = cursor.getInt(cursor.getColumnIndexOrThrow("didUserFightIt")) == 1;
             boolean isAllianceBoss = cursor.getInt(cursor.getColumnIndexOrThrow("isAllianceBoss")) == 1;
             String bossAppearanceDateStr = cursor.getString(cursor.getColumnIndexOrThrow("bossAppearanceDate"));
             LocalDate bossAppearanceDate = null;
@@ -97,7 +100,7 @@ public class BossLocalDataSource {
                 bossAppearanceDate = LocalDate.parse(bossAppearanceDateStr, formatter);
             }
 
-            boss = new Boss(id,eId,bossLevel,bossHp,bossGold,isBossBeaten,isAllianceBoss,bossAppearanceDate);
+            boss = new Boss(id,eId,bossLevel,bossHp,bossGold,isBossBeaten,didUserFightIt,isAllianceBoss,bossAppearanceDate);
         }
 
         cursor.close();
@@ -114,6 +117,7 @@ public class BossLocalDataSource {
         values.put("bossHp", boss.getBossHp());
         values.put("bossGold", boss.getBossGold());
         values.put("isBossBeaten", boss.isBossBeaten() ? 1 : 0);
+        values.put("didUserFightIt", boss.isDidUserFightIt() ? 1 : 0);
         values.put("isAllianceBoss", boss.isAllianceBoss() ? 1 : 0);
         if (boss.getBossAppearanceDate() != null) {
             values.put("bossAppearanceDate", boss.getBossAppearanceDate().format(formatter));

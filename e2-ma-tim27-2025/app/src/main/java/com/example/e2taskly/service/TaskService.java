@@ -138,4 +138,8 @@ public class TaskService {
 
     }
 
+    public boolean isThereTaskWithCategory(int categoryId){
+        return taskRepository.isThereTaskWithCategory(categoryId);
+    }
+
 }

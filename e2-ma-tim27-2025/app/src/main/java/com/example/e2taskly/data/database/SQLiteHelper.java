@@ -143,6 +143,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "bossHp FLOAT NOT NULL, " +
                 "bossGold FLOAT NOT NULL, " +
                 "isBossBeaten INTEGER DEFAULT 0 NOT NULL, " +
+                "didUserFightIt INTEGER DEFAULT 0 NOT NULL, " +
                 "isAllianceBoss INTEGER DEFAULT 0 NOT NULL," +
                 "bossAppearanceDate TEXT " +
                 ");";
@@ -289,6 +290,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     "bossHp FLOAT NOT NULL, " +
                     "bossGold FLOAT NOT NULL, " +
                     "isBossBeaten INTEGER DEFAULT 0 NOT NULL, " +
+                    "didUserFightIt INTEGER DEFAULT 0 NOT NULL, " +
                     "isAllianceBoss INTEGER DEFAULT 0 NOT NULL," +
                     "bossAppearanceDate TEXT " +
                     ");";

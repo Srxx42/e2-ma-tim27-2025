@@ -9,20 +9,30 @@ public class Boss {
     private float bossHp;
     private float bossGold;
     private boolean isBossBeaten;
+    private boolean didUserFightIt;
     private boolean isAllianceBoss;
     private LocalDate bossAppearanceDate;
 
     public Boss(){}
 
-    public Boss(int bossId, String enemyId, int bossLevel, float bossHp, float bossGold, boolean isBossBeaten, boolean isAllianceBoss, LocalDate bossAppearanceDate) {
+    public Boss(int bossId, String enemyId, int bossLevel, float bossHp, float bossGold, boolean isBossBeaten,boolean didUserFightIt ,boolean isAllianceBoss, LocalDate bossAppearanceDate) {
         this.bossId = bossId;
         this.enemyId = enemyId;
         this.bossLevel = bossLevel;
         this.bossHp = bossHp;
         this.bossGold = bossGold;
         this.isBossBeaten = isBossBeaten;
+        this.didUserFightIt = didUserFightIt;
         this.isAllianceBoss = isAllianceBoss;
         this.bossAppearanceDate = bossAppearanceDate;
+    }
+
+    public boolean isDidUserFightIt() {
+        return didUserFightIt;
+    }
+
+    public void setDidUserFightIt(boolean didUserFightIt) {
+        this.didUserFightIt = didUserFightIt;
     }
 
     public int getBossId() {

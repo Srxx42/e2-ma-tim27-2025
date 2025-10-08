@@ -9,7 +9,7 @@
 
     <!-- Pozadinska slika koja se menja -->
     <ImageView
-        android:id="@+id/iv_background"
+        android:id="@+id/boss_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
@@ -29,7 +29,7 @@
 
     <!-- Health Bar Bossa (crveni) -->
     <ProgressBar
-        android:id="@+id/pb_boss_hp"
+        android:id="@+id/boss_hp_bar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="25dp"
@@ -42,8 +42,8 @@
         android:id="@+id/tv_boss_hp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/pb_boss_hp"
-        android:layout_alignBottom="@id/pb_boss_hp"
+        android:layout_alignTop="@id/boss_hp_bar"
+        android:layout_alignBottom="@id/boss_hp_bar"
         android:layout_centerHorizontal="true"
         android:gravity="center"
         android:textColor="@android:color/white"
@@ -56,7 +56,7 @@
         android:id="@+id/view_pp_bar"
         android:layout_width="match_parent"
         android:layout_height="25dp"
-        android:layout_below="@id/pb_boss_hp"
+        android:layout_below="@id/boss_hp_bar"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/blue_bar_background" />
@@ -307,7 +307,7 @@ tools:visibility="visible">
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="(Reenter page to try again)"
+            android:text="(Level up for another chance)"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:shadowColor="@android:color/black"
@@ -316,5 +316,87 @@ tools:visibility="visible">
             android:shadowRadius="2"/>
 
     </LinearLayout>
+
+    <!-- =================================================================== -->
+    <!--          EKRAN ZA NAGRADE NAKON POBEDE BOSSA (OVERLAY)           -->
+    <!-- =================================================================== -->
+    <RelativeLayout
+        android:id="@+id/reward_overlay_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#A6000000"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <!-- GIF kovčega -->
+        <ImageView
+            android:id="@+id/iv_chest_gif"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/chest_closed" />
+
+        <!-- Kontejner za prikaz nagrada (inicijalno nevidljiv) -->
+        <LinearLayout
+            android:id="@+id/ll_rewards_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/iv_chest_gif"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You received:"
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="2"/>
+
+            <!-- Prikaz zlata -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_reward_gold_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFD700"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    tools:text="250" />
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/gold_coins" />
+            </LinearLayout>
+
+            <!-- Kontejner za iteme (dinamički se popunjava) -->
+            <LinearLayout
+                android:id="@+id/ll_reward_items"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+                <!-- Ovde će se dinamički dodavati ikonice za iteme -->
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
     </RelativeLayout>
