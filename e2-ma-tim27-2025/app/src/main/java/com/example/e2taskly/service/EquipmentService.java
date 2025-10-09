@@ -131,7 +131,6 @@ public class EquipmentService {
                 return Tasks.whenAll(updateItemTask, updatePowerPoint);
 
             } else {
-                // Logic to activate a new item
                 itemToActivate.setActivated(true);
 
                 if (template.getType() == EquipmentType.POTION) {
