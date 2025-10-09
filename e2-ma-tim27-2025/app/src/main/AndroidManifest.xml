@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.E2Taskly">
         <activity
+            android:name=".presentation.activity.EquipmentActivity"
+            android:exported="false" />
+        <activity
             android:name=".presentation.activity.ShopActivity"
             android:exported="false" />
         <activity

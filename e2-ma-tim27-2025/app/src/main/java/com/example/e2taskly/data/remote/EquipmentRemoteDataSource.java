@@ -19,8 +19,24 @@ public class EquipmentRemoteDataSource {
         return db.collection("users").document(userId).collection("inventory").get();
     }
     public Task<DocumentReference> addInventoryItem(String userId, UserInventoryItem item) {
-        item.setUserId(null);
-        return db.collection("users").document(userId).collection("inventory").add(item);
+        item.setUserId(userId);
+        Task<DocumentReference> addTask = db.collection("users")
+                .document(userId)
+                .collection("inventory")
+                .add(item);
+
+        addTask.addOnSuccessListener(documentReference -> {
+            String inventoryId = documentReference.getId();
+            item.setInventoryId(inventoryId);
+
+            db.collection("users")
+                    .document(userId)
+                    .collection("inventory")
+                    .document(inventoryId)
+                    .set(item);
+        });
+
+        return addTask;
     }
     public Task<Void> updateInventoryItem(String userId, UserInventoryItem item) {
         String inventoryId = item.getInventoryId();

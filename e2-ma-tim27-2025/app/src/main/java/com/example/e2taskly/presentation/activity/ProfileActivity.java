@@ -3,6 +3,7 @@ package com.example.e2taskly.presentation.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -26,13 +27,23 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.e2taskly.R;
+import com.example.e2taskly.model.EquipmentTemplate;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.UserInventoryItem;
+import com.example.e2taskly.service.EquipmentService;
 import com.example.e2taskly.service.LevelingService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ProfileActivity extends BaseActivity {
     public static final String EXTRA_USER_ID = "com.example.e2taskly.USER_ID";
@@ -50,6 +61,10 @@ public class ProfileActivity extends BaseActivity {
     private User profileUserObject;
     private SharedPreferencesUtil sharedPreferences;
     private ImageView menuButton;
+    private TextView labelEquipment;
+    private LinearLayout layoutEquipment;
+    private Button buttonMyEquipment;
+    private EquipmentService equipmentService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +87,7 @@ public class ProfileActivity extends BaseActivity {
 
         userService = new UserService(this);
         levelingService = new LevelingService();
+        equipmentService = new EquipmentService(this);
         setupViews();
 
         Intent intent = getIntent();
@@ -86,8 +102,6 @@ public class ProfileActivity extends BaseActivity {
             return;
         }
         buttonChangePassword.setOnClickListener(v -> showChangePasswordDialog());
-
-        loadUserProfile();
     }
     private void setupViews(){
         imageViewAvatar = findViewById(R.id.imageViewAvatar);
@@ -108,6 +122,9 @@ public class ProfileActivity extends BaseActivity {
         coinsLayout = findViewById(R.id.coinsLayout);
         textViewPower = findViewById(R.id.textViewPower);
         textViewCoins = findViewById(R.id.textViewCoins);
+        labelEquipment = findViewById(R.id.labelEquipment);
+        layoutEquipment = findViewById(R.id.layoutEquipment);
+        buttonMyEquipment = findViewById(R.id.buttonMyEquipment);
     }
     @Override
     protected void onResume() {
@@ -193,17 +210,24 @@ public class ProfileActivity extends BaseActivity {
             textViewCoins.setText(String.valueOf(user.getCoins()));
             buttonAddFriend.setVisibility(View.GONE);
             buttonRemoveFriend.setVisibility(View.GONE);
+            loadAndDisplayAllEquipment(currentUserId);
+            buttonMyEquipment.setVisibility(View.VISIBLE);
+            buttonMyEquipment.setOnClickListener(v -> {
+                Intent intent = new Intent(ProfileActivity.this, EquipmentActivity.class);
+                startActivity(intent);
+            });
         }else{
             powerLayout.setVisibility(View.GONE);
             coinsLayout.setVisibility(View.GONE);
             buttonChangePassword.setVisibility(View.GONE);
             menuButton.setVisibility(View.GONE);
+            loadAndDisplayActiveEquipment(user.getUid());
+            buttonMyEquipment.setVisibility(View.GONE);
             updateFriendshipButtons();
         }
         displayProgress(user);
     }
     private void updateFriendshipButtons() {
-        // Check if the viewed user's ID is in the current user's friend list
         boolean areFriends = currentUserObject.getFriendIds().contains(profileUserObject.getUid());
 
         if (areFriends) {
@@ -325,4 +349,90 @@ public class ProfileActivity extends BaseActivity {
             progressBarXp.setProgress(xpProgressInLevel);
         }
     }
+    private View createEquipmentItemView(UserInventoryItem item, EquipmentTemplate template) {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View itemView = inflater.inflate(R.layout.item_equipment, layoutEquipment, false);
+
+        ImageView imageView = itemView.findViewById(R.id.imageViewEquipment);
+        TextView textViewName = itemView.findViewById(R.id.textViewEquipmentName);
+        TextView textViewDescription = itemView.findViewById(R.id.textViewEquipmentDescription);
+        TextView textViewStatus = itemView.findViewById(R.id.textViewStatus);
+
+        itemView.findViewById(R.id.buttonActivate).setVisibility(View.GONE);
+        textViewName.setText(template.getName());
+        textViewDescription.setText(template.getDescription());
+
+        // Prikaz statusa sa bojama
+        textViewStatus.setVisibility(View.VISIBLE);
+        if (item.isActivated()) {
+            textViewStatus.setTextColor(Color.parseColor("#4CAF50")); // Zelena
+            textViewStatus.setText(template.getDurationInFights() > 0 ?
+                    "Active for " + item.getFightsRemaining() + " more battles" : "Active");
+        } else {
+            textViewStatus.setTextColor(Color.GRAY);
+            textViewStatus.setText("Inactive");
+        }
+
+        // Postavljanje slike
+        String itemId = template.getId();
+        if (itemId.contains("boots")) imageView.setImageResource(R.drawable.ic_boots);
+        else if (itemId.contains("gloves")) imageView.setImageResource(R.drawable.ic_gloves);
+        else if (itemId.contains("shield")) imageView.setImageResource(R.drawable.ic_shield);
+        else if (itemId.contains("potion")) imageView.setImageResource(R.drawable.ic_potion);
+        else if (itemId.contains("bow")) imageView.setImageResource(R.drawable.ic_bow);
+        else if (itemId.contains("sword")) imageView.setImageResource(R.drawable.ic_sword);
+
+        return itemView;
+    }
+    private void loadAndDisplayActiveEquipment(String userId) {
+        loadEquipment(userId, true);
+    }
+    private void loadAndDisplayAllEquipment(String userId) {
+        loadEquipment(userId, false);
+    }
+    private void loadEquipment(String userId, boolean onlyActive) {
+        layoutEquipment.removeAllViews();
+
+        Task<List<UserInventoryItem>> inventoryTask = equipmentService.getUserInventory(userId);
+        Task<List<EquipmentTemplate>> templatesTask = equipmentService.getEquipmentTemplates();
+
+        Tasks.whenAllSuccess(inventoryTask, templatesTask).addOnSuccessListener(results -> {
+            List<UserInventoryItem> inventory = (List<UserInventoryItem>) results.get(0);
+            List<EquipmentTemplate> templates = (List<EquipmentTemplate>) results.get(1);
+            Map<String, EquipmentTemplate> templateMap = new HashMap<>();
+            for (EquipmentTemplate t : templates) {
+                templateMap.put(t.getId(), t);
+            }
+
+            List<UserInventoryItem> itemsToDisplay = new ArrayList<>();
+            for (UserInventoryItem item : inventory) {
+                if (!onlyActive || item.isActivated()) {
+                    itemsToDisplay.add(item);
+                }
+            }
+
+            if (itemsToDisplay.isEmpty()) {
+                labelEquipment.setVisibility(View.VISIBLE);
+                layoutEquipment.setVisibility(View.GONE);
+                labelEquipment.setText(onlyActive ? "No Active Equipment" : "No Equipment in Inventory");
+            } else {
+                labelEquipment.setVisibility(View.VISIBLE);
+                layoutEquipment.setVisibility(View.VISIBLE);
+                labelEquipment.setText(onlyActive ? "Active Equipment" : "My Equipment");
+
+                for (UserInventoryItem item : itemsToDisplay) {
+                    EquipmentTemplate template = templateMap.get(item.getTemplateId());
+                    if (template != null) {
+                        View itemView = createEquipmentItemView(item, template);
+                        layoutEquipment.addView(itemView);
+                    }
+                }
+            }
+        }).addOnFailureListener(e -> {
+            labelEquipment.setVisibility(View.GONE);
+            layoutEquipment.setVisibility(View.GONE);
+        });
+    }
+
+
 }

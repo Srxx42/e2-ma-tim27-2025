@@ -2,6 +2,8 @@ package com.example.e2taskly.presentation.activity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -17,14 +19,17 @@ import com.example.e2taskly.model.EquipmentTemplate;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.presentation.adapter.ShopAdapter;
 import com.example.e2taskly.service.EquipmentService;
+import com.example.e2taskly.service.LevelingService;
 import com.example.e2taskly.service.UserService;
 
 import java.util.List;
 
 public class ShopActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
+    private ImageView menuButton;
     private ShopAdapter shopAdapter;
     private EquipmentService equipmentService;
+    private LevelingService levelingService;
     private UserService userService;
     private List<EquipmentTemplate> equipmentList;
     private User currentUser;
@@ -39,8 +44,10 @@ public class ShopActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         equipmentService = new EquipmentService(this);
+        levelingService = new LevelingService();
         userService = new UserService(this);
-
+        menuButton = findViewById(R.id.menuButton);
+        menuButton.setVisibility(View.GONE);
         loadShopItems();
     }
 
@@ -49,9 +56,7 @@ public class ShopActivity extends AppCompatActivity {
         if (currentUserId != null) {
             userService.getUserProfile(currentUserId).addOnSuccessListener(user -> {
                 currentUser = user;
-                // Ovde bi trebalo implementirati logiku za dobavljanje nagrade prethodnog bosa
-                // previousBossReward = ...
-                previousBossReward = 200;
+                previousBossReward = levelingService.getCoinsRewardForLevel(currentUser.getLevel());
                 equipmentService.getShopEquipment().addOnSuccessListener(templates -> {
                     equipmentList = templates;
                     Log.e("Greska",equipmentList.toString());
