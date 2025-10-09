@@ -40,4 +40,11 @@ public class LevelingService {
         }
         return (int) Math.round(xp);
     }
+    public int getCoinsRewardForLevel(int level) {
+        if (level <= 1) {
+            return 200;
+        }
+        int previousReward = getCoinsRewardForLevel(level - 1);
+        return (int) Math.round(previousReward * 1.20);
+    }
 }

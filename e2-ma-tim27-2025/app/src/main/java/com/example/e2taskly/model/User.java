@@ -18,7 +18,6 @@ public class User {
     private int powerPoints;
     private int coins;
     private List<String> badges;
-    private List<String> equipment;
     private int activeDaysStreak;
     private Date lastActivityDate;
     private List<String> friendIds;
@@ -30,7 +29,6 @@ public class User {
 
     public User() {
         this.badges = new ArrayList<>();
-        this.equipment = new ArrayList<>();
         this.activeDaysStreak=0;
         this.friendIds = new ArrayList<>();
     }
@@ -174,13 +172,6 @@ public class User {
         this.badges = badges;
     }
 
-    public List<String> getEquipment() {
-        return equipment;
-    }
-
-    public void setEquipment(List<String> equipment) {
-        this.equipment = equipment;
-    }
 
     public Date getLastActivityDate() {
         return lastActivityDate;

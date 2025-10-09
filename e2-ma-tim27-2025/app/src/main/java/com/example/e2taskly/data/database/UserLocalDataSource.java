@@ -37,9 +37,6 @@ public class UserLocalDataSource {
         if (user.getBadges() != null) {
             values.put("badges", TextUtils.join(",", user.getBadges()));
         }
-        if (user.getEquipment() != null) {
-            values.put("equipment", TextUtils.join(",", user.getEquipment()));
-        }
         values.put("active_days_streak",user.getActiveDaysStreak());
         values.put("last_activity_date",user.getLastActivityDate().getTime());
         values.put("friends_ids",TextUtils.join(",", user.getFriendIds()));
@@ -86,9 +83,6 @@ public class UserLocalDataSource {
         values.put("coins", user.getCoins());
         if (user.getBadges() != null) {
             values.put("badges", TextUtils.join(",", user.getBadges()));
-        }
-        if (user.getEquipment() != null) {
-            values.put("equipment", TextUtils.join(",", user.getEquipment()));
         }
         values.put("active_days_streak",user.getActiveDaysStreak());
         values.put("last_activity_date",user.getLastActivityDate().getTime());
@@ -218,9 +212,6 @@ public class UserLocalDataSource {
             }
 
             String equipmentStr = cursor.getString(cursor.getColumnIndexOrThrow("equipment"));
-            if (equipmentStr != null && !equipmentStr.isEmpty()) {
-                user.setEquipment(new ArrayList<>(Arrays.asList(equipmentStr.split(","))));
-            }
 
             user.setActiveDaysStreak(cursor.getInt(cursor.getColumnIndexOrThrow("active_days_streak")));
             user.setLastActivityDate(new Date(cursor.getLong(cursor.getColumnIndexOrThrow("last_activity_date"))));
@@ -240,5 +231,19 @@ public class UserLocalDataSource {
         }
         db.close();
         return user;
+    }
+    public void updateUserCoins(String uid, int newCoinAmount) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("coins", newCoinAmount);
+        db.update(SQLiteHelper.T_USERS, values, "id = ?", new String[]{uid});
+        db.close();
+    }
+    public void updatePowerPoints(String uid, int newPowerPointsAmount) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("power_points", newPowerPointsAmount);
+        db.update(SQLiteHelper.T_USERS, values, "id = ?", new String[]{uid});
+        db.close();
     }
 }
