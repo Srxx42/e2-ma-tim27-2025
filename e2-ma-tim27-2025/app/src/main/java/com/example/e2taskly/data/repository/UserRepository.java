@@ -210,4 +210,9 @@ public class UserRepository {
             localDataSource.updateUserCoins(uid, newCoinAmount);
         });
     }
+    public Task<Void> updatePowerPoints(String uid, int newPowerPointsAmount) {
+        return remoteDataSource.updatePowerPoints(uid, newPowerPointsAmount).addOnSuccessListener(aVoid -> {
+            localDataSource.updatePowerPoints(uid, newPowerPointsAmount);
+        });
+    }
 }

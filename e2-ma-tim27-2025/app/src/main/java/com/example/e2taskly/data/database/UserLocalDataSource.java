@@ -239,4 +239,11 @@ public class UserLocalDataSource {
         db.update(SQLiteHelper.T_USERS, values, "id = ?", new String[]{uid});
         db.close();
     }
+    public void updatePowerPoints(String uid, int newPowerPointsAmount) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("power_points", newPowerPointsAmount);
+        db.update(SQLiteHelper.T_USERS, values, "id = ?", new String[]{uid});
+        db.close();
+    }
 }

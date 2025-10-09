@@ -374,4 +374,13 @@ public class UserService {
         // Pozivamo metodu iz Repository-ja (koju ćemo sada kreirati)
         return userRepository.updateUserCoins(uid, newCoinAmount);
     }
+    public void updateUser(User user){
+        userRepository.updateUser(user);
+    }
+    public Task<Void> updatePowerPoints(String uid, int newPowerPointsAmount) {
+        if (uid == null || uid.isEmpty()) {
+            return Tasks.forException(new Exception("User ID cannot be null."));
+        }
+        return userRepository.updatePowerPoints(uid, newPowerPointsAmount);
+    }
 }

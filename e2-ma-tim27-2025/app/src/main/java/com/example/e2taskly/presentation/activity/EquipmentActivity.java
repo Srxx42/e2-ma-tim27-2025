@@ -84,13 +84,13 @@ public class EquipmentActivity extends AppCompatActivity implements EquipmentAda
     public void onActivateClick(UserInventoryItem item) {
         String userId = userService.getCurrentUserId();
         EquipmentTemplate template = templateMap.get(item.getTemplateId());
-        if (userId != null && template != null) {
-            equipmentService.activateItemForBattle(userId, item, template).addOnCompleteListener(task -> {
+        if (currentUser != null && template != null) {
+            equipmentService.activateItemForBattle(currentUser, item, template).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     Toast.makeText(this, template.getName() + " activated!", Toast.LENGTH_SHORT).show();
                     loadInventoryAndTemplates();
                 } else {
-                    Toast.makeText(this, "Failed to activate item.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to activate item: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }

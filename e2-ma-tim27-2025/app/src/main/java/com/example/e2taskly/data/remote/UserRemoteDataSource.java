@@ -182,4 +182,7 @@ public class UserRemoteDataSource {
     public Task<Void> updateUserCoins(String uid, int newCoinAmount) {
         return db.collection("users").document(uid).update("coins", newCoinAmount);
     }
+    public Task<Void> updatePowerPoints(String uid, int newCoinAmount) {
+        return db.collection("users").document(uid).update("powerPoints", newCoinAmount);
+    }
 }
