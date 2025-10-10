@@ -216,6 +216,15 @@ public class ProfileActivity extends BaseActivity {
                 Intent intent = new Intent(ProfileActivity.this, EquipmentActivity.class);
                 startActivity(intent);
             });
+//            equipmentService.getActiveBonusesForBattle(user.getUid()).addOnSuccessListener(activeBonuses -> {
+//                int totalBattlePower = (int) Math.round(user.getPowerPoints() * activeBonuses.getPpMultiplier());
+//                textViewPower.setText(String.valueOf(totalBattlePower));
+//                progressBar.setVisibility(View.GONE);
+//            }).addOnFailureListener(e -> {
+//                Toast.makeText(this, "Failed to calculate battle power.", Toast.LENGTH_SHORT).show();
+//                textViewPower.setText(String.valueOf(user.getPowerPoints()));
+//                progressBar.setVisibility(View.GONE);
+//            });
         }else{
             powerLayout.setVisibility(View.GONE);
             coinsLayout.setVisibility(View.GONE);
@@ -292,7 +301,7 @@ public class ProfileActivity extends BaseActivity {
         final EditText etNewPassword = dialogView.findViewById(R.id.editTextNewPassword);
         final EditText etConfirmPassword = dialogView.findViewById(R.id.editTextConfirmPassword);
 
-        builder.setView(dialogView) // Postavlja vaš XML kao sadržaj
+        builder.setView(dialogView)
                 .setTitle(R.string.profile_change_password_dialog_title)
 
                 .setPositiveButton(R.string.dialog_change_button, (dialog, id) -> {
