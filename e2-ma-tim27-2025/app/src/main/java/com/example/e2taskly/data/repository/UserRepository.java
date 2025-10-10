@@ -205,4 +205,14 @@ public class UserRepository {
             });
         }
     }
+    public Task<Void> updateUserCoins(String uid, int newCoinAmount) {
+        return remoteDataSource.updateUserCoins(uid, newCoinAmount).addOnSuccessListener(aVoid -> {
+            localDataSource.updateUserCoins(uid, newCoinAmount);
+        });
+    }
+    public Task<Void> updatePowerPoints(String uid, int newPowerPointsAmount) {
+        return remoteDataSource.updatePowerPoints(uid, newPowerPointsAmount).addOnSuccessListener(aVoid -> {
+            localDataSource.updatePowerPoints(uid, newPowerPointsAmount);
+        });
+    }
 }
