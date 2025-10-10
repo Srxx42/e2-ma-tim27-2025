@@ -87,4 +87,10 @@ public class BossService {
 
         return bossRepository.updateBoss(boss);
     }
+
+    public Boss getByBossId(int bossId){
+        return bossRepository.getById(bossId);
+    }
+
+
 }
