@@ -92,6 +92,36 @@
         android:shadowRadius="2"
         android:textStyle="bold" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:orientation="horizontal"
+            android:layout_below="@id/tv_possible_rewards_label"
+            >
+        <ImageView
+            android:id="@+id/reward1"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="10dp"
+            android:src="@drawable/ic_boots" />
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_gloves" />
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_shield" />
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_sword" />
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_bow" />
+        </LinearLayout>
+
     <!-- Ovde će se dinamički dodavati ikonice za nagrade -->
     <LinearLayout
         android:id="@+id/ll_possible_rewards"
@@ -201,6 +231,12 @@
                 android:layout_width="30dp"
                 android:layout_height="60dp"
                 android:src="@drawable/short_sword" />
+            <ImageView
+                android:id="@+id/iv_sword6"
+                android:layout_width="30dp"
+                android:layout_height="60dp"
+                android:src="@drawable/short_sword" />
+
         </LinearLayout>
 
         <!-- Current items i procenat -->
@@ -221,12 +257,13 @@
                 android:textStyle="bold" />
 
             <!-- Ovde će se dinamički dodavati ikonice za iteme -->
-            <LinearLayout
+            <com.google.android.flexbox.FlexboxLayout
                 android:id="@+id/ll_current_items"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:orientation="horizontal" />
+                app:flexWrap="wrap"
+                app:alignItems="center" />
 
         </LinearLayout>
 
@@ -243,7 +280,7 @@
 
     </RelativeLayout>
 
-</RelativeLayout>
+    </RelativeLayout>
 
 <LinearLayout
 android:id="@+id/ll_boss_beaten_message"
@@ -278,6 +315,8 @@ tools:visibility="visible">
     android:shadowDx="1"
     android:shadowDy="1"
     android:shadowRadius="2"/>
+
+
 
 </LinearLayout>
 
@@ -320,6 +359,7 @@ tools:visibility="visible">
     <!-- =================================================================== -->
     <!--          EKRAN ZA NAGRADE NAKON POBEDE BOSSA (OVERLAY)           -->
     <!-- =================================================================== -->
+
     <RelativeLayout
         android:id="@+id/reward_overlay_container"
         android:layout_width="match_parent"
@@ -352,14 +392,14 @@ tools:visibility="visible">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="You received:"
-                android:textColor="@android:color/white"
-                android:textSize="22sp"
-                android:textStyle="bold"
                 android:shadowColor="@android:color/black"
                 android:shadowDx="1"
                 android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:shadowRadius="2"
+                android:text="You received:"
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold" />
 
             <!-- Prikaz zlata -->
             <LinearLayout
@@ -383,6 +423,8 @@ tools:visibility="visible">
                     android:layout_height="40dp"
                     android:layout_marginStart="8dp"
                     android:src="@drawable/gold_coins" />
+
+
             </LinearLayout>
 
             <!-- Kontejner za iteme (dinamički se popunjava) -->
@@ -390,13 +432,20 @@ tools:visibility="visible">
                 android:id="@+id/ll_reward_items"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:visibility="visible"
                 android:layout_marginTop="12dp"
                 android:orientation="horizontal">
-                <!-- Ovde će se dinamički dodavati ikonice za iteme -->
+
+                <ImageView
+                    android:id="@+id/iv_reward_item"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_bow" />
             </LinearLayout>
 
         </LinearLayout>
 
     </RelativeLayout>
 
-    </RelativeLayout>
+</RelativeLayout>

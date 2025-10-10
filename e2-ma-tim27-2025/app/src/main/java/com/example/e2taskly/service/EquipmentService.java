@@ -18,11 +18,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 public class EquipmentService {
     private final EquipmentRepository equipmentRepository;
     private final LevelingService levelingService;
     private final UserService userService;
+
+    private List<EquipmentTemplate> allTemplatesCache = null;
 
     public EquipmentService(Context context){
         this.equipmentRepository = new EquipmentRepository(context);
@@ -93,6 +97,26 @@ public class EquipmentService {
     }
     public Task<List<UserInventoryItem>> getUserInventory(String userId) {
         return equipmentRepository.syncAndGetUserInventory(userId);
+    }
+
+    public Task<List<UserInventoryItem>> getUserActiveItems(String userId) {
+        Task<List<UserInventoryItem>> originalTask = equipmentRepository.syncAndGetUserInventory(userId);
+
+        return originalTask.continueWith(task -> {
+            if (!task.isSuccessful()) {
+                throw task.getException();
+            }
+            List<UserInventoryItem> allItems = task.getResult();
+            if (allItems == null) {
+                return new ArrayList<UserInventoryItem>();
+            }
+
+            List<UserInventoryItem> activeItems = allItems.stream()
+                    .filter(UserInventoryItem::isActivated)
+                    .collect(Collectors.toList());
+
+            return activeItems;
+        });
     }
     public Task<ActiveBonuses> getActiveBonusesForBattle(String userId) {
         Task<List<UserInventoryItem>> inventoryTask = getUserInventory(userId);
@@ -278,6 +302,58 @@ public class EquipmentService {
                 return equipmentRepository.buyInventoryItem(userId, newItem).continueWith(task -> null);
             }
         });
+    }
+    public Task<Void> loadAllTemplates() {
+        return getEquipmentTemplates().onSuccessTask(templates -> {
+            this.allTemplatesCache = templates;
+            return Tasks.forResult(null);
+        });
+    }
+
+    public EquipmentTemplate getRandomItem(){
+        Random random = new Random();
+        int randomNumber = random.nextInt(100);
+
+        List<EquipmentTemplate> allItems = allTemplatesCache;
+        EquipmentTemplate bow = new EquipmentTemplate();
+        EquipmentTemplate sword = new EquipmentTemplate();
+        EquipmentTemplate boots = new EquipmentTemplate();
+        EquipmentTemplate gloves = new EquipmentTemplate();
+        EquipmentTemplate shield = new EquipmentTemplate();
+
+        for(EquipmentTemplate newItem : allItems){
+            switch (newItem.getId()) {
+                case "weapon_sword_1":
+                    sword = newItem;
+                    break;
+                case "weapon_bow_1":
+                    bow = newItem;
+                    break;
+                case "clothing_boots_1":
+                    boots = newItem;
+                    break;
+                case "clothing_gloves_1":
+                    gloves = newItem;
+                    break;
+                case "clothing_shield_1":
+                    shield = newItem;
+                    break;
+            }
+        }
+
+        if(randomNumber < 3){
+            return sword;
+        } else if (randomNumber < 6) {
+            return bow;
+        } else if(randomNumber < 37){
+            return boots;
+        } else if(randomNumber < 68){
+            return gloves;
+        }else {
+            return shield;
+        }
+
+
     }
 }
 

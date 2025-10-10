@@ -92,5 +92,17 @@ public class BossService {
         return bossRepository.getById(bossId);
     }
 
+    public boolean willUserGetItems(Boolean isBossBeaten){
+        int successPercentage = 100;
+        if(!isBossBeaten) successPercentage = 10;
+
+        Random random = new Random();
+
+        int randomNumber = random.nextInt(100);
+
+        return randomNumber < successPercentage;
+
+    }
+
 
 }

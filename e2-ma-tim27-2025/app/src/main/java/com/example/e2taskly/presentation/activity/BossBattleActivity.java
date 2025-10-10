@@ -1,5 +1,9 @@
 package com.example.e2taskly.presentation.activity;
 
+import static android.view.View.GONE;
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -30,8 +34,13 @@ import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.e2taskly.R;
+import com.example.e2taskly.model.ActiveBonuses;
 import com.example.e2taskly.model.Boss;
+import com.example.e2taskly.model.EquipmentTemplate;
+import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.UserInventoryItem;
 import com.example.e2taskly.service.BossService;
+import com.example.e2taskly.service.EquipmentService;
 import com.example.e2taskly.service.UserService;
 
 import java.util.ArrayList;
@@ -43,6 +52,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
     private BossService bossService;
     private UserService userService;
     private Boss currentBoss;
+    private EquipmentService equipmentService;
 
     // UI Elementi
     private RelativeLayout rootLayout;
@@ -51,6 +61,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
     private TextView tvBossHp, tvUserPp, tvGoldAmount, tvAttackChance;
     private ImageButton btnAttack;
     private List<ImageView> swordIcons;
+    private com.google.android.flexbox.FlexboxLayout  ll_current_items;
 
     //UI Layouts
     private RelativeLayout battle_ui_container;
@@ -61,7 +72,10 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
     private ImageView ivChestGif;
     private LinearLayout llRewardsContainer;
     private TextView tvRewardGoldAmount;
+
     private LinearLayout llRewardItems;
+
+    private ImageView iv_reward_item;
 
     // Za detekciju potresa
     private SensorManager sensorManager;
@@ -71,13 +85,20 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
 
     private boolean isChestOpen = false; // Sprečava višestruko otvaranje
 
-    private int attacksLeft = 5;
+    private int attacksLeft = 5 ;
+
+    private boolean isBonusAttackGiven = false;
     private  int attackChance ;
     private  int userPP ;
     private int userLvl;
     private float maxBossHp;
 
     private int goldToGet;
+
+    //Provara bonusa
+    private ActiveBonuses userBonuses;
+
+    private  List<UserInventoryItem> userItems;
     private boolean isDragon;
     private boolean isAttackInProgress = false; // Sprečava višestruke brze klikove
 
@@ -88,12 +109,19 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
 
         bossService = new BossService(this);
         userService = new UserService(this);
+        equipmentService = new EquipmentService(this);
 
         String userId = userService.getCurrentUserId();
         currentBoss = bossService.getByEnemyId(userId,false);
 
         initializeUI();
-        loadUserStats(userId);
+        equipmentService.loadAllTemplates().addOnSuccessListener(aVoid -> {
+            loadUserStats(userId);
+        }).addOnFailureListener(e -> {
+            Toast.makeText(this, "Failed to load game data. Please try again.", Toast.LENGTH_LONG).show();
+            finish();
+        });
+
 
     }
 
@@ -122,12 +150,32 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
                         return;
                     }
 
-                    this.attackChance = user.getAttackChance();
-                    this.userPP = user.getPowerPoints();
-                    this.userLvl = user.getLevel();
+                    equipmentService.getActiveBonusesForBattle(userId).addOnSuccessListener( bonuses -> {
 
-                    setupInitialState();
-                    btnAttack.setOnClickListener(v -> performAttack());
+                         equipmentService.getUserActiveItems(userId) .addOnSuccessListener(activeInventoryItems -> {
+
+
+                             this.userBonuses = bonuses;
+                             this.userItems = activeInventoryItems;
+                             this.attackChance = (int) (user.getAttackChance() + (userBonuses.getExtraAttackChance()/ 100 * user.getAttackChance()));
+                             if (this.attackChance > 100) {
+                                 this.attackChance = 100;
+                             }
+
+                             calculateBonusAttackProbability();
+
+                             if(userBonuses.getPpMultiplier() != 0) {
+                                 this.userPP = (int) (user.getPowerPoints() * userBonuses.getPpMultiplier());
+                             } else {
+                                 this.userPP = user.getPowerPoints();
+                             }
+
+                             this.userLvl = user.getLevel();
+
+                             setupInitialState();
+                             btnAttack.setOnClickListener(v -> performAttack());
+                         });
+                    });
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -149,6 +197,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         battle_ui_container = findViewById(R.id.battle_ui_container);
         llBossBeatenMessage = findViewById(R.id.ll_boss_beaten_message);
         lost_boss_message = findViewById(R.id.lost_boss_message);
+        ll_current_items = findViewById(R.id.ll_current_items);
 
         swordIcons = new ArrayList<>();
         swordIcons.add(findViewById(R.id.iv_sword1));
@@ -156,6 +205,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         swordIcons.add(findViewById(R.id.iv_sword3));
         swordIcons.add(findViewById(R.id.iv_sword4));
         swordIcons.add(findViewById(R.id.iv_sword5));
+        swordIcons.add(findViewById(R.id.iv_sword6));
 
         // Inicijalizacija UI elemenata za nagrade
         rewardOverlayContainer = findViewById(R.id.reward_overlay_container);
@@ -163,10 +213,12 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         llRewardsContainer = findViewById(R.id.ll_rewards_container);
         tvRewardGoldAmount = findViewById(R.id.tv_reward_gold_amount);
         llRewardItems = findViewById(R.id.ll_reward_items);
+        iv_reward_item = findViewById(R.id.iv_reward_item);
 
         setupShakeDetector();
     }
 
+    @SuppressLint("DefaultLocale")
     private void setupInitialState() {
         if (currentBoss == null) {
             Toast.makeText(this, "Boss not found!", Toast.LENGTH_SHORT).show();
@@ -176,16 +228,16 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
 
         if (currentBoss.isBossBeaten()) {
             // Boss je pobeđen
-            battle_ui_container.setVisibility(View.GONE);
-            llBossBeatenMessage.setVisibility(View.VISIBLE);
-            lost_boss_message.setVisibility(View.GONE);
-            ivBoss.setVisibility(View.GONE);
+            battle_ui_container.setVisibility(GONE);
+            llBossBeatenMessage.setVisibility(VISIBLE);
+            lost_boss_message.setVisibility(GONE);
+            ivBoss.setVisibility(GONE);
         }else if (currentBoss.isDidUserFightIt()) {
             // Korisnik je vec pokusao da pobedi boss-a
-            battle_ui_container.setVisibility(View.GONE);
-            llBossBeatenMessage.setVisibility(View.GONE);
-            lost_boss_message.setVisibility(View.VISIBLE);
-            ivBoss.setVisibility(View.GONE);
+            battle_ui_container.setVisibility(GONE);
+            llBossBeatenMessage.setVisibility(GONE);
+            lost_boss_message.setVisibility(VISIBLE);
+            ivBoss.setVisibility(GONE);
         } else {
 
 
@@ -203,7 +255,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
 
 
         maxBossHp = currentBoss.getBossHp();
-        goldToGet =(int) currentBoss.getBossGold();
+        goldToGet =(int) currentBoss.getBossGold() + (int)(currentBoss.getBossGold() * (userBonuses.getCoinGainBonusPercent()/100));
         bossHpBar.setMax(100);
         updateHpUI();
 
@@ -211,7 +263,52 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         tvAttackChance.setText(String.format("%d%%", attackChance));
         tvUserPp.setText(String.valueOf((int) userPP));
 
-        // TODO: Implementirati logiku za prikaz mogućih i trenutnih itema
+
+        ll_current_items.removeAllViews();
+
+        for (UserInventoryItem item : userItems) {
+            int drawableId = 0;  // Za napitke
+
+            switch (item.getTemplateId()) {
+                case "weapon_sword_1":
+                    drawableId = R.drawable.ic_sword;
+                    break;
+                    case "weapon_bow_1":
+                        drawableId = R.drawable.ic_bow;
+                        break;
+                        case "clothing_boots_1":
+                        drawableId = R.drawable.ic_boots;
+                        break;
+                    case "clothing_gloves_1":
+                        drawableId = R.drawable.ic_gloves;
+                        break;
+                    case "clothing_shield_1":
+                        drawableId = R.drawable.ic_shield;
+                        break;
+
+                    default:
+                        if (item.getTemplateId().startsWith("potion_")) {
+                            drawableId = R.drawable.ic_potion;
+                        }
+                        break;
+                }
+
+                if (drawableId != 0) {
+                        ImageView icon = new ImageView(this);
+
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                                dpToPx(25),
+                                dpToPx(25)
+                        );
+                        params.setMarginEnd(dpToPx(4));
+                        icon.setLayoutParams(params);
+
+                        icon.setImageResource(drawableId);
+                        icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+                        ll_current_items.addView(icon);
+                }
+            }
         }
     }
 
@@ -258,13 +355,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
 
         if(currentBoss.getBossHp() > 0 && attacksLeft <= 0) {
             boolean lowerThanHalf = currentBoss.getBossHp() < maxBossHp / 2;
-
-            if(lowerThanHalf){
-                handleBossNotBeaten(true);
-
-            } else {
-                handleBossNotBeaten(false);
-            }
+            handleBossNotBeaten(lowerThanHalf);
         }
     }
 
@@ -292,10 +383,26 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         bossHpBar.setProgress(progress);
     }
 
+    private void calculateBonusAttackProbability(){
+        swordIcons.get(5).setVisibility(INVISIBLE);
+
+        int chance = (int) userBonuses.getExtraAttackChance();
+        if(bossService.isAttackSuccessful(chance)){
+            this.attacksLeft = 6;
+            swordIcons.get(5).setVisibility(VISIBLE);
+            this.isBonusAttackGiven = true;
+        }
+
+    }
+
     private void updateSwordVisibility() {
-        if (attacksLeft >= 0 && attacksLeft < 5) {
+        int maxAttacks = 5;
+        if(isBonusAttackGiven){
+            maxAttacks = 6;
+        }
+        if (attacksLeft >= 0 && attacksLeft < maxAttacks) {
             // Sakriva poslednji vidljiv mač
-            swordIcons.get(attacksLeft).setVisibility(View.INVISIBLE);
+            swordIcons.get(attacksLeft).setVisibility(INVISIBLE);
         }
     }
 
@@ -304,14 +411,16 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         currentBoss.setBossHp(maxBossHp);
         currentBoss.setDidUserFightIt(true);
         bossService.beatBoss(currentBoss,userLvl);
+
+        String userId = userService.getCurrentUserId();
+        equipmentService.processInventoryAfterBattle(userId);
+
         if (isDragon) {
             ivBoss.setImageResource(R.drawable.dragon_hurt_nb);
         } else {
             ivBoss.setImageResource(R.drawable.goblin_hurt_nb);
         }
         Toast.makeText(this, "Boss defeated!", Toast.LENGTH_LONG).show();
-
-        // TODO: Implementirati logiku za dodavanje nagrada korisniku
 
         btnAttack.setEnabled(false);
         showRewardScreen(true);
@@ -320,6 +429,9 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         currentBoss.setBossHp(maxBossHp);
         currentBoss.setDidUserFightIt(true);
         bossService.updateBoss(currentBoss);
+
+        String userId = userService.getCurrentUserId();
+        equipmentService.processInventoryAfterBattle(userId);
 
         if (isDragon) {
             ivBoss.setImageResource(R.drawable.dragon_attack_nb);
@@ -333,15 +445,15 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
             showRewardScreen(false);
         } else{
             Toast.makeText(this, "More luck next time warrior!", Toast.LENGTH_LONG).show();
-            lost_boss_message.setVisibility(View.VISIBLE);
+            lost_boss_message.setVisibility(VISIBLE);
         }
 
     }
 
     private void showRewardScreen(boolean isBossBeaten) {
         isChestOpen = false;
-        rewardOverlayContainer.setVisibility(View.VISIBLE);
-        llRewardsContainer.setVisibility(View.INVISIBLE); // Sakrijemo nagrade pre otvaranja
+        rewardOverlayContainer.setVisibility(VISIBLE);
+        llRewardsContainer.setVisibility(INVISIBLE); // Sakrijemo nagrade pre otvaranja
 
         // Učitaj GIF zatvorenog kovčega koji se ponavlja
         Glide.with(this)
@@ -390,15 +502,49 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
             tvRewardGoldAmount.setText(String.valueOf(reducedGold));
             userService.addCoinsToUser(currenUserId,reducedGold);
         }
-        // TODO: Ovde dodajte logiku za prikaz ikonica itema u llRewardItems
+
+        if(bossService.willUserGetItems(isBossBeaten)){
+            EquipmentTemplate dropedItem = equipmentService.getRandomItem();
+           userService.getUserProfile(currenUserId).addOnSuccessListener(currentUser ->{
+               equipmentService.handleItemDrop(currentUser, dropedItem);
+            });
+
+            iv_reward_item.setVisibility(VISIBLE);
+            setRewardItemIcon(dropedItem);
+
+        }else{
+            llRewardItems.setVisibility(GONE);
+        }
 
         // Prikazujemo nagrade sa malim zakašnjenjem i fade-in animacijom
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
             fadeIn.setDuration(500);
-            llRewardsContainer.setVisibility(View.VISIBLE);
+            llRewardsContainer.setVisibility(VISIBLE);
             llRewardsContainer.startAnimation(fadeIn);
         }, 1200); // Podesi vreme da odgovara trajanju tvog GIF-a za otvaranje
+    }
+
+    public void setRewardItemIcon(EquipmentTemplate dropedItem){
+
+        switch (dropedItem.getId()) {
+            case "weapon_sword_1":
+                iv_reward_item.setImageResource(R.drawable.ic_sword);
+                break;
+            case "weapon_bow_1":
+                iv_reward_item.setImageResource(R.drawable.ic_bow);
+                break;
+            case "clothing_boots_1":
+                iv_reward_item.setImageResource(R.drawable.ic_boots);
+                break;
+            case "clothing_gloves_1":
+                iv_reward_item.setImageResource(R.drawable.ic_gloves);
+                break;
+            case "clothing_shield_1":
+                iv_reward_item.setImageResource(R.drawable.ic_shield);
+                break;
+        }
+
     }
 
     private void setupShakeDetector() {
@@ -408,6 +554,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         }
         lastShakeTime = System.currentTimeMillis();
     }
+
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -428,12 +575,12 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
                     // Logika odlučivanja: Da li otvaramo kovčeg ili napadamo?
 
                     // 1. Ako je ekran sa nagradama vidljiv, potres otvara kovčeg.
-                    if (rewardOverlayContainer.getVisibility() == View.VISIBLE && !isChestOpen) {
+                    if (rewardOverlayContainer.getVisibility() == VISIBLE && !isChestOpen) {
 
                         openChest(currentBoss.isBossBeaten());
                     }
                     // 2. Inače, ako je borba u toku, potres aktivira napad.
-                    else if (battle_ui_container.getVisibility() == View.VISIBLE && attacksLeft > 0 && !isAttackInProgress) {
+                    else if (battle_ui_container.getVisibility() == VISIBLE && attacksLeft > 0 && !isAttackInProgress) {
                         performShakeAttack();
                     }
                 }
@@ -444,4 +591,11 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // Nije potrebno implementirati za ovaj slučaj
     }
+
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round((float) dp * density);
+    }
+
+
 }

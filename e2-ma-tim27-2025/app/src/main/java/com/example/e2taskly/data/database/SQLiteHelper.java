@@ -173,6 +173,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         db.execSQL(createSingleTaskTable);
         db.execSQL(createRepeatingTaskTable);
         db.execSQL(createOccurrenceTable);
+        db.execSQL(missionProgressTable);
+
         db.execSQL("CREATE TABLE " + T_EQUIPMENT_TEMPLATES + " (" +
                 "id TEXT PRIMARY KEY," +
                 "name TEXT," +
@@ -190,7 +192,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "is_activated INTEGER," +
                 "fights_remaining INTEGER," +
                 "current_bonus_value REAL)");
-        db.execSQL(missionProgressTable);
+
 
     }
 
