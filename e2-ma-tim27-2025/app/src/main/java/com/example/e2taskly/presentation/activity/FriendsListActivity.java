@@ -5,14 +5,17 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -30,12 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FriendsListActivity extends AppCompatActivity implements UserAdapter.OnFriendActionListener {
+public class FriendsListActivity extends BaseActivity implements UserAdapter.OnFriendActionListener {
 
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView textViewInfo;
     private SearchView searchView;
+    private ImageView menuButton;
     private UserAdapter userAdapter;
     private UserService userService;
     private String currentUserId;
@@ -73,14 +77,8 @@ public class FriendsListActivity extends AppCompatActivity implements UserAdapte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends_list);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle("Friends");
-        }
+        EdgeToEdge.enable(this);
+        setupToolbar();
 
         userService = new UserService(this);
         currentUserId = userService.getCurrentUserId();
@@ -89,6 +87,7 @@ public class FriendsListActivity extends AppCompatActivity implements UserAdapte
         textViewInfo = findViewById(R.id.textViewInfo);
         recyclerView = findViewById(R.id.recyclerViewFriends);
         searchView = findViewById(R.id.searchView);
+        menuButton = findViewById(R.id.menuButton);
 
         setupRecyclerView();
         setupSearch();
@@ -104,7 +103,35 @@ public class FriendsListActivity extends AppCompatActivity implements UserAdapte
             searchUsers(currentQuery);
         }
     }
+    @Override
+    protected void preparePopupMenu(PopupMenu popupMenu) {
+        // Preuzimamo meni iz PopupMenu-a
+        Menu menu = popupMenu.getMenu();
 
+    }
+    @Override
+    protected int getMenuResourceId() {
+        return R.menu.friends_menu;
+    }
+    @Override
+    protected boolean handleMenuItemClick(MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_scan_qr) {
+            launchQrScanner();
+            return true;
+        } else if (itemId == R.id.action_view_alliance) {
+            Intent intent = new Intent(FriendsListActivity.this, AllianceActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (itemId == R.id.action_logout) {
+            userService.logoutUser();
+            Intent intent = new Intent(FriendsListActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        }
+        return false;
+    }
     private void setupRecyclerView() {
         userAdapter = new UserAdapter(this, new ArrayList<>(), myFriendIds, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -224,30 +251,6 @@ public class FriendsListActivity extends AppCompatActivity implements UserAdapte
             recyclerView.setVisibility(View.VISIBLE);
             textViewInfo.setVisibility(View.GONE);
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.friends_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-        if (itemId == android.R.id.home) {
-            finish();
-            return true;
-        } else if (itemId == R.id.action_scan_qr) {
-            launchQrScanner();
-            return true;
-        } else if (itemId == R.id.action_view_alliance) {
-            startActivity(new Intent(this, AllianceActivity.class));
-            return true;
-        }
-
-
-        return super.onOptionsItemSelected(item);
     }
 
     private void launchQrScanner() {
