@@ -14,9 +14,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AllianceActivity extends AppCompatActivity {
+public class AllianceActivity extends BaseActivity {
     private ProgressBar progressBar;
     private LinearLayout layoutAllianceInfo, layoutNoAlliance;
     private TextView textViewAllianceName, textViewAllianceLeader;
@@ -60,13 +62,8 @@ public class AllianceActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alliance);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        EdgeToEdge.enable(this);
+        setupToolbar();
 
         userService = new UserService(this);
         allianceService = new AllianceService(this);
@@ -304,13 +301,9 @@ public class AllianceActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.alliance_menu, menu);
-        return true;
-    }
+    protected void preparePopupMenu(PopupMenu popupMenu) {
+        Menu menu = popupMenu.getMenu();
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentAlliance != null && currentUser != null) {
             boolean isLeader = currentUser.getUid().equals(currentAlliance.getLeaderId());
             menu.findItem(R.id.action_leave_alliance).setVisible(!isLeader);
@@ -321,11 +314,14 @@ public class AllianceActivity extends AppCompatActivity {
             menu.findItem(R.id.action_disband_alliance).setVisible(false);
             menu.findItem(R.id.action_chat).setVisible(false);
         }
-        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    protected int getMenuResourceId() {
+        return R.menu.alliance_menu;
+    }
+    @Override
+    protected boolean handleMenuItemClick(MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == android.R.id.home) {
             finish();
@@ -340,7 +336,7 @@ public class AllianceActivity extends AppCompatActivity {
             openChatActivity();
             return true;
         }
-        return super.onOptionsItemSelected(item);
+        return false;
     }
     private void openChatActivity() {
         if (currentAlliance != null) {

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -130,6 +132,12 @@ public class ProfileActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         loadUserProfile();
+    }
+    @Override
+    protected void preparePopupMenu(PopupMenu popupMenu) {
+        // Preuzimamo meni iz PopupMenu-a
+        Menu menu = popupMenu.getMenu();
+
     }
     @Override
     protected int getMenuResourceId() {

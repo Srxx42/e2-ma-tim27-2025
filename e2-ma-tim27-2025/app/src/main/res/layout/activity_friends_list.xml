@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".presentation.activity.FriendsListActivity"
-    android:fitsSystemWindows="true"
     android:background="@drawable/background7">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -17,11 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Friends" />
+        <include layout="@layout/toolbar" />
 
         <!-- SearchView JE OBAVEZAN za ovaj pristup -->
         <androidx.appcompat.widget.SearchView

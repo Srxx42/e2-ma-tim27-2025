@@ -21,6 +21,7 @@ import com.example.e2taskly.presentation.adapter.ShopAdapter;
 import com.example.e2taskly.service.EquipmentService;
 import com.example.e2taskly.service.LevelingService;
 import com.example.e2taskly.service.UserService;
+import com.example.e2taskly.util.SharedPreferencesUtil;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class ShopActivity extends AppCompatActivity {
     private UserService userService;
     private List<EquipmentTemplate> equipmentList;
     private User currentUser;
+    private SharedPreferencesUtil sharedPreferences;
     private int previousBossReward = 200;
 
     @Override
@@ -45,6 +47,7 @@ public class ShopActivity extends AppCompatActivity {
 
         equipmentService = new EquipmentService(this);
         levelingService = new LevelingService();
+        sharedPreferences = new SharedPreferencesUtil(this);
         userService = new UserService(this);
         menuButton = findViewById(R.id.menuButton);
         menuButton.setVisibility(View.GONE);
@@ -52,7 +55,7 @@ public class ShopActivity extends AppCompatActivity {
     }
 
     private void loadShopItems() {
-        String currentUserId = userService.getCurrentUserId();
+        String currentUserId = sharedPreferences.getActiveUserUid();
         if (currentUserId != null) {
             userService.getUserProfile(currentUserId).addOnSuccessListener(user -> {
                 currentUser = user;

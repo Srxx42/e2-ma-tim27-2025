@@ -3,7 +3,11 @@ package com.example.e2taskly.presentation.activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,6 +45,7 @@ import java.util.concurrent.Executors;
 
 public class StatisticsActivity extends AppCompatActivity {
 
+    private ImageView menuButton;
     private StatisticsService statisticsService;
     private UserService userService;
     private SharedPreferencesUtil sharedPreferences;
@@ -57,19 +62,14 @@ public class StatisticsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistics);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        EdgeToEdge.enable(this);
 
         sharedPreferences = new SharedPreferencesUtil(this);
         currentUserId = sharedPreferences.getActiveUserUid();
         statisticsService = new StatisticsService(this);
         userService = new UserService(this);
-
+        menuButton = findViewById(R.id.menuButton);
+        menuButton.setVisibility(View.GONE);
         setupViews();
         loadAllStatistics();
     }
@@ -99,7 +99,7 @@ public class StatisticsActivity extends AppCompatActivity {
                 setupWeeklyXpChart(weeklyXp);
             });
 
-            userService.getUserLocallyFirst(currentUserId).addOnSuccessListener(user -> {
+            userService.getUserProfile(currentUserId).addOnSuccessListener(user -> {
                 if (user != null) {
                     textViewActiveDays.setText(user.getActiveDaysStreak() + " days");
                 }

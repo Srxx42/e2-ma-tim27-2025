@@ -5,15 +5,22 @@
         android:id="@+id/action_leave_alliance"
         android:title="@string/leave_alliance"
         android:icon="@drawable/ic_leave"
-    app:showAsAction="ifRoom" />
+        android:actionLayout="@layout/menu_item_layout"
+        app:showAsAction="ifRoom"
+        android:visible="false" />
     <item
         android:id="@+id/action_disband_alliance"
         android:title="@string/disband_alliance"
         android:icon="@drawable/ic_disband"
-    app:showAsAction="ifRoom" />
+        android:actionLayout="@layout/menu_item_layout"
+
+        app:showAsAction="ifRoom"
+        android:visible="false" />
     <item
         android:id="@+id/action_chat"
         android:title="@string/chat"
         android:icon="@drawable/ic_chat"
-        app:showAsAction="ifRoom" />
+        android:actionLayout="@layout/menu_item_layout"
+        app:showAsAction="ifRoom"
+        android:visible="false" />
 </menu>

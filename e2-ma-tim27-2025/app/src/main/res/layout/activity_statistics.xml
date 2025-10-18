@@ -5,18 +5,16 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.activity.StatisticsActivity"
-    android:fitsSystemWindows="true">
+    tools:context=".presentation.activity.StatisticsActivity">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/statistics"/>
+        <include layout="@layout/toolbar" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView

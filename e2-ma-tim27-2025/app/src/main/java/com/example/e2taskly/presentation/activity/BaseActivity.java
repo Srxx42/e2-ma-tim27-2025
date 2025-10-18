@@ -16,7 +16,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected abstract int getMenuResourceId();
     protected abstract boolean handleMenuItemClick(MenuItem item);
 
-
+    protected abstract void preparePopupMenu(PopupMenu popupMenu);
     protected void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.customToolbar);
         setSupportActionBar(toolbar);
@@ -36,7 +36,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            preparePopupMenu(popupMenu);
             popupMenu.setOnMenuItemClickListener(this::handleMenuItemClick);
             popupMenu.show();
         });
