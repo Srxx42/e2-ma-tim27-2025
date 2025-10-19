@@ -12,10 +12,14 @@ import androidx.annotation.RequiresApi;
 
 import com.example.e2taskly.model.SpecialMissionProgress;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +27,7 @@ public class MissionProgressLocalDataSource {
 
     private SQLiteHelper dbHelper;
     private static final String TAG = "MissionProgressDS";
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd"); // yyyy-MM-dd
 
     public MissionProgressLocalDataSource(Context context) {
         this.dbHelper = new SQLiteHelper(context);
@@ -81,14 +85,14 @@ public class MissionProgressLocalDataSource {
         return rowsAffected > 0;
     }
 
-    public List<SpecialMissionProgress> getAllAlianceProgresses(String allianceId, int bossId) {
+    public List<SpecialMissionProgress> getAllAlianceProgresses(String allianceId, String bossId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<SpecialMissionProgress> progresses = new ArrayList<>();
         Cursor cursor = null;
 
         try {
             String selection = "allianceId = ? AND bossId = ?";
-            String[] selectionArgs = {allianceId, String.valueOf(bossId)};
+            String[] selectionArgs = {allianceId, bossId};
             cursor = db.query(SQLiteHelper.T_S_MISSON_PROGRESS, null, selection, selectionArgs, null, null, null);
 
             if (cursor != null && cursor.moveToFirst()) {
@@ -127,18 +131,18 @@ public class MissionProgressLocalDataSource {
         return progress;
     }
 
-    private SpecialMissionProgress mapCursorToProgress(Cursor cursor) {
-        int smpId = cursor.getInt(cursor.getColumnIndexOrThrow("smpId"));
+    private SpecialMissionProgress mapCursorToProgress(Cursor cursor) throws ParseException {
+        String smpId = cursor.getString(cursor.getColumnIndexOrThrow("smpId"));
         String userId = cursor.getString(cursor.getColumnIndexOrThrow("userId"));
         String allianceId = cursor.getString(cursor.getColumnIndexOrThrow("allianceId"));
-        int bossId = cursor.getInt(cursor.getColumnIndexOrThrow("bossId"));
+        String bossId = cursor.getString(cursor.getColumnIndexOrThrow("bossId"));
         int shoppingCount = cursor.getInt(cursor.getColumnIndexOrThrow("shoppingCount"));
         int easyTaskCount = cursor.getInt(cursor.getColumnIndexOrThrow("easyTaskCount"));
         int hardTaskCount = cursor.getInt(cursor.getColumnIndexOrThrow("hardTaskCount"));
         int succesfullBossHitCount = cursor.getInt(cursor.getColumnIndexOrThrow("successfulBossHitCount"));
         boolean completedAll = cursor.getInt(cursor.getColumnIndexOrThrow("completedAll")) == 1;
         boolean didUserGetReward = cursor.getInt(cursor.getColumnIndexOrThrow("didUserGetReward")) == 1;
-        List<LocalDate> messageCount = convertStringToDateList(cursor.getString(cursor.getColumnIndexOrThrow("messageCount")));
+        List<Date> messageCount = convertStringToDateList(cursor.getString(cursor.getColumnIndexOrThrow("messageCount")));
 
         // Kreiranje objekta - pretpostavlja se da postoji odgovarajući konstruktor
         SpecialMissionProgress progress = new SpecialMissionProgress();
@@ -157,23 +161,23 @@ public class MissionProgressLocalDataSource {
         return progress;
     }
 
-    private String convertDateListToString(List<LocalDate> dateList) {
+    private String convertDateListToString(List<Date> dateList) {
         if (dateList == null || dateList.isEmpty()) {
             return null;
         }
         return dateList.stream()
-                .map(date -> date.format(DATE_FORMATTER))
+                .map(date -> DATE_FORMATTER.format(date)) // ✅
                 .collect(Collectors.joining(","));
     }
 
-    private List<LocalDate> convertStringToDateList(String dateString) {
-        List<LocalDate> dateList = new ArrayList<>();
+    private List<Date> convertStringToDateList(String dateString) throws ParseException {
+        List<Date> dateList = new ArrayList<>();
         if (dateString == null || dateString.isEmpty()) {
             return dateList;
         }
         String[] dateArray = dateString.split(",");
         for (String s : dateArray) {
-            dateList.add(LocalDate.parse(s, DATE_FORMATTER));
+            dateList.add(DATE_FORMATTER.parse(s)); // ✅
         }
         return dateList;
     }

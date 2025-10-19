@@ -310,7 +310,7 @@ public class EquipmentService {
         });
     }
 
-    public EquipmentTemplate getRandomItem(){
+    public EquipmentTemplate getRandomItem(boolean isAllianceReward,boolean isPotion){
         Random random = new Random();
         int randomNumber = random.nextInt(100);
 
@@ -320,6 +320,10 @@ public class EquipmentService {
         EquipmentTemplate boots = new EquipmentTemplate();
         EquipmentTemplate gloves = new EquipmentTemplate();
         EquipmentTemplate shield = new EquipmentTemplate();
+        EquipmentTemplate potion_40 = new EquipmentTemplate();
+        EquipmentTemplate potion_20 = new EquipmentTemplate();
+        EquipmentTemplate potion_10 = new EquipmentTemplate();
+        EquipmentTemplate potion_5 = new EquipmentTemplate();
 
         for(EquipmentTemplate newItem : allItems){
             switch (newItem.getId()) {
@@ -338,19 +342,49 @@ public class EquipmentService {
                 case "clothing_shield_1":
                     shield = newItem;
                     break;
+                case "potion_pp_perm_5":
+                    potion_5 = newItem;
+                    break;
+                case "potion_pp_perm_10":
+                    potion_10 = newItem;
+                    break;
+                case "potion_pp_boost_20":
+                    potion_20 = newItem;
+                    break;
+                case "potion_pp_boost_40":
+                    potion_40 = newItem;
+                    break;
             }
         }
 
-        if(randomNumber < 3){
-            return sword;
-        } else if (randomNumber < 6) {
-            return bow;
-        } else if(randomNumber < 37){
-            return boots;
-        } else if(randomNumber < 68){
-            return gloves;
-        }else {
-            return shield;
+        if(!isAllianceReward) {
+            if (randomNumber < 3) {
+                return sword;
+            } else if (randomNumber < 6) {
+                return bow;
+            } else if (randomNumber < 37) {
+                return boots;
+            } else if (randomNumber < 68) {
+                return gloves;
+            } else {
+                return shield;
+            }
+        } else if(!isPotion){
+             if (randomNumber < 50) {
+                return boots;
+            } else {
+                return shield;
+            }
+        } else {
+            if (randomNumber < 25) {
+                return potion_5;
+            } else if (randomNumber < 50) {
+                return potion_10;
+            } else if (randomNumber < 75) {
+                return potion_20;
+            } else  {
+                return potion_40;
+            }
         }
 
 

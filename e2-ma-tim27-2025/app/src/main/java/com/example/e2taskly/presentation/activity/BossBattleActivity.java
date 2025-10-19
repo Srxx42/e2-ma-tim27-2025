@@ -39,9 +39,13 @@ import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.model.EquipmentTemplate;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.model.UserInventoryItem;
+import com.example.e2taskly.model.enums.ProgressType;
 import com.example.e2taskly.service.BossService;
 import com.example.e2taskly.service.EquipmentService;
+import com.example.e2taskly.service.MissionProgressService;
 import com.example.e2taskly.service.UserService;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +57,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
     private UserService userService;
     private Boss currentBoss;
     private EquipmentService equipmentService;
+    private MissionProgressService progressService;
 
     // UI Elementi
     private RelativeLayout rootLayout;
@@ -91,6 +96,8 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
     private  int attackChance ;
     private  int userPP ;
     private int userLvl;
+
+    private String userId;
     private float maxBossHp;
 
     private int goldToGet;
@@ -110,19 +117,44 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         bossService = new BossService(this);
         userService = new UserService(this);
         equipmentService = new EquipmentService(this);
-
-        String userId = userService.getCurrentUserId();
-        currentBoss = bossService.getByEnemyId(userId,false);
+        progressService = new MissionProgressService(this);
 
         initializeUI();
-        equipmentService.loadAllTemplates().addOnSuccessListener(aVoid -> {
-            loadUserStats(userId);
-        }).addOnFailureListener(e -> {
-            Toast.makeText(this, "Failed to load game data. Please try again.", Toast.LENGTH_LONG).show();
+        loadInitialData();
+    }
+    private void loadInitialData() {
+         this.userId = userService.getCurrentUserId();
+        if (userId == null) {
+            Toast.makeText(this, "User not logged in!", Toast.LENGTH_LONG).show();
             finish();
-        });
+            return;
+        }
+
+        bossService.getByEnemyId(userId, false)
+                .addOnSuccessListener(boss -> {
+                    if (boss == null) {
+                        Toast.makeText(this, "Boss could not be loaded for this user.", Toast.LENGTH_LONG).show();
+                        finish();
+                        return;
+                    }
+                    this.currentBoss = boss;
 
 
+                    equipmentService.loadAllTemplates()
+                            .addOnSuccessListener(aVoid -> {
+                                // KORAK 3: Kada su templejti učitani, učitaj statistike korisnika.
+                                // loadUserStats će pokrenuti i setupInitialState kada završi.
+                                loadUserStats(userId);
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this, "Failed to load game data. Please try again.", Toast.LENGTH_LONG).show();
+                                finish();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error loading boss data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    finish();
+                });
     }
 
     @Override
@@ -333,10 +365,8 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
             updateHpUI();
 
             ivBoss.setImageResource(isDragon ? R.drawable.dragon_hurt_nb : R.drawable.goblin_hurt_nb);
+            progressService.updateMissionProgress(userId, ProgressType.HIT_BOSS);
 
-            if (currentBoss.getBossHp() <= 0) {
-                handleBossDefeated(userLvl);
-            }
         } else {
 
             ivBoss.setImageResource(isDragon ? R.drawable.dragon_attack_nb : R.drawable.goblin_attack_nb);
@@ -353,7 +383,10 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         }, 1500);
 
 
-        if(currentBoss.getBossHp() > 0 && attacksLeft <= 0) {
+        if (currentBoss.getBossHp() <= 0) {
+            handleBossDefeated(userLvl);
+        } else if (attacksLeft <= 0) {
+
             boolean lowerThanHalf = currentBoss.getBossHp() < maxBossHp / 2;
             handleBossNotBeaten(lowerThanHalf);
         }
@@ -410,11 +443,16 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
 
         currentBoss.setBossHp(maxBossHp);
         currentBoss.setDidUserFightIt(true);
-        bossService.beatBoss(currentBoss,userLvl);
+        Task<Void> beatBossTask = bossService.beatBoss(currentBoss, userLvl);
+        Task<Void> inventoryTask = equipmentService.processInventoryAfterBattle(userService.getCurrentUserId());
 
-        String userId = userService.getCurrentUserId();
-        equipmentService.processInventoryAfterBattle(userId);
-
+        // Koristimo Tasks.whenAll da sačekamo da se oba završe
+        Tasks.whenAll(beatBossTask, inventoryTask)
+                .addOnSuccessListener(aVoid -> {})
+                .addOnFailureListener(e -> {
+                    // Ako bilo koji od taskova pukne, prikaži grešku
+                    Toast.makeText(this, "Failed to save battle results.", Toast.LENGTH_SHORT).show();
+                });
         if (isDragon) {
             ivBoss.setImageResource(R.drawable.dragon_hurt_nb);
         } else {
@@ -428,10 +466,14 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
     public void handleBossNotBeaten(boolean isHalflyBeaten){
         currentBoss.setBossHp(maxBossHp);
         currentBoss.setDidUserFightIt(true);
-        bossService.updateBoss(currentBoss);
+        Task<Void> updateBossTask = bossService.updateBoss(currentBoss);
+        Task<Void> inventoryTask = equipmentService.processInventoryAfterBattle(userService.getCurrentUserId());
 
-        String userId = userService.getCurrentUserId();
-        equipmentService.processInventoryAfterBattle(userId);
+        Tasks.whenAll(updateBossTask, inventoryTask)
+                .addOnSuccessListener(aVoid -> {})
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to save battle results.", Toast.LENGTH_SHORT).show();
+                });
 
         if (isDragon) {
             ivBoss.setImageResource(R.drawable.dragon_attack_nb);
@@ -504,7 +546,7 @@ public class BossBattleActivity extends AppCompatActivity implements SensorEvent
         }
 
         if(bossService.willUserGetItems(isBossBeaten)){
-            EquipmentTemplate dropedItem = equipmentService.getRandomItem();
+            EquipmentTemplate dropedItem = equipmentService.getRandomItem(false,false);
            userService.getUserProfile(currenUserId).addOnSuccessListener(currentUser ->{
                equipmentService.handleItemDrop(currentUser, dropedItem);
             });

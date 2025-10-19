@@ -15,6 +15,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.e2taskly.R;
+import com.example.e2taskly.model.enums.Difficulty;
+import com.example.e2taskly.model.enums.Importance;
+import com.example.e2taskly.model.enums.ProgressType;
 import com.example.e2taskly.presentation.adapter.OccurrenceListAdapter;
 import com.example.e2taskly.presentation.adapter.OnOccurrenceUpdateListener;
 import com.example.e2taskly.model.RepeatingTask;
@@ -24,6 +27,7 @@ import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.enums.RepeatingType;
 import com.example.e2taskly.model.enums.TaskStatus;
 import com.example.e2taskly.model.enums.TaskType;
+import com.example.e2taskly.service.MissionProgressService;
 import com.example.e2taskly.service.TaskService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
@@ -44,7 +48,7 @@ public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurre
     private Button btnComplete, btnPause, btnCancel;
     private LinearLayout layoutSingleInfo, layoutRepeatingInfo;
     private TaskService taskService;
-
+    private MissionProgressService progressService;
     private UserService userService;
     private Task currentTask;
     private ListView rTaskOccurrencesListView;
@@ -58,6 +62,7 @@ public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurre
 
         taskService = new TaskService(this);
         userService = new UserService(this);
+        progressService = new MissionProgressService(this);
 
         sharedPreferencesUtil = new SharedPreferencesUtil(this);
 
@@ -243,6 +248,9 @@ public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurre
                 }
                 currentTask.setStatus(TaskStatus.COMPLETED);
                 taskService.updateTask(currentTask);
+
+                updateProgress(currentTask,currentUserId);
+
                 updateStatusUI(TaskStatus.COMPLETED);
                 setupButtonsVisibility();
             }
@@ -284,6 +292,39 @@ public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurre
                 setupButtonsVisibility();
             }
         });
+    }
+
+    private void updateProgress(Task currentTask, String currentUserId){
+        ProgressType importanceProgressType;
+        if (currentTask.getImportance().equals(Importance.NORMAL) || currentTask.getImportance().equals(Importance.IMPORTANT)) {
+            importanceProgressType = ProgressType.EASY_TASK;
+        } else {
+            importanceProgressType = ProgressType.HARD_TASK;
+        }
+
+        ProgressType difficultyProgressType;
+        if (currentTask.getDifficulty().equals(Difficulty.EASY) || currentTask.getDifficulty().equals(Difficulty.NORMAL)) {
+            difficultyProgressType = ProgressType.EASY_TASK;
+        } else {
+            difficultyProgressType = ProgressType.HARD_TASK;
+        }
+
+        progressService.updateMissionProgress(currentUserId, importanceProgressType)
+                .continueWithTask(firstUpdateTask -> {
+                    if (!firstUpdateTask.isSuccessful()) {
+                        throw firstUpdateTask.getException();
+                    }
+                    return progressService.updateMissionProgress(currentUserId, difficultyProgressType);
+                })
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("TaskComplete", "Oba progresa za misiju su uspešno ažurirana.");
+                    } else {
+                        Log.e("TaskComplete", "Greška prilikom ažuriranja progresa misije.", task.getException());
+                        Toast.makeText(this, "Greška prilikom ažuriranja progresa misije.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
     }
 
     /**

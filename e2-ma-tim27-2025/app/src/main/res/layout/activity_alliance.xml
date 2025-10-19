@@ -46,12 +46,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
         <TextView
             android:id="@+id/textViewAllianceName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?attr/textAppearanceHeadline5"
             tools:text="The Avengers" />
+
+
+        <Button
+            android:id="@+id/special_mission_button"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Special mission"
+            android:layout_marginLeft="100dp"/>
+
+    </LinearLayout>
+
+
 
         <TextView
             android:id="@+id/textViewAllianceLeader"

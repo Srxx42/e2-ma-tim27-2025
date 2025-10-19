@@ -8,23 +8,23 @@ import java.util.Map;
 
 public class SpecialMissionProgress {
 
-    private int smpId;
+    private String smpId;
     private String userUid;
     private String allianceId;
-    private int bossId;
+    private String bossId;
     private int shoppingCount;
     private int easyTaskCount;
     private int hardTaskCount;
     private int successfulBossHitCount;
     private boolean completedAll;
     private boolean didUserGetReward;
-    private List<LocalDate> messageCount;
+    private List<Date> messageCount;
 
     public SpecialMissionProgress(){
         messageCount = new ArrayList<>();
     }
 
-    public SpecialMissionProgress(int smpId, String userUid, String allianceId, int bossId, int shoppingCount, int easyTaskCount, int hardTaskCount,int successfulBossHitCount ,boolean completedAll, boolean didUserGetReward, List<LocalDate> massageCount) {
+    public SpecialMissionProgress(String smpId, String userUid, String allianceId, String bossId, int shoppingCount, int easyTaskCount, int hardTaskCount,int successfulBossHitCount ,boolean completedAll, boolean didUserGetReward, List<Date> massageCount) {
         this.smpId = smpId;
         this.userUid = userUid;
         this.allianceId = allianceId;
@@ -46,11 +46,11 @@ public class SpecialMissionProgress {
         this.successfulBossHitCount = successfulBossHitCount;
     }
 
-    public int getSmpId() {
+    public String getSmpId() {
         return smpId;
     }
 
-    public void setSmpId(int smpId) {
+    public void setSmpId(String smpId) {
         this.smpId = smpId;
     }
 
@@ -70,11 +70,11 @@ public class SpecialMissionProgress {
         this.allianceId = allianceId;
     }
 
-    public int getBossId() {
+    public String getBossId() {
         return bossId;
     }
 
-    public void setBossId(int bossId) {
+    public void setBossId(String bossId) {
         this.bossId = bossId;
     }
 
@@ -120,11 +120,11 @@ public class SpecialMissionProgress {
         this.hardTaskCount = hardTaskCount;
     }
 
-    public List<LocalDate> getMessageCount() {
+    public List<Date> getMessageCount() {
         return messageCount;
     }
 
-    public void setMessageCount(List<LocalDate> messageCount) {
+    public void setMessageCount(List<Date> messageCount) {
         this.messageCount = messageCount;
     }
 }

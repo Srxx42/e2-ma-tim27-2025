@@ -1,9 +1,10 @@
 package com.example.e2taskly.model;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 public class Boss {
-    private int bossId;
+    private String bossId;
     private String enemyId;
     private int bossLevel;
     private float bossHp;
@@ -11,11 +12,11 @@ public class Boss {
     private boolean isBossBeaten;
     private boolean didUserFightIt;
     private boolean isAllianceBoss;
-    private LocalDate bossAppearanceDate;
+    private Date bossAppearanceDate;
 
     public Boss(){}
 
-    public Boss(int bossId, String enemyId, int bossLevel, float bossHp, float bossGold, boolean isBossBeaten,boolean didUserFightIt ,boolean isAllianceBoss, LocalDate bossAppearanceDate) {
+    public Boss(String bossId, String enemyId, int bossLevel, float bossHp, float bossGold, boolean isBossBeaten,boolean didUserFightIt ,boolean isAllianceBoss, Date bossAppearanceDate) {
         this.bossId = bossId;
         this.enemyId = enemyId;
         this.bossLevel = bossLevel;
@@ -35,11 +36,11 @@ public class Boss {
         this.didUserFightIt = didUserFightIt;
     }
 
-    public int getBossId() {
+    public String getBossId() {
         return bossId;
     }
 
-    public void setBossId(int bossId) {
+    public void setBossId(String bossId) {
         this.bossId = bossId;
     }
 
@@ -91,11 +92,11 @@ public class Boss {
         isAllianceBoss = allianceBoss;
     }
 
-    public LocalDate getBossAppearanceDate() {
+    public Date getBossAppearanceDate() {
         return bossAppearanceDate;
     }
 
-    public void setBossAppearanceDate(LocalDate bossAppearanceDate) {
+    public void setBossAppearanceDate(Date bossAppearanceDate) {
         this.bossAppearanceDate = bossAppearanceDate;
     }
 }

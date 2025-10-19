@@ -1,6 +1,7 @@
 package com.example.e2taskly.presentation.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +15,13 @@ import androidx.annotation.Nullable;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.RepeatingTaskOccurrence;
+import com.example.e2taskly.model.SpecialMissionProgress;
 import com.example.e2taskly.model.Task;
+import com.example.e2taskly.model.enums.Difficulty;
+import com.example.e2taskly.model.enums.Importance;
+import com.example.e2taskly.model.enums.ProgressType;
 import com.example.e2taskly.model.enums.TaskStatus;
+import com.example.e2taskly.service.MissionProgressService;
 import com.example.e2taskly.service.TaskService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
@@ -33,6 +39,7 @@ public class OccurrenceListAdapter extends ArrayAdapter<RepeatingTaskOccurrence>
     private TaskService taskService;
 
     private UserService userService;
+    private MissionProgressService progressService;
     private OnOccurrenceUpdateListener updateListener;
 
     private SharedPreferencesUtil sharedPreferencesUtil;
@@ -43,6 +50,7 @@ public class OccurrenceListAdapter extends ArrayAdapter<RepeatingTaskOccurrence>
 
         taskService = new TaskService(context);
         userService = new UserService(context);
+        progressService = new MissionProgressService(context);
 
         this.sharedPreferencesUtil = new SharedPreferencesUtil(context);
         this.updateListener = listener;
@@ -126,6 +134,8 @@ public class OccurrenceListAdapter extends ArrayAdapter<RepeatingTaskOccurrence>
             ocr.setOccurrenceStatus(TaskStatus.COMPLETED);
             taskService.updateOccurrence(ocr);
 
+            updateProgress(task,currentUserId);
+
             if (updateListener != null) {
                 updateListener.onOccurrenceUpdated();
             }
@@ -150,6 +160,38 @@ public class OccurrenceListAdapter extends ArrayAdapter<RepeatingTaskOccurrence>
         if(!ocr.getOccurrenceStatus().equals(TaskStatus.ACTIVE)) return false;
 
         return true;
+    }
+
+    private void updateProgress(Task currentTask, String currentUserId){
+        ProgressType importanceProgressType;
+        if (currentTask.getImportance().equals(Importance.NORMAL) || currentTask.getImportance().equals(Importance.IMPORTANT)) {
+            importanceProgressType = ProgressType.EASY_TASK;
+        } else {
+            importanceProgressType = ProgressType.HARD_TASK;
+        }
+
+        ProgressType difficultyProgressType;
+        if (currentTask.getDifficulty().equals(Difficulty.EASY) || currentTask.getDifficulty().equals(Difficulty.NORMAL)) {
+            difficultyProgressType = ProgressType.EASY_TASK;
+        } else {
+            difficultyProgressType = ProgressType.HARD_TASK;
+        }
+
+        progressService.updateMissionProgress(currentUserId, importanceProgressType)
+                .continueWithTask(firstUpdateTask -> {
+                    if (!firstUpdateTask.isSuccessful()) {
+                        throw firstUpdateTask.getException();
+                    }
+                    return progressService.updateMissionProgress(currentUserId, difficultyProgressType);
+                })
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("TaskComplete", "Oba progresa za misiju su uspešno ažurirana.");
+                    } else {
+                        Log.e("TaskComplete", "Greška prilikom ažuriranja progresa misije.", task.getException());
+                    }
+                });
+
     }
 
 }
