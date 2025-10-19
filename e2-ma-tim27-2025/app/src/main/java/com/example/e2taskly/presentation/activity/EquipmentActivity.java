@@ -101,43 +101,14 @@ public class EquipmentActivity extends AppCompatActivity implements EquipmentAda
     }
 
     private void setupRecyclerView() {
-        boolean isActivationLocked = false; // Pretpostavimo da je otključano
         String userId = userService.getCurrentUserId();
-
-        if (userId != null) {
-            Boss activeBoss = bossService.getByEnemyId(userId, false);
-            if (activeBoss != null && !activeBoss.isBossBeaten()) {
-                boolean isAfterAppearanceDate = !LocalDate.now().isBefore(activeBoss.getBossAppearanceDate());
-                if (!activeBoss.isDidUserFightIt() && isAfterAppearanceDate) {
-                    isActivationLocked = true;
-                }
-            }
-        }
-        adapter = new EquipmentAdapter(currentUser, inventoryList, templateMap, this,isActivationLocked);
+        adapter = new EquipmentAdapter(currentUser, inventoryList, templateMap, this);
         recyclerView.setAdapter(adapter);
     }
 
     @Override
     public void onActivateClick(UserInventoryItem item) {
         String userId = userService.getCurrentUserId();
-        Boss activeBoss = bossService.getByEnemyId(userId, false);
-
-        // Oprema se ne može aktivirati samo ako boss postoji, nije pobeđen, I korisnik je već ušao u borbu.
-        if (activeBoss != null) {
-            boolean isAfterAppearanceDate = !LocalDate.now().isBefore(activeBoss.getBossAppearanceDate());
-            if(!activeBoss.isDidUserFightIt() && isAfterAppearanceDate) {
-                Toast.makeText(this, "Defeat the boss before activating your gear.", Toast.LENGTH_LONG).show();
-                return; // Zaustavi aktivaciju
-            }
-        }
-        // Optional: Also check for an active alliance boss if the user is in an alliance
-        // if (currentUser.getAllianceId() != null) {
-        //     Boss activeAllianceBoss = bossService.getByEnemyId(currentUser.getAllianceId(), true);
-        //     if (activeAllianceBoss != null && !activeAllianceBoss.isBossBeaten()) {
-        //         Toast.makeText(this, "Cannot activate equipment while an alliance boss is active.", Toast.LENGTH_LONG).show();
-        //         return;
-        //     }
-        // }
 
         EquipmentTemplate template = templateMap.get(item.getTemplateId());
         if (currentUser != null && template != null) {

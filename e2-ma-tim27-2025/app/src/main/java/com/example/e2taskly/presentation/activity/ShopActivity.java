@@ -50,6 +50,7 @@ public class ShopActivity extends AppCompatActivity {
 
         equipmentService = new EquipmentService(this);
         levelingService = new LevelingService();
+        sharedPreferences = new SharedPreferencesUtil(this);
         missionProgressService = new MissionProgressService(this);
         userService = new UserService(this);
         menuButton = findViewById(R.id.menuButton);

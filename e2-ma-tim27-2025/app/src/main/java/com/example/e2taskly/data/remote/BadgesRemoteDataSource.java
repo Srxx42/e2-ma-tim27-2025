@@ -27,7 +27,7 @@ public class BadgesRemoteDataSource {
     }
 
     public Task<QuerySnapshot> getUserBadges(String userId){
-        return db.collection("userBadges").whereEqualTo("userId", userId).get();
+        return db.collection("userBadges").whereEqualTo("userUid", userId).get();
     }
 
 

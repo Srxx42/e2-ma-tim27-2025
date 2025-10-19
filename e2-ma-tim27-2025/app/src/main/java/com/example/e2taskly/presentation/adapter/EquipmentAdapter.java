@@ -32,7 +32,6 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
     private OnActivateClickListener listener;
     private final User currentUser;
     private final LevelingService levelingService;
-    private final boolean isActivationLocked;
 
 
 
@@ -41,13 +40,12 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
         void onUpgradeClick(UserInventoryItem item);
     }
 
-    public EquipmentAdapter(User currentUser, List<UserInventoryItem> inventory, Map<String, EquipmentTemplate> templates, OnActivateClickListener listener, boolean isActivationLocked) {
+    public EquipmentAdapter(User currentUser, List<UserInventoryItem> inventory, Map<String, EquipmentTemplate> templates, OnActivateClickListener listener) {
         this.currentUser = currentUser;
         this.inventory = inventory;
         this.templates = templates;
         this.listener = listener;
         this.levelingService = new LevelingService();
-        this.isActivationLocked = isActivationLocked;
     }
 
     @NonNull
@@ -110,11 +108,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
                     holder.textViewStatus.setVisibility(View.GONE);
                 }
             } else {
-                if (isActivationLocked) {
-                    holder.buttonActivate.setEnabled(false);
-                } else {
-                    holder.buttonActivate.setEnabled(true);
-                }
+                holder.buttonActivate.setEnabled(true);
                 holder.buttonActivate.setText("Activate");
                 holder.textViewStatus.setVisibility(View.GONE);
             }

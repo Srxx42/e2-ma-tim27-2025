@@ -31,10 +31,12 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.Alliance;
+import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.presentation.adapter.FriendInviteAdapter;
 import com.example.e2taskly.presentation.adapter.UserAdapter;
 import com.example.e2taskly.service.AllianceService;
+import com.example.e2taskly.service.BossService;
 import com.example.e2taskly.service.InviteService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
@@ -43,6 +45,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,6 +62,7 @@ public class AllianceActivity extends BaseActivity {
     private FloatingActionButton fabInviteMembers;
     private UserService userService;
     private AllianceService allianceService;
+    private BossService bossService;
     private UserAdapter memberAdapter;
     private String currentUserId;
     private User currentUser;
@@ -73,6 +79,7 @@ public class AllianceActivity extends BaseActivity {
 
         userService = new UserService(this);
         allianceService = new AllianceService(this);
+        bossService = new BossService(this);
         sharedPreferences = new SharedPreferencesUtil(this);
         currentUserId = sharedPreferences.getActiveUserUid();
 
@@ -381,45 +388,78 @@ public class AllianceActivity extends BaseActivity {
         }
     }
     private void showLeaveAllianceDialog() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Leave Alliance")
-                .setMessage("Are you sure you want to leave '" + currentAlliance.getName() + "'?")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Leave", (dialog, which) -> {
-                    setLoadingState(true);
-                    allianceService.leaveAlliance(currentUserId, currentAlliance.getAllianceId())
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "You have left the alliance.", Toast.LENGTH_SHORT).show();
-                                displayNoAllianceView(); // Correctly refreshes UI
-                            })
-                            .addOnFailureListener(e -> {
-                                setLoadingState(false);
-                                layoutAllianceInfo.setVisibility(View.VISIBLE);
-                                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                })
-                .show();
+        checkMissionStatusAndProceed(() -> {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Leave Alliance")
+                    .setMessage("Are you sure you want to leave '" + currentAlliance.getName() + "'?")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Leave", (dialog, which) -> {
+                        setLoadingState(true);
+                        allianceService.leaveAlliance(currentUserId, currentAlliance.getAllianceId())
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "You have left the alliance.", Toast.LENGTH_SHORT).show();
+                                    displayNoAllianceView();
+                                })
+                                .addOnFailureListener(e -> {
+                                    setLoadingState(false);
+                                    layoutAllianceInfo.setVisibility(View.VISIBLE);
+                                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                });
+                    })
+                    .show();
+        });
     }
 
     private void showDisbandAllianceDialog() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Disband Alliance")
-                .setMessage("Are you sure you want to permanently disband '" + currentAlliance.getName() + "'? This action cannot be undone.")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Disband", (dialog, which) -> {
-                    setLoadingState(true);
-                    allianceService.disbandAlliance(currentUserId, currentAlliance.getAllianceId())
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "Alliance has been disbanded.", Toast.LENGTH_SHORT).show();
-                                displayNoAllianceView(); // Correctly refreshes UI
-                            })
-                            .addOnFailureListener(e -> {
-                                setLoadingState(false);
-                                layoutAllianceInfo.setVisibility(View.VISIBLE);
-                                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                })
-                .show();
+        checkMissionStatusAndProceed(() -> {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Disband Alliance")
+                    .setMessage("Are you sure you want to permanently disband '" + currentAlliance.getName() + "'? This action cannot be undone.")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Disband", (dialog, which) -> {
+                        setLoadingState(true);
+                        allianceService.disbandAlliance(currentUserId, currentAlliance.getAllianceId())
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Alliance has been disbanded.", Toast.LENGTH_SHORT).show();
+                                    displayNoAllianceView();
+                                })
+                                .addOnFailureListener(e -> {
+                                    setLoadingState(false);
+                                    layoutAllianceInfo.setVisibility(View.VISIBLE);
+                                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                });
+                    })
+                    .show();
+        });
+    }
+    private void checkMissionStatusAndProceed(Runnable actionToProceed) {
+        if (currentAlliance == null) return;
+
+        setLoadingState(true);
+        bossService.getByEnemyId(currentAlliance.getAllianceId(), true)
+                .addOnCompleteListener(task -> {
+                    setLoadingState(false);
+                    layoutAllianceInfo.setVisibility(View.VISIBLE);
+
+                    if (!task.isSuccessful() || task.getResult() == null) {
+                        actionToProceed.run();
+                        return;
+                    }
+
+                    Boss allianceBoss = task.getResult();
+
+                    LocalDate appearanceDate = allianceBoss.getBossAppearanceDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    long daysPassed = ChronoUnit.DAYS.between(appearanceDate, LocalDate.now());
+                    boolean isMissionExpired = daysPassed >= 14;
+
+                    boolean isMissionActive = !allianceBoss.isBossBeaten() && !isMissionExpired;
+
+                    if (isMissionActive) {
+                        Toast.makeText(this, "You cannot perform this action while a special mission is active.", Toast.LENGTH_LONG).show();
+                    } else {
+                        actionToProceed.run();
+                    }
+                });
     }
 
 }

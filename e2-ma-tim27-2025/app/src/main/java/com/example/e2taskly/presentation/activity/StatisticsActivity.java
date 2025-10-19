@@ -15,7 +15,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.example.e2taskly.R;
+import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.UserBadge;
+import com.example.e2taskly.service.BadgeService;
+import com.example.e2taskly.service.BossService;
 import com.example.e2taskly.service.StatisticsService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
@@ -34,6 +38,8 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,12 +56,15 @@ public class StatisticsActivity extends AppCompatActivity {
     private UserService userService;
     private SharedPreferencesUtil sharedPreferences;
     private String currentUserId;
+    private BossService bossService;
+    private BadgeService badgeService;
 
     private TextView textViewActiveDays, textViewLongestStreak;
     private PieChart chartTaskStatus;
     private BarChart chartTasksByCategory;
     private LineChart chartAverageDifficulty, chartXpLast7Days;
     private TextView textViewDifficultyConclusion;
+    private TextView textViewStartedMissions, textViewCompletedMissions;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -69,6 +78,8 @@ public class StatisticsActivity extends AppCompatActivity {
         currentUserId = sharedPreferences.getActiveUserUid();
         statisticsService = new StatisticsService(this);
         userService = new UserService(this);
+        bossService = new BossService(this);
+        badgeService = new BadgeService(this);
         menuButton = findViewById(R.id.menuButton);
         menuButton.setVisibility(View.GONE);
         setupViews();
@@ -83,6 +94,8 @@ public class StatisticsActivity extends AppCompatActivity {
         chartAverageDifficulty = findViewById(R.id.chartAverageDifficulty);
         chartXpLast7Days = findViewById(R.id.chartXpLast7Days);
         textViewDifficultyConclusion = findViewById(R.id.textViewDifficultyConclusion);
+        textViewStartedMissions = findViewById(R.id.textViewStartedMissions);
+        textViewCompletedMissions = findViewById(R.id.textViewCompletedMissions);
     }
 
     private void loadAllStatistics() {
@@ -106,9 +119,41 @@ public class StatisticsActivity extends AppCompatActivity {
                     textViewActiveDays.setText(user.getActiveDaysStreak() + " days");
                 }
             });
+            loadMissionStatistics();
         });
     }
+    private void loadMissionStatistics() {
+        userService.getUserProfile(currentUserId).addOnSuccessListener(user -> {
+            if (user != null && user.getAllianceId() != null && !user.getAllianceId().isEmpty()) {
+                String allianceId = user.getAllianceId();
 
+                Task<Boss> bossTask = bossService.getByEnemyId(allianceId, true);
+                Task<List<UserBadge>> badgesTask = badgeService.getAsyncUserBadges(currentUserId);
+
+                Tasks.whenAllSuccess(bossTask, badgesTask).addOnSuccessListener(results -> {
+                    Boss allianceBoss = (Boss) results.get(0);
+                    List<UserBadge> badges = (List<UserBadge>) results.get(1);
+
+                    int startedMissions = (allianceBoss != null) ? allianceBoss.getBossLevel() : 0;
+                    int completedMissions = (badges != null) ? badges.size() : 0;
+
+                    runOnUiThread(() -> {
+                        textViewStartedMissions.setText(String.valueOf(startedMissions));
+                        textViewCompletedMissions.setText(String.valueOf(completedMissions));
+                    });
+                });
+
+            } else {
+                badgeService.getAsyncUserBadges(currentUserId).addOnSuccessListener(badges -> {
+                    int completedMissions = (badges != null) ? badges.size() : 0;
+                    runOnUiThread(() -> {
+                        textViewStartedMissions.setText("0");
+                        textViewCompletedMissions.setText(String.valueOf(completedMissions));
+                    });
+                });
+            }
+        });
+    }
     private void setupDonutChart(Map<String, Integer> data) {
         List<PieEntry> entries = new ArrayList<>();
         entries.add(new PieEntry(data.getOrDefault("completed", 0), "Completed"));

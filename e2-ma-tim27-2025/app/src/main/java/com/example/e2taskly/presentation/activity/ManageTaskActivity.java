@@ -100,8 +100,8 @@ public class ManageTaskActivity extends AppCompatActivity {
         initViews();
         setupSpinners();
         initListeners();
-        loadUserProfile();
         currentUserId = sharedPreferences.getActiveUserUid();
+        loadUserProfile();
         editingTaskId = getIntent().getIntExtra("TASK_ID", -1);
         if (editingTaskId != -1) {
             Task taskToEdit = taskService.getTaskById(editingTaskId);
