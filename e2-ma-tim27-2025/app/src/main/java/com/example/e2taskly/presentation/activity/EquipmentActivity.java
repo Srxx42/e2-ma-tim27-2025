@@ -106,7 +106,6 @@ public class EquipmentActivity extends AppCompatActivity implements EquipmentAda
 
         if (userId != null) {
             Boss activeBoss = bossService.getByEnemyId(userId, false);
-            // Važno: Proverite da li boss uopšte postoji da izbegnete grešku
             if (activeBoss != null && !activeBoss.isBossBeaten()) {
                 boolean isAfterAppearanceDate = !LocalDate.now().isBefore(activeBoss.getBossAppearanceDate());
                 if (!activeBoss.isDidUserFightIt() && isAfterAppearanceDate) {

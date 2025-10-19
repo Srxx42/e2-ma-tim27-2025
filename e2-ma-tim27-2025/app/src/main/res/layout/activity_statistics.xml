@@ -90,6 +90,14 @@
                 android:id="@+id/chartAverageDifficulty"
                 android:layout_width="match_parent"
                 android:layout_height="300dp" />
+            <TextView
+                android:id="@+id/textViewDifficultyConclusion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:text="You mostly complete HARD tasks." />
 
             <TextView
                 android:layout_width="wrap_content"

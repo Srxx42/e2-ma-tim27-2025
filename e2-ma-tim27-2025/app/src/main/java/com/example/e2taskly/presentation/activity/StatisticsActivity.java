@@ -55,6 +55,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private PieChart chartTaskStatus;
     private BarChart chartTasksByCategory;
     private LineChart chartAverageDifficulty, chartXpLast7Days;
+    private TextView textViewDifficultyConclusion;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -81,6 +82,7 @@ public class StatisticsActivity extends AppCompatActivity {
         chartTasksByCategory = findViewById(R.id.chartTasksByCategory);
         chartAverageDifficulty = findViewById(R.id.chartAverageDifficulty);
         chartXpLast7Days = findViewById(R.id.chartXpLast7Days);
+        textViewDifficultyConclusion = findViewById(R.id.textViewDifficultyConclusion);
     }
 
     private void loadAllStatistics() {
@@ -163,13 +165,19 @@ public class StatisticsActivity extends AppCompatActivity {
         ArrayList<String> labels = new ArrayList<>();
         List<Map.Entry<String, Double>> sortedEntries = new ArrayList<>(data.entrySet());
         Collections.sort(sortedEntries, Comparator.comparing(Map.Entry::getKey));
+        double totalAverageSum = 0;
         int i = 0;
         for (Map.Entry<String, Double> entry : sortedEntries) {
+            float value = entry.getValue().floatValue();
             entries.add(new Entry(i, entry.getValue().floatValue()));
             labels.add(entry.getKey().substring(5));
+            totalAverageSum += value;
             i++;
         }
+        double overallAverage = totalAverageSum / data.size();
 
+        String conclusionText = getClosestDifficultyCategory(overallAverage);
+        textViewDifficultyConclusion.setText("You mostly complete " + conclusionText + " tasks.");
         LineDataSet dataSet = new LineDataSet(entries, "Average XP difficulty");
         dataSet.setValueTextColor(Color.WHITE);
         dataSet.setLineWidth(2f);
@@ -184,6 +192,23 @@ public class StatisticsActivity extends AppCompatActivity {
         chartAverageDifficulty.getAxisLeft().setTextColor(Color.WHITE);
         chartAverageDifficulty.getAxisRight().setTextColor(Color.WHITE);
         chartAverageDifficulty.invalidate();
+    }
+    private String getClosestDifficultyCategory(double averageScore) {
+        double[] scores = {1.0, 3.0, 7.0, 20.0};
+        String[] names = {"EASY", "NORMAL", "HARD", "EPIC"};
+
+        double minDifference = Double.MAX_VALUE;
+        String closestCategory = names[0];
+
+        for (int i = 0; i < scores.length; i++) {
+            double difference = Math.abs(averageScore - scores[i]);
+            if (difference < minDifference) {
+                minDifference = difference;
+                closestCategory = names[i];
+            }
+        }
+
+        return closestCategory;
     }
 
     private void setupWeeklyXpChart(Map<String, Integer> data) {
