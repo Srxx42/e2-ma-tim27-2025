@@ -32,6 +32,12 @@
             android:name=".presentation.activity.AllianceActivity"
             android:exported="false" />
         <activity
+            android:name=".presentation.activity.AllianceBossActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".presentation.activity.AllianceBossProgressActivity"
+            android:exported="false"/>
+        <activity
             android:name=".presentation.activity.FriendsListActivity"
             android:exported="false" />
         <activity

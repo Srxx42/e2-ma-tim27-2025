@@ -48,6 +48,7 @@ public class AllianceActivity extends BaseActivity {
     private TextView textViewAllianceName, textViewAllianceLeader;
     private RecyclerView recyclerViewMembers;
     private Button buttonCreateAlliance;
+    private Button special_mission_button;
     private FloatingActionButton fabInviteMembers;
     private UserService userService;
     private AllianceService allianceService;
@@ -77,12 +78,17 @@ public class AllianceActivity extends BaseActivity {
         textViewAllianceLeader = findViewById(R.id.textViewAllianceLeader);
         recyclerViewMembers = findViewById(R.id.recyclerViewMembers);
         buttonCreateAlliance = findViewById(R.id.buttonCreateAlliance);
+        special_mission_button = findViewById(R.id.special_mission_button);
         fabInviteMembers = findViewById(R.id.fabInviteMembers);
 
         setupRecyclerView();
 
         fabInviteMembers.setOnClickListener(v -> showInviteMoreFriendsDialog());
         buttonCreateAlliance.setOnClickListener(v -> showCreateAllianceDialog());
+        special_mission_button.setOnClickListener(v -> {
+            Intent intent = new Intent(AllianceActivity.this, AllianceBossActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override

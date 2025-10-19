@@ -24,8 +24,10 @@ import com.example.e2taskly.R;
 import com.example.e2taskly.data.repository.MessageRepository;
 import com.example.e2taskly.model.Message;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.enums.ProgressType;
 import com.example.e2taskly.presentation.adapter.MessageAdapter;
 import com.example.e2taskly.service.MessageService;
+import com.example.e2taskly.service.MissionProgressService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
 
@@ -44,6 +46,8 @@ public class AllianceMessagesActivity extends AppCompatActivity {
     private MessageAdapter messageAdapter;
     private MessageService messageService;
     private UserService userService;
+
+    private MissionProgressService progressService;
 
     private String allianceId;
     private String allianceName;
@@ -79,6 +83,7 @@ public class AllianceMessagesActivity extends AppCompatActivity {
 
         messageService = new MessageService(this);
         userService = new UserService(this);
+        progressService = new MissionProgressService(this);
 
         initViews();
         setupRecyclerView();
@@ -147,8 +152,23 @@ public class AllianceMessagesActivity extends AppCompatActivity {
         }
         editTextMessage.setText("");
         messageService.sendMessage(messageText, allianceId, currentUserId, currentUsername)
-                .addOnSuccessListener(aVoid -> editTextMessage.setText(""))
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to send message.", Toast.LENGTH_SHORT).show());
+                .continueWithTask(sendMessageTask -> {
+                    if (!sendMessageTask.isSuccessful()) {
+                        throw sendMessageTask.getException();
+                    }
+                    return progressService.updateMissionProgress(currentUserId, ProgressType.ALLIANCE_MESSAGE);
+                })
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        boolean progressUpdated = task.getResult();
+                        if (progressUpdated) {
+                            Toast.makeText(this, "Message sent & mission progress updated!", Toast.LENGTH_SHORT).show();
+                        } else {
+                        }
+                    } else {
+                        Toast.makeText(this, "Failed to send message.", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Override

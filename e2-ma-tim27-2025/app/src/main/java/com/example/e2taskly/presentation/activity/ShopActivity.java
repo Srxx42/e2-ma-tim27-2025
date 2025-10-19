@@ -17,9 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.EquipmentTemplate;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.enums.ProgressType;
 import com.example.e2taskly.presentation.adapter.ShopAdapter;
 import com.example.e2taskly.service.EquipmentService;
 import com.example.e2taskly.service.LevelingService;
+import com.example.e2taskly.service.MissionProgressService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
 
@@ -32,6 +34,7 @@ public class ShopActivity extends AppCompatActivity {
     private EquipmentService equipmentService;
     private LevelingService levelingService;
     private UserService userService;
+    private MissionProgressService missionProgressService;
     private List<EquipmentTemplate> equipmentList;
     private User currentUser;
     private SharedPreferencesUtil sharedPreferences;
@@ -47,7 +50,7 @@ public class ShopActivity extends AppCompatActivity {
 
         equipmentService = new EquipmentService(this);
         levelingService = new LevelingService();
-        sharedPreferences = new SharedPreferencesUtil(this);
+        missionProgressService = new MissionProgressService(this);
         userService = new UserService(this);
         menuButton = findViewById(R.id.menuButton);
         menuButton.setVisibility(View.GONE);
@@ -76,6 +79,7 @@ public class ShopActivity extends AppCompatActivity {
             equipmentService.purchaseItem(currentUser, item, itemPrice).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     Toast.makeText(this, "Purchase successful!", Toast.LENGTH_SHORT).show();
+                    missionProgressService.updateMissionProgress(currentUser.getUid(), ProgressType.SHOPPING);
                     currentUser.setCoins(currentUser.getCoins() - itemPrice);
                 } else {
                     Toast.makeText(this, "Purchase failed.", Toast.LENGTH_SHORT).show();

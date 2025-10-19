@@ -254,52 +254,86 @@ public class UserService {
             userRepository.updateUser(user);
         });
     }
-    public void addXpToUser(String uid,int xpToAdd){
-        userRepository.getUserProfile(uid).addOnCompleteListener(getTask->{
-           if(!getTask.isSuccessful() || getTask.getResult() == null){
-               Log.e("addXpToUser","Failed to get user profile.",getTask.getException());
-               return;
-           }
-
-           User user = getTask.getResult();
-           user.setXp(user.getXp() + xpToAdd);
-
-           int xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel()+1);
-
-
-           while(user.getXp()>=xpNeededForNextLevel){
-               user.setLevel(user.getLevel()+1);
-
-               if(user.getLevel() == 2){
-                   bossService.createBoss(user.getUid(),false,0);
-               } else {
-                  Boss boss = bossService.getByEnemyId(user.getUid(),false);
-                  if(boss.getBossLevel() < user.getLevel() && boss.isBossBeaten()){
-                      bossService.levelUpBoss(boss);
-                  } else {
-                      if(boss.isDidUserFightIt()){
-                          boss.setDidUserFightIt(false);
-                          bossService.updateBoss(boss);
-                      }
-                  }
-               }
-
-               Date lastLevelUpDate = user.getLevelUpDate();
-               Date now = new Date();
-               int attChance = taskService.calculateTaskCompletionPercent(lastLevelUpDate,now);
-               user.setAttackChance(attChance);
-
-               int ppGained = levelingService.getPowerPointsForLevel(user.getLevel());
-               user.setLevelUpDate(now);
-               user.setPowerPoints(user.getPowerPoints() + ppGained);
-               user.setTitle(levelingService.getTitleForLevel(user.getLevel()));
-
-               xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel()+1);
-//               updateTaskXpForUser(user.getUid(), user.getLevel());
-           }
-           userRepository.updateUser(user);
-        });
+    public Task<Void> addXpToUser(String uid, int xpToAdd) {
+        return userRepository.getUserProfile(uid)
+                .onSuccessTask(user -> {
+                    if (user == null) {
+                        return Tasks.forException(new Exception("User with UID " + uid + " not found."));
+                    }
+                    user.setXp(user.getXp() + xpToAdd);
+                    // Započni rekurzivni proces levelovanja
+                    return processLevelUps(user);
+                })
+                .onSuccessTask(this::updateFinalUser); // Poziv finalnog snimanja preko reference na metodu
     }
+
+    /**
+     * Pomoćna metoda koja vrši finalno snimanje korisnika.
+     * Ovo razbija lanac i pomaže kompajleru da nedvosmisleno odredi tipove.
+     */
+    private Task<Void> updateFinalUser(User finalUser) {
+        if (finalUser == null) {
+            return Tasks.forException(new IllegalStateException("Final user object was null before update."));
+        }
+        return userRepository.updateUser(finalUser);
+    }
+
+
+    private Task<User> processLevelUps(User user) {
+        int xpNeededForNextLevel = levelingService.getXpForLevel(user.getLevel() + 1);
+
+        // Bazni slučaj rekurzije: Ako nema dovoljno XP, završili smo.
+        if (user.getXp() < xpNeededForNextLevel) {
+            return Tasks.forResult(user);
+        }
+
+        // Korak 1: Odradi sve sinhrone promene na user objektu za ovaj nivo
+        user.setLevel(user.getLevel() + 1);
+        Date lastLevelUpDate = user.getLevelUpDate();
+        Date now = new Date();
+        int attChance = taskService.calculateTaskCompletionPercent(lastLevelUpDate, now);
+        user.setAttackChance(attChance);
+        int ppGained = levelingService.getPowerPointsForLevel(user.getLevel());
+        user.setLevelUpDate(now);
+        user.setPowerPoints(user.getPowerPoints() + ppGained);
+        user.setTitle(levelingService.getTitleForLevel(user.getLevel()));
+
+        // Korak 2: Dohvati asinhronu operaciju za bossa
+        Task<Void> bossOperationTask = getBossOperationForLevel(user);
+
+        // Korak 3: Nakon što se boss operacija završi, ponovo pozovi ovu metodu
+        // da proveriš da li ima XP za još jedan nivo.
+        return bossOperationTask.onSuccessTask(aVoid -> processLevelUps(user));
+    }
+
+    /**
+     * Pomoćna metoda koja vraća odgovarajuću asinhronu operaciju za bossa
+     * na osnovu trenutnog nivoa korisnika.
+     */
+    private Task<Void> getBossOperationForLevel(User user) {
+        if (user.getLevel() == 2) {
+            return bossService.createBoss(user.getUid(), false, 0);
+        } else {
+            return bossService.getByEnemyId(user.getUid(), false)
+                    .onSuccessTask(boss -> {
+                        if (boss == null) {
+                            // Ako boss ne postoji, ne radimo ništa. Vraćamo uspešno završen task.
+                            return Tasks.forResult(null);
+                        }
+
+                        if (boss.getBossLevel() < user.getLevel() && boss.isBossBeaten()) {
+                            return bossService.levelUpBoss(boss);
+                        } else if (boss.isDidUserFightIt()) {
+                            boss.setDidUserFightIt(false);
+                            return bossService.updateBoss(boss);
+                        } else {
+                            // Nema potrebe za akcijom. Vraćamo uspešno završen task.
+                            return Tasks.forResult(null);
+                        }
+                    });
+        }
+    }
+
 //    private void updateTaskXpForUser(String userId, int newLevel) {
 //        List<com.example.e2taskly.model.Task> tasks = taskRepository.getTasksByCreator(userId);
 //

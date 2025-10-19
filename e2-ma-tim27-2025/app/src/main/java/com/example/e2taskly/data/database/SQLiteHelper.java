@@ -24,6 +24,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String T_REPEATING_TASKS = "repeating_tasks";
     public static final String T_R_TASK_OCCURRENCE = "r_task_occurrences";
     public static final String T_BOSS = "boss";
+    public static final String T_S_MISSON_PROGRESS = "s_mission_progress";
+
     public static final String T_EQUIPMENT_TEMPLATES = "equipment_templates";
     public static final String T_USER_INVENTORY = "user_inventory";
     public SQLiteHelper(Context context) {
@@ -139,7 +141,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 ");";
 
         //TABELA ZA BOSS-a
-        String createBossTabel = "CREATE TABLE " + T_BOSS + " (" +
+        String createBossTable = "CREATE TABLE " + T_BOSS + " (" +
                 "bossId INTEGER PRIMARY KEY, " +
                 "enemyId TEXT NOT NULL, " +
                 "bossLevel INTEGER NOT NULL, " +
@@ -151,11 +153,28 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "bossAppearanceDate TEXT " +
                 ");";
 
-        db.execSQL(createBossTabel);
+        //TABELA ZA MISSION PROGRESS
+        String missionProgressTable = "CREATE TABLE " + T_S_MISSON_PROGRESS + " (" +
+                "smpId INTEGER PRIMARY KEY, " +
+                "userId TEXT NOT NULL, " +
+                "allianceId TEXT NOT NULL, " +
+                "bossId INTEGER NOT NULL, " +
+                "shoppingCount INTEGER NOT NULL, " +
+                "easyTaskCount INTEGER NOT NULL, " +
+                "hardTaskCount INTEGER NOT NULL, " +
+                "successfulBossHitCount INTEGER NOT NULL, " +
+                "completedAll INTEGER DEFAULT 0 NOT NULL, " +
+                "didUserGetReward INTEGER DEFAULT 0 NOT NULL," +
+                "massageCount TEXT " +
+                ");";
+
+        db.execSQL(createBossTable);
         db.execSQL(createTaskTable);
         db.execSQL(createSingleTaskTable);
         db.execSQL(createRepeatingTaskTable);
         db.execSQL(createOccurrenceTable);
+        db.execSQL(missionProgressTable);
+
         db.execSQL("CREATE TABLE " + T_EQUIPMENT_TEMPLATES + " (" +
                 "id TEXT PRIMARY KEY," +
                 "name TEXT," +
@@ -173,6 +192,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 "is_activated INTEGER," +
                 "fights_remaining INTEGER," +
                 "current_bonus_value REAL)");
+
+
     }
 
     @Override
@@ -314,11 +335,27 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     "bossAppearanceDate TEXT " +
                     ");";
 
+            //TABELA ZA MISSION PROGRESS
+            String missionProgressTable = "CREATE TABLE " + T_S_MISSON_PROGRESS + " (" +
+                    "smpId INTEGER PRIMARY KEY, " +
+                    "userId TEXT NOT NULL, " +
+                    "allianceId TEXT NOT NULL, " +
+                    "bossId INTEGER NOT NULL, " +
+                    "shoppingCount INTEGER NOT NULL, " +
+                    "easyTaskCount INTEGER NOT NULL, " +
+                    "hardTaskCount INTEGER NOT NULL, " +
+                    "successfulBossHitCount INTEGER NOT NULL, " +
+                    "completedAll INTEGER DEFAULT 0 NOT NULL, " +
+                    "didUserGetReward INTEGER DEFAULT 0 NOT NULL," +
+                    "massageCount TEXT " +
+                    ");";
+
             db.execSQL(createBossTabel);
             db.execSQL(createTaskTable);
             db.execSQL(createSingleTaskTable);
             db.execSQL(createRepeatingTaskTable);
             db.execSQL(createOccurrenceTable);
+            db.execSQL(missionProgressTable);
 
         } if (oldVersion < 11){
 
