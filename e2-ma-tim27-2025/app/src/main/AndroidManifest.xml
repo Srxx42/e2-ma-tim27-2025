@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,7 +14,37 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.E2Taskly">
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.activity.EquipmentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ShopActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.StatisticsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.AllianceMessagesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.AllianceDecisionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.AllianceActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.AllianceBossActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".presentation.activity.AllianceBossProgressActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".presentation.activity.FriendsListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,6 +52,50 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".presentation.activity.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.RegistrationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ManageTaskActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ShowTaskListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ShowTaskCalendarActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ShowTaskInfoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ShowCategoriesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.ManageCategoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.BossBattleActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".presentation.activity.MainActivity"
+            android:exported="false"
+            android:windowFullscreen="true" />
+
+        <receiver
+            android:name=".broadcast.InviteActionReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name=".service.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

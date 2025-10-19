@@ -1,0 +1,55 @@
+package com.example.e2taskly.data.repository;
+
+import android.content.Context;
+
+import com.example.e2taskly.data.database.InviteLocalDataSource;
+import com.example.e2taskly.data.remote.InviteRemoteDataSource;
+import com.example.e2taskly.model.Alliance;
+import com.example.e2taskly.model.AllianceInvite;
+import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.enums.Status;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+
+import java.util.List;
+import java.util.Map;
+
+public class InviteRepository {
+    private InviteLocalDataSource localDataSource;
+    private InviteRemoteDataSource remoteDataSource;
+
+    public InviteRepository(Context context) {
+        this.localDataSource = new InviteLocalDataSource(context);
+        this.remoteDataSource = new InviteRemoteDataSource();
+    }
+
+    public Task<Void> sendInvites(List<AllianceInvite> invites) {
+        return remoteDataSource.sendInvites(invites)
+                .onSuccessTask(aVoid -> {
+                    return Tasks.call(() -> {
+                        localDataSource.saveOrUpdateInvites(invites);
+                        return null;
+                    });
+                });
+    }
+    public Task<AllianceInvite> getInvitationById(String inviteId) {
+        return remoteDataSource.getInvitationById(inviteId).onSuccessTask(documentSnapshot -> {
+            if (documentSnapshot != null && documentSnapshot.exists()) {
+                AllianceInvite invite = documentSnapshot.toObject(AllianceInvite.class);
+                return Tasks.forResult(invite);
+            }
+            return Tasks.forException(new Exception("Invitation not found."));
+        });
+    }
+    public Task<Void> acceptInvite(String inviteId) {
+        return remoteDataSource.updateInviteStatus(inviteId, Status.ACCEPTED).addOnSuccessListener(aVoid -> {
+            localDataSource.deleteInvite(inviteId);
+        });
+    }
+
+    public Task<Void> declineInvite(String inviteId) {
+        return remoteDataSource.updateInviteStatus(inviteId, Status.DECLINED).addOnSuccessListener(aVoid -> {
+            localDataSource.deleteInvite(inviteId);
+        });
+    }
+}

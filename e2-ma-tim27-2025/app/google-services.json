@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "193610460125",
+    "project_id": "e2taskly-33",
+    "storage_bucket": "e2taskly-33.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:193610460125:android:706967d3976c8795e82434",
+        "android_client_info": {
+          "package_name": "com.example.e2taskly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByRWJ3X3lT4gjtSg0XjERpdl9lhsl5v20"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

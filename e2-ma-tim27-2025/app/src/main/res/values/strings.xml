@@ -1,3 +1,82 @@
 <resources>
     <string name="app_name">E2Taskly</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="username_hint">Username</string>
+
+    <string name="login_title">Login</string>
+    <string name="login_button">Sign In</string>
+    <string name="login_no_account_prompt">Don’t have an account? Register here.</string>
+
+    <string name="registration_title">Registration</string>
+    <string name="registration_confirm_password_hint">Confirm password</string>
+    <string name="registration_choose_avatar_label">Choose avatar:</string>
+    <string name="registration_button">Register</string>
+    <string name="registration_already_have_account_prompt">Already have an account? Sign in here.</string>
+
+    <string name="main_welcome_message">Welcome!</string>
+    <string name="main_logout_button">Logout</string>
+
+    <string name="category_title">Category</string>
+    <string name="category_name">Name:</string>
+    <string name="category_color">Color:</string>
+    <string name="save_button">Save</string>
+
+    <string name="profile_level_label">Level</string>
+    <string name="profile_xp_label">XP</string>
+    <string name="profile_pp_label">Power</string>
+    <string name="profile_coins_label">Coins</string>
+    <string name="profile_your_qr_code_label">Your QR Code</string>
+    <string name="profile_badges_label">Badges</string>
+    <string name="profile_equipment_label">Equipment</string>
+    <string name="profile_change_password_button">Change Password</string>
+    <string name="profile_change_password_dialog_title">Change Password</string>
+    <string name="profile_old_password_hint">Old Password</string>
+    <string name="profile_new_password_hint">New Password</string>
+    <string name="profile_confirm_new_password_hint">Confirm New Password</string>
+    <string name="profile_level_progress">Level Progress</string>
+    <string name="dialog_change_button">Change</string>
+    <string name="dialog_cancel_button">Cancel</string>
+    <string name="main_profile_button">My Profile</string>
+    <string name="main_all_users_button">All Users</string>
+    <string name="button_add_friend">Add Friend</string>
+    <string name="button_remove_friend">Remove Friend</string>
+    <string name="button_my_friends">My Friends</string>
+    <string name="decision_info">You are already in an alliance. Do you want to leave your current alliance to join the new one?</string>
+    <string name="button_confirm_join">Yes, Leave and Join New Alliance</string>
+    <string name="button_cancel_join">No, Stay in Current Alliance</string>
+    <string name="alliance_title">My Alliance</string>
+    <string name="members_label">Members:</string>
+    <string name="no_alliance_message">You are not part of an alliance.</string>
+    <string name="create_alliance_button">Create New Alliance</string>
+    <string name="invite_members_description">Invite New Members</string>
+    <string name="hint_alliance_name">Enter alliance name</string>
+    <string name="label_invite_friends">Invite friends:</string>
+    <string name="text_no_friends">There are no friends to invite.</string>
+    <string name="checkbox_friend_placeholder">Friend Username</string>
+    <string name="type_a_message">Type a message...</string>
+    <string name="send_message">Send message</string>
+    <string name="alliance_chat_title">Alliance Chat</string>
+    <string name="chat">Chat</string>
+    <string name="leave_alliance">Leave Alliance</string>
+    <string name="disband_alliance">Disband Alliance</string>
+    <string name="statistics">Statistic</string>
+    <string name="active_days_in_streak">Active days in streak</string>
+    <string name="longest_streak_of_completed_tasks">Longest streak of completed tasks</string>
+    <string name="task_overview">Task overview</string>
+    <string name="completed_tasks_by_category">Completed tasks by category</string>
+    <string name="average_task_difficulty">Average task difficulty</string>
+    <string name="xp_earned_last_7_days">XP earned in the last 7 days</string>
+    <string name="button_logout">Logout</string>
+    <string name="menu_profile">Profile</string>
+
+    <string name="item_name_placeholder">Single-use strength potion +20%</string>
+    <string name="item_description_placeholder">Increases strength (PP) by 20% in the next boss fight.</string>
+    <string name="item_price_placeholder">Price: 100 coins</string>
+    <string name="purchase">Purchase</string>
+    <string name="item_image_description">Image of the shop item</string>
+    <string name="profile_badges">Badges</string>
+    <string name="special_missions">Special Missions</string>
+    <string name="started">Started</string>
+    <string name="completed">Completed</string>
 </resources>
