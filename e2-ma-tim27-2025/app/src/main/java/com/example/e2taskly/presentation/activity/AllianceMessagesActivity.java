@@ -4,14 +4,19 @@ import android.os.Bundle;
 
 import android.text.TextUtils;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,6 +42,7 @@ public class AllianceMessagesActivity extends AppCompatActivity {
     private RecyclerView recyclerViewMessages;
     private EditText editTextMessage;
     private ImageButton buttonSendMessage;
+    private ImageView menuButton;
     private MessageAdapter messageAdapter;
     private MessageService messageService;
     private UserService userService;
@@ -52,7 +58,16 @@ public class AllianceMessagesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alliance_messages);
+        EdgeToEdge.enable(this);
+        View mainView = findViewById(R.id.main);
+        ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
+            int systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            int imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
 
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), Math.max(systemBarsInsets, imeInsets));
+
+            return insets;
+        });
         allianceId = getIntent().getStringExtra(EXTRA_ALLIANCE_ID);
         allianceName = getIntent().getStringExtra(EXTRA_ALLIANCE_NAME);
 
@@ -62,13 +77,6 @@ public class AllianceMessagesActivity extends AppCompatActivity {
             return;
         }
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle(allianceName);
-        }
 
         SharedPreferencesUtil prefs = new SharedPreferencesUtil(this);
         currentUserId = prefs.getActiveUserUid();
@@ -88,6 +96,7 @@ public class AllianceMessagesActivity extends AppCompatActivity {
         recyclerViewMessages = findViewById(R.id.recyclerViewMessages);
         editTextMessage = findViewById(R.id.editTextMessage);
         buttonSendMessage = findViewById(R.id.buttonSendMessage);
+        menuButton = findViewById(R.id.menuButton);
     }
 
     private void setupRecyclerView() {

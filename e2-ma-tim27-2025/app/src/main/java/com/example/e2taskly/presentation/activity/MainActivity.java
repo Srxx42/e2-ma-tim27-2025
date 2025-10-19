@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -103,7 +105,11 @@ public class MainActivity extends BaseActivity {
         super.onResume();
         checkUserActivityStreak();
     }
+    @Override
+    protected void preparePopupMenu(PopupMenu popupMenu) {
+        Menu menu = popupMenu.getMenu();
 
+    }
     @Override
     protected int getMenuResourceId() {
         return R.menu.main_menu;

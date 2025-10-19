@@ -5,10 +5,19 @@
         android:id="@+id/action_scan_qr"
         android:icon="@drawable/ic_qr_code_scanner"
         android:title="Scan QR Code"
+        android:actionLayout="@layout/menu_item_layout"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_view_alliance"
         android:title="My Alliance"
         android:icon="@drawable/ic_alliance"
+        android:actionLayout="@layout/menu_item_layout"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="@string/button_logout"
+        android:actionLayout="@layout/menu_item_layout"
+        app:showAsAction="ifRoom"
+        />
 </menu>
