@@ -75,4 +75,8 @@
     <string name="item_price_placeholder">Price: 100 coins</string>
     <string name="purchase">Purchase</string>
     <string name="item_image_description">Image of the shop item</string>
+    <string name="profile_badges">Badges</string>
+    <string name="special_missions">Special Missions</string>
+    <string name="started">Started</string>
+    <string name="completed">Completed</string>
 </resources>

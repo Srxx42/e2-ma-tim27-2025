@@ -5,19 +5,25 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e2taskly.R;
+import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.model.EquipmentTemplate;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.model.UserInventoryItem;
 import com.example.e2taskly.presentation.adapter.EquipmentAdapter;
+import com.example.e2taskly.service.BossService;
 import com.example.e2taskly.service.EquipmentService;
 import com.example.e2taskly.service.UserService;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +36,7 @@ public class EquipmentActivity extends AppCompatActivity implements EquipmentAda
     private EquipmentService equipmentService;
     private UserService userService;
     private User currentUser;
+    private BossService bossService;
     private List<UserInventoryItem> inventoryList = new ArrayList<>();
     private Map<String, EquipmentTemplate> templateMap = new HashMap<>();
 
@@ -44,6 +51,24 @@ public class EquipmentActivity extends AppCompatActivity implements EquipmentAda
 
         equipmentService = new EquipmentService(this);
         userService = new UserService(this);
+        bossService = new BossService(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(recyclerView, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            int originalPaddingLeft = v.getPaddingLeft();
+            int originalPaddingTop = v.getPaddingTop();
+            int originalPaddingRight = v.getPaddingRight();
+
+            v.setPadding(
+                    originalPaddingLeft,
+                    originalPaddingTop,
+                    originalPaddingRight,
+                    insets.bottom
+            );
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         loadInventoryAndTemplates();
     }
@@ -76,6 +101,7 @@ public class EquipmentActivity extends AppCompatActivity implements EquipmentAda
     }
 
     private void setupRecyclerView() {
+        String userId = userService.getCurrentUserId();
         adapter = new EquipmentAdapter(currentUser, inventoryList, templateMap, this);
         recyclerView.setAdapter(adapter);
     }
@@ -83,6 +109,7 @@ public class EquipmentActivity extends AppCompatActivity implements EquipmentAda
     @Override
     public void onActivateClick(UserInventoryItem item) {
         String userId = userService.getCurrentUserId();
+
         EquipmentTemplate template = templateMap.get(item.getTemplateId());
         if (currentUser != null && template != null) {
             equipmentService.activateItemForBattle(currentUser, item, template).addOnCompleteListener(task -> {

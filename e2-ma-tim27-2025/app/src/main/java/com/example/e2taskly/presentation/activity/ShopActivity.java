@@ -50,10 +50,28 @@ public class ShopActivity extends AppCompatActivity {
 
         equipmentService = new EquipmentService(this);
         levelingService = new LevelingService();
+        sharedPreferences = new SharedPreferencesUtil(this);
         missionProgressService = new MissionProgressService(this);
         userService = new UserService(this);
         menuButton = findViewById(R.id.menuButton);
         menuButton.setVisibility(View.GONE);
+
+        ViewCompat.setOnApplyWindowInsetsListener(recyclerView, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            int originalPaddingLeft = v.getPaddingLeft();
+            int originalPaddingTop = v.getPaddingTop();
+            int originalPaddingRight = v.getPaddingRight();
+
+            v.setPadding(
+                    originalPaddingLeft,
+                    originalPaddingTop,
+                    originalPaddingRight,
+                    insets.bottom
+            );
+
+            return WindowInsetsCompat.CONSUMED;
+        });
         loadShopItems();
     }
 
