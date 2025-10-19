@@ -10,6 +10,9 @@ import com.example.e2taskly.model.enums.ProgressType;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -223,5 +226,43 @@ public class MissionProgressService {
         cal2.setTime(date2);
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
+    }
+
+    public Task<Integer> calculateUserProgress(String currentUserId, Date bossAppearanceDate) {
+        return missionProgressRepository.getUserProgress(currentUserId).onSuccessTask(progress -> {
+            if (progress == null) {
+                return Tasks.forResult(0);
+            }
+
+            int easyCount = progress.getEasyTaskCount();
+            int hardCount = progress.getHardTaskCount();
+            int bossHitCount = progress.getSuccessfulBossHitCount();
+            int shopCount = progress.getShoppingCount();
+            int datesCount = progress.getMessageCount().size();
+
+            int totalUserActions = easyCount + hardCount + bossHitCount + shopCount + datesCount;
+
+            final int MAX_EASY = 10;
+            final int MAX_HARD = 6;
+            final int MAX_BOSS_HIT = 10;
+            final int MAX_SHOP = 5;
+
+            long daysPassed = ChronoUnit.DAYS.between(
+                    bossAppearanceDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                    LocalDate.now()
+            );
+
+            long maxMessages = Math.max(daysPassed, 1);
+
+            double maxTotalActions = MAX_EASY + MAX_HARD + MAX_BOSS_HIT + MAX_SHOP + maxMessages;
+
+            if (maxTotalActions == 0) {
+                return Tasks.forResult(0);
+            }
+
+            int finalPercentage = (int) ((totalUserActions / maxTotalActions) * 100);
+
+            return Tasks.forResult(finalPercentage);
+        });
     }
 }

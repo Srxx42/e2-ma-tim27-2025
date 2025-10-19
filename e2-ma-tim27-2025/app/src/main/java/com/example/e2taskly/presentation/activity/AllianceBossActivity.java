@@ -33,7 +33,10 @@ import com.example.e2taskly.model.Alliance;
 import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.model.EquipmentTemplate;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.UserBadge;
+import com.example.e2taskly.model.enums.BadgeType;
 import com.example.e2taskly.service.AllianceService;
+import com.example.e2taskly.service.BadgeService;
 import com.example.e2taskly.service.BossService;
 import com.example.e2taskly.service.EquipmentService;
 import com.example.e2taskly.service.MissionProgressService;
@@ -54,6 +57,8 @@ public class AllianceBossActivity extends AppCompatActivity {
     private EquipmentService equipmentService;
     private MissionProgressService missionProgressService;
 
+    private BadgeService badgeService;
+
     // Data models
     private User currentUser;
     private Alliance currentAlliance;
@@ -64,7 +69,7 @@ public class AllianceBossActivity extends AppCompatActivity {
     private LinearLayout allianceNoMissionMessage, llRewardsContainer, llRewardItems;
     private ProgressBar allianceBossHpBar;
     private TextView tvAllianceBossHp, tvDaysLeft, tvRewardGoldAmount, tvMissionStatusTitle;
-    private ImageView ivAllianceBoss, ivAllianceChestGif, ivRewardItem1, ivRewardItem2;
+    private ImageView ivAllianceBoss, ivAllianceChestGif, ivRewardItem1, ivRewardItem2, ivRewardBadge;
     private Button btnStartMission, btnShowProgress;
 
     private boolean isChestOpen = false;
@@ -82,6 +87,7 @@ public class AllianceBossActivity extends AppCompatActivity {
         bossService = new BossService(this);
         missionProgressService = new MissionProgressService(this);
         equipmentService = new EquipmentService(this);
+        badgeService = new BadgeService(this);
 
         initializeUI();
         loadInitialData();
@@ -102,6 +108,7 @@ public class AllianceBossActivity extends AppCompatActivity {
         ivAllianceChestGif = findViewById(R.id.iv_alliance_chest_gif);
         ivRewardItem1 = findViewById(R.id.iv_reward_item1);
         ivRewardItem2 = findViewById(R.id.iv_reward_item2);
+        ivRewardBadge = findViewById(R.id.iv_reward_badge);
         btnStartMission = findViewById(R.id.btn_start_mission);
         btnShowProgress = findViewById(R.id.btn_show_progress);
     }
@@ -302,25 +309,44 @@ public class AllianceBossActivity extends AppCompatActivity {
                     }
                 }).into(ivAllianceChestGif);
 
-        String currenUserId = userService.getCurrentUserId();
+        String currentUserId = userService.getCurrentUserId();
 
         tvRewardGoldAmount.setText(String.valueOf(goldToGet));
-        userService.addCoinsToUser(currenUserId,goldToGet);
+        userService.addCoinsToUser(currentUserId,goldToGet);
 
         EquipmentTemplate dropedItem1 = equipmentService.getRandomItem(true,false);
-        userService.getUserProfile(currenUserId).addOnSuccessListener(currentUser ->{
+        userService.getUserProfile(currentUserId).addOnSuccessListener(currentUser ->{
             equipmentService.handleItemDrop(currentUser, dropedItem1);
         });
 
         EquipmentTemplate dropedItem2 = equipmentService.getRandomItem(true,true);
-        userService.getUserProfile(currenUserId).addOnSuccessListener(currentUser ->{
+        userService.getUserProfile(currentUserId).addOnSuccessListener(currentUser ->{
             equipmentService.handleItemDrop(currentUser, dropedItem2);
         });
 
-        ivRewardItem1.setVisibility(VISIBLE);
-        ivRewardItem2.setVisibility(VISIBLE);
-        setRewardItemIcon(dropedItem1);
-        ivRewardItem2.setImageResource(R.drawable.ic_potion);
+        missionProgressService.calculateUserProgress(currentUserId, currentBoss.getBossAppearanceDate())
+                .continueWithTask(calculateTask -> {
+                    if (!calculateTask.isSuccessful()) {
+                        throw calculateTask.getException();
+                    }
+                    int completedNumber = calculateTask.getResult();
+
+                    return badgeService.createBadge(currentUserId, completedNumber);
+                })
+                .addOnSuccessListener(givenBadge -> {
+
+                    ivRewardItem1.setVisibility(VISIBLE);
+                    ivRewardItem2.setVisibility(VISIBLE);
+                    ivRewardBadge.setVisibility(VISIBLE);
+
+
+                    setRewardItemIcon(dropedItem1);
+                    setBadgeItemIcon(givenBadge);
+                    ivRewardItem2.setImageResource(R.drawable.ic_potion);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error processing mission rewards.", Toast.LENGTH_SHORT).show();
+                });
 
 
         // Ažuriramo progress da označi da je nagrada pokupljena
@@ -353,5 +379,22 @@ public class AllianceBossActivity extends AppCompatActivity {
                 break;
         }
 
+    }
+
+    public void setBadgeItemIcon(UserBadge badge){
+        switch (badge.getBadgeType()){
+            case BRONZE:
+                ivRewardBadge.setImageResource(R.drawable.badge_bronze);
+                break;
+            case SILVER:
+                ivRewardBadge.setImageResource(R.drawable.badge_silver);
+                break;
+            case GOLD:
+                ivRewardBadge.setImageResource(R.drawable.badge_gold);
+                break;
+            case DIAMOND:
+                ivRewardBadge.setImageResource(R.drawable.badge_diamond);
+                break;
+        }
     }
 }
