@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -20,6 +21,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.app.AlertDialog;
@@ -82,7 +87,7 @@ public class AllianceActivity extends BaseActivity {
         fabInviteMembers = findViewById(R.id.fabInviteMembers);
 
         setupRecyclerView();
-
+        setupFloatingButton();
         fabInviteMembers.setOnClickListener(v -> showInviteMoreFriendsDialog());
         buttonCreateAlliance.setOnClickListener(v -> showCreateAllianceDialog());
         special_mission_button.setOnClickListener(v -> {
@@ -102,7 +107,28 @@ public class AllianceActivity extends BaseActivity {
         recyclerViewMembers.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewMembers.setAdapter(memberAdapter);
     }
+    private void setupFloatingButton(){
+        ConstraintLayout mainLayout = findViewById(R.id.main);
+        FloatingActionButton fab = findViewById(R.id.fabInviteMembers);
 
+        ViewCompat.setOnApplyWindowInsetsListener(mainLayout, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            ViewGroup.MarginLayoutParams fabParams = (ViewGroup.MarginLayoutParams) fab.getLayoutParams();
+            int originalEndMargin = fabParams.rightMargin; // ili endMargin
+
+            fabParams.setMargins(
+                    fabParams.leftMargin,
+                    fabParams.topMargin,
+                    originalEndMargin,
+                    insets.bottom
+            );
+
+            fab.setLayoutParams(fabParams);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+    }
     private void loadUserAllianceStatus() {
         setLoadingState(true);
         userService.getUserProfile(currentUserId)

@@ -27,14 +27,17 @@ import com.example.e2taskly.model.RepeatingTask;
 import com.example.e2taskly.model.SingleTask;
 import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.TaskCategory;
+import com.example.e2taskly.model.User;
 import com.example.e2taskly.model.enums.Difficulty;
 import com.example.e2taskly.model.enums.Importance;
 import com.example.e2taskly.model.enums.RepeatingType;
 import com.example.e2taskly.model.enums.TaskStatus;
 import com.example.e2taskly.model.enums.TaskType;
+import com.example.e2taskly.service.LevelingService;
 import com.example.e2taskly.service.TaskCategoryService;
 import com.example.e2taskly.service.TaskService;
 import com.example.e2taskly.service.UserService;
+import com.example.e2taskly.util.SharedPreferencesUtil;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.time.DateTimeException;
@@ -75,7 +78,11 @@ public class ManageTaskActivity extends AppCompatActivity {
     private UserService userService;
     private TaskCategoryService  categoryService;
     private TaskService taskService;
+    private SharedPreferencesUtil sharedPreferences;
     private int editingTaskId;
+    private String currentUserId;
+    private User currentUserObject;
+    private LevelingService levelingService;
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault());
 
@@ -86,12 +93,15 @@ public class ManageTaskActivity extends AppCompatActivity {
         userService = new UserService(this);
         categoryService = new TaskCategoryService(this);
         taskService = new TaskService(this);
+        sharedPreferences = new SharedPreferencesUtil(this);
+        levelingService = new LevelingService();
         setContentView(R.layout.activity_task_manage);
 
         initViews();
         setupSpinners();
         initListeners();
-
+        loadUserProfile();
+        currentUserId = sharedPreferences.getActiveUserUid();
         editingTaskId = getIntent().getIntExtra("TASK_ID", -1);
         if (editingTaskId != -1) {
             Task taskToEdit = taskService.getTaskById(editingTaskId);
@@ -167,7 +177,16 @@ public class ManageTaskActivity extends AppCompatActivity {
         saveRepeatingTask = findViewById(R.id.saveRepeatingTask);
 
     }
+    private void loadUserProfile() {
+        userService.getUserProfile(currentUserId).addOnCompleteListener(currentUserTask -> {
+            if (currentUserTask.isSuccessful() && currentUserTask.getResult() != null) {
+                this.currentUserObject = currentUserTask.getResult();
 
+            } else {
+                Toast.makeText(this, "Error loading your session.", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
     private void setupSpinners(){
         //Spinner za postojece kategorije
         setupCategorySpinner();
@@ -258,8 +277,13 @@ public class ManageTaskActivity extends AppCompatActivity {
             status = taskToEdit.getStatus();
             deleted = taskToEdit.isDeleted();
         }
+        int baseImportanceXp = importance.getXpValue();
+        int baseDifficultyXp = difficulty.getXpValue();
 
-         int valueXP = caluclateTaskXP(difficulty, importance);
+        // 3. Izračunajte nove XP vrednosti na osnovu nivoa korisnika
+        int newImportanceXp = levelingService.calculateNextXpGain(baseImportanceXp, currentUserObject.getLevel());
+        int newDifficultyXp = levelingService.calculateNextXpGain(baseDifficultyXp, currentUserObject.getLevel());
+        int valueXP = newDifficultyXp + newImportanceXp;
 
         //Krairanje task objekta - SINGLE
         if(currentTaskType == TaskType.SINGLE){

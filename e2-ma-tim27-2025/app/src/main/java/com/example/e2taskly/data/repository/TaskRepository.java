@@ -11,6 +11,7 @@ import com.example.e2taskly.model.Task;
 import com.example.e2taskly.model.enums.TaskStatus;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -123,5 +124,17 @@ public class TaskRepository {
         return localDataSource.isThereTaskWithCategory(categoryId);
     }
 
+
+    public List<Task> getTasksByCreator(String userId) {
+        List<Task> allTasks = new ArrayList<>();
+
+        List<SingleTask> singleTasks = localDataSource.getAllSingleTasks(userId);
+        List<RepeatingTask> repeatingTasks = localDataSource.getAllRepeatingTasks(userId);
+
+        allTasks.addAll(singleTasks);
+        allTasks.addAll(repeatingTasks);
+
+        return allTasks;
+    }
 
 }

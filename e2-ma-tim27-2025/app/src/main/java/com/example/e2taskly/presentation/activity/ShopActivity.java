@@ -54,6 +54,23 @@ public class ShopActivity extends AppCompatActivity {
         userService = new UserService(this);
         menuButton = findViewById(R.id.menuButton);
         menuButton.setVisibility(View.GONE);
+
+        ViewCompat.setOnApplyWindowInsetsListener(recyclerView, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            int originalPaddingLeft = v.getPaddingLeft();
+            int originalPaddingTop = v.getPaddingTop();
+            int originalPaddingRight = v.getPaddingRight();
+
+            v.setPadding(
+                    originalPaddingLeft,
+                    originalPaddingTop,
+                    originalPaddingRight,
+                    insets.bottom
+            );
+
+            return WindowInsetsCompat.CONSUMED;
+        });
         loadShopItems();
     }
 
