@@ -27,11 +27,16 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.EquipmentTemplate;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.UserBadge;
 import com.example.e2taskly.model.UserInventoryItem;
+import com.example.e2taskly.presentation.adapter.BadgeAdapter;
+import com.example.e2taskly.service.BadgeService;
 import com.example.e2taskly.service.EquipmentService;
 import com.example.e2taskly.service.LevelingService;
 import com.example.e2taskly.service.UserService;
@@ -67,6 +72,13 @@ public class ProfileActivity extends BaseActivity {
     private LinearLayout layoutEquipment;
     private Button buttonMyEquipment;
     private EquipmentService equipmentService;
+    private BadgeService badgeService;
+    private TextView labelBadges;
+    private TextView textViewBadgesCount;
+    private RecyclerView recyclerViewBadges;
+    private BadgeAdapter badgeAdapter;
+    private List<UserBadge> userBadgeList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,7 +102,9 @@ public class ProfileActivity extends BaseActivity {
         userService = new UserService(this);
         levelingService = new LevelingService();
         equipmentService = new EquipmentService(this);
+        badgeService = new BadgeService(this);
         setupViews();
+        setupRecyclerView();
 
         Intent intent = getIntent();
         profileUserId = intent.getStringExtra(EXTRA_USER_ID);
@@ -127,6 +141,9 @@ public class ProfileActivity extends BaseActivity {
         labelEquipment = findViewById(R.id.labelEquipment);
         layoutEquipment = findViewById(R.id.layoutEquipment);
         buttonMyEquipment = findViewById(R.id.buttonMyEquipment);
+        labelBadges = findViewById(R.id.labelBadges);
+        textViewBadgesCount = findViewById(R.id.textViewBadgesCount);
+        recyclerViewBadges = findViewById(R.id.recyclerViewBadges);
     }
     @Override
     protected void onResume() {
@@ -166,6 +183,12 @@ public class ProfileActivity extends BaseActivity {
             startActivity(intent);
         }
         return false;
+    }
+    private void setupRecyclerView() {
+        badgeAdapter = new BadgeAdapter(this, userBadgeList);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerViewBadges.setLayoutManager(layoutManager);
+        recyclerViewBadges.setAdapter(badgeAdapter);
     }
     private void loadUserProfile() {
         progressBar.setVisibility(View.VISIBLE);
@@ -243,6 +266,31 @@ public class ProfileActivity extends BaseActivity {
             updateFriendshipButtons();
         }
         displayProgress(user);
+        loadAndDisplayBadges(user.getUid());
+    }
+    private void loadAndDisplayBadges(String userId) {
+        badgeService.getAsyncUserBadges(userId).addOnSuccessListener(badges -> {
+            if (badges != null && !badges.isEmpty()) {
+                labelBadges.setVisibility(View.VISIBLE);
+                textViewBadgesCount.setVisibility(View.VISIBLE);
+                recyclerViewBadges.setVisibility(View.VISIBLE);
+
+                // Postavljamo broj bedževa
+                textViewBadgesCount.setText("(" + badges.size() + ")");
+
+                badgeAdapter.updateBadges(badges);
+            } else {
+                labelBadges.setVisibility(View.VISIBLE);
+                labelBadges.setText("User has no badges");
+                textViewBadgesCount.setVisibility(View.GONE);
+                recyclerViewBadges.setVisibility(View.GONE);
+            }
+        }).addOnFailureListener(e -> {
+            labelBadges.setVisibility(View.GONE);
+            textViewBadgesCount.setVisibility(View.GONE);
+            recyclerViewBadges.setVisibility(View.GONE);
+            Toast.makeText(ProfileActivity.this, "Error loading badges.", Toast.LENGTH_SHORT).show();
+        });
     }
     private void updateFriendshipButtons() {
         boolean areFriends = currentUserObject.getFriendIds().contains(profileUserObject.getUid());

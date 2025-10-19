@@ -28,13 +28,23 @@
             android:layout_height="wrap_content"
             tools:text="Username"
             android:textSize="16sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:textColor="@color/text_color_on_image"
+            android:shadowColor="#000000"
+            android:shadowDx="1.5"
+            android:shadowDy="1.5"
+            android:shadowRadius="1.6" />
 
         <TextView
             android:id="@+id/textViewTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="Rookie"/>
+            tools:text="Rookie"
+            android:textColor="@color/text_color_on_image"
+            android:shadowColor="#000000"
+            android:shadowDx="1.5"
+            android:shadowDy="1.5"
+            android:shadowRadius="1.6" />
     </LinearLayout>
     <LinearLayout
         android:id="@+id/ll_user_badges"
@@ -131,7 +141,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:text="Level: 15"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:textColor="@color/text_color_on_image"
+        android:shadowColor="#000000"
+        android:shadowDx="1.5"
+        android:shadowDy="1.5"
+        android:shadowRadius="1.6" />
     <ImageView
         android:id="@+id/imageViewAddFriend"
         android:layout_width="wrap_content"

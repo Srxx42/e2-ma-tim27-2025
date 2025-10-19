@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
 
+import com.example.e2taskly.data.repository.TaskRepository;
 import com.example.e2taskly.data.repository.UserRepository;
 import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.model.User;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 public class UserService {
     private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
     private final SharedPreferencesUtil sharedPreferences;
     private final LevelingService levelingService;
 
@@ -38,9 +40,11 @@ public class UserService {
     public UserService(Context context){
 
         userRepository = new UserRepository(context);
+        taskRepository = new TaskRepository(context);
         sharedPreferences = new SharedPreferencesUtil(context);
         levelingService = new LevelingService();
         bossService = new BossService(context);
+
     }
     public void setTaskService(TaskService taskService) {
         this.taskService = taskService;
@@ -303,6 +307,7 @@ public class UserService {
 
         // Korak 3: Nakon što se boss operacija završi, ponovo pozovi ovu metodu
         // da proveriš da li ima XP za još jedan nivo.
+        updateTaskXpForUser(user.getUid(), user.getLevel());
         return bossOperationTask.onSuccessTask(aVoid -> processLevelUps(user));
     }
 
@@ -333,22 +338,20 @@ public class UserService {
                     });
         }
     }
+    private void updateTaskXpForUser(String userId, int newLevel) {
+        List<com.example.e2taskly.model.Task> tasks = taskRepository.getTasksByCreator(userId);
 
-//    private void updateTaskXpForUser(String userId, int newLevel) {
-//        List<com.example.e2taskly.model.Task> tasks = taskRepository.getTasksByCreator(userId);
-//
-//        for(com.example.e2taskly.model.Task task : tasks){
-//            int baseImportanceXp = task.getImportance().getXpValue();
-//            int baseDifficultyXp = task.getDifficulty().getXpValue();
-//            int newImportanceXp = levelingService.calculateNextXpGain(baseImportanceXp,newLevel);
-//            int newDifficultyXp = levelingService.calculateNextXpGain(baseDifficultyXp,newLevel);
-//
-//            // zbir oba
-//            task.setValueXP(newImportanceXp + newDifficultyXp);
-//
-//            taskRepository.updateTask(task);
-//        }
-//    }
+        for(com.example.e2taskly.model.Task task : tasks){
+            int baseImportanceXp = task.getImportance().getXpValue();
+            int baseDifficultyXp = task.getDifficulty().getXpValue();
+            int newImportanceXp = levelingService.calculateNextXpGain(baseImportanceXp,newLevel);
+            int newDifficultyXp = levelingService.calculateNextXpGain(baseDifficultyXp,newLevel);
+
+            task.setValueXP(newImportanceXp + newDifficultyXp);
+
+            taskRepository.updateTask(task);
+        }
+    }
     public Task<Void> addFriend(String currentUid,String friendUid) {
     if (currentUid == null || currentUid.equals(friendUid)) {
         return Tasks.forException(new Exception("You can't add yourself as a friend."));

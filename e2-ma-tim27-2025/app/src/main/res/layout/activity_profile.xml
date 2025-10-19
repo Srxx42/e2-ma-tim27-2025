@@ -202,6 +202,37 @@
             app:layout_constraintTop_toBottomOf="@id/progressBarXp"
             android:textColor="#F0BC54"
             tools:text="1500 / 2500 XP" />
+        <TextView
+            android:id="@+id/labelBadges"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/profile_badges"
+            android:textColor="#F0BC54"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewXpProgress" />
+        <TextView
+            android:id="@+id/textViewBadgesCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="#F0BC54"
+            android:textStyle="bold"
+            app:layout_constraintBaseline_toBaselineOf="@id/labelBadges"
+            app:layout_constraintStart_toEndOf="@id/labelBadges"
+            tools:text="(5)" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewBadges"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/labelBadges"
+            tools:listitem="@layout/item_badge" />
         <!-- QR Code -->
         <TextView
             android:id="@+id/labelQrCode"
@@ -212,7 +243,7 @@
             android:textColor="#F0BC54"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/progressBarXp" />
+            app:layout_constraintTop_toBottomOf="@id/recyclerViewBadges" />
 
         <ImageView
             android:id="@+id/imageViewQrCode"

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -20,16 +21,22 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.app.AlertDialog;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.Alliance;
+import com.example.e2taskly.model.Boss;
 import com.example.e2taskly.model.User;
 import com.example.e2taskly.presentation.adapter.FriendInviteAdapter;
 import com.example.e2taskly.presentation.adapter.UserAdapter;
 import com.example.e2taskly.service.AllianceService;
+import com.example.e2taskly.service.BossService;
 import com.example.e2taskly.service.InviteService;
 import com.example.e2taskly.service.UserService;
 import com.example.e2taskly.util.SharedPreferencesUtil;
@@ -38,6 +45,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,6 +62,7 @@ public class AllianceActivity extends BaseActivity {
     private FloatingActionButton fabInviteMembers;
     private UserService userService;
     private AllianceService allianceService;
+    private BossService bossService;
     private UserAdapter memberAdapter;
     private String currentUserId;
     private User currentUser;
@@ -68,6 +79,7 @@ public class AllianceActivity extends BaseActivity {
 
         userService = new UserService(this);
         allianceService = new AllianceService(this);
+        bossService = new BossService(this);
         sharedPreferences = new SharedPreferencesUtil(this);
         currentUserId = sharedPreferences.getActiveUserUid();
 
@@ -82,7 +94,7 @@ public class AllianceActivity extends BaseActivity {
         fabInviteMembers = findViewById(R.id.fabInviteMembers);
 
         setupRecyclerView();
-
+        setupFloatingButton();
         fabInviteMembers.setOnClickListener(v -> showInviteMoreFriendsDialog());
         buttonCreateAlliance.setOnClickListener(v -> showCreateAllianceDialog());
         special_mission_button.setOnClickListener(v -> {
@@ -102,7 +114,28 @@ public class AllianceActivity extends BaseActivity {
         recyclerViewMembers.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewMembers.setAdapter(memberAdapter);
     }
+    private void setupFloatingButton(){
+        ConstraintLayout mainLayout = findViewById(R.id.main);
+        FloatingActionButton fab = findViewById(R.id.fabInviteMembers);
 
+        ViewCompat.setOnApplyWindowInsetsListener(mainLayout, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            ViewGroup.MarginLayoutParams fabParams = (ViewGroup.MarginLayoutParams) fab.getLayoutParams();
+            int originalEndMargin = fabParams.rightMargin; // ili endMargin
+
+            fabParams.setMargins(
+                    fabParams.leftMargin,
+                    fabParams.topMargin,
+                    originalEndMargin,
+                    insets.bottom
+            );
+
+            fab.setLayoutParams(fabParams);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+    }
     private void loadUserAllianceStatus() {
         setLoadingState(true);
         userService.getUserProfile(currentUserId)
@@ -355,45 +388,78 @@ public class AllianceActivity extends BaseActivity {
         }
     }
     private void showLeaveAllianceDialog() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Leave Alliance")
-                .setMessage("Are you sure you want to leave '" + currentAlliance.getName() + "'?")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Leave", (dialog, which) -> {
-                    setLoadingState(true);
-                    allianceService.leaveAlliance(currentUserId, currentAlliance.getAllianceId())
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "You have left the alliance.", Toast.LENGTH_SHORT).show();
-                                displayNoAllianceView(); // Correctly refreshes UI
-                            })
-                            .addOnFailureListener(e -> {
-                                setLoadingState(false);
-                                layoutAllianceInfo.setVisibility(View.VISIBLE);
-                                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                })
-                .show();
+        checkMissionStatusAndProceed(() -> {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Leave Alliance")
+                    .setMessage("Are you sure you want to leave '" + currentAlliance.getName() + "'?")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Leave", (dialog, which) -> {
+                        setLoadingState(true);
+                        allianceService.leaveAlliance(currentUserId, currentAlliance.getAllianceId())
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "You have left the alliance.", Toast.LENGTH_SHORT).show();
+                                    displayNoAllianceView();
+                                })
+                                .addOnFailureListener(e -> {
+                                    setLoadingState(false);
+                                    layoutAllianceInfo.setVisibility(View.VISIBLE);
+                                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                });
+                    })
+                    .show();
+        });
     }
 
     private void showDisbandAllianceDialog() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Disband Alliance")
-                .setMessage("Are you sure you want to permanently disband '" + currentAlliance.getName() + "'? This action cannot be undone.")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Disband", (dialog, which) -> {
-                    setLoadingState(true);
-                    allianceService.disbandAlliance(currentUserId, currentAlliance.getAllianceId())
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "Alliance has been disbanded.", Toast.LENGTH_SHORT).show();
-                                displayNoAllianceView(); // Correctly refreshes UI
-                            })
-                            .addOnFailureListener(e -> {
-                                setLoadingState(false);
-                                layoutAllianceInfo.setVisibility(View.VISIBLE);
-                                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                })
-                .show();
+        checkMissionStatusAndProceed(() -> {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Disband Alliance")
+                    .setMessage("Are you sure you want to permanently disband '" + currentAlliance.getName() + "'? This action cannot be undone.")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Disband", (dialog, which) -> {
+                        setLoadingState(true);
+                        allianceService.disbandAlliance(currentUserId, currentAlliance.getAllianceId())
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Alliance has been disbanded.", Toast.LENGTH_SHORT).show();
+                                    displayNoAllianceView();
+                                })
+                                .addOnFailureListener(e -> {
+                                    setLoadingState(false);
+                                    layoutAllianceInfo.setVisibility(View.VISIBLE);
+                                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                });
+                    })
+                    .show();
+        });
+    }
+    private void checkMissionStatusAndProceed(Runnable actionToProceed) {
+        if (currentAlliance == null) return;
+
+        setLoadingState(true);
+        bossService.getByEnemyId(currentAlliance.getAllianceId(), true)
+                .addOnCompleteListener(task -> {
+                    setLoadingState(false);
+                    layoutAllianceInfo.setVisibility(View.VISIBLE);
+
+                    if (!task.isSuccessful() || task.getResult() == null) {
+                        actionToProceed.run();
+                        return;
+                    }
+
+                    Boss allianceBoss = task.getResult();
+
+                    LocalDate appearanceDate = allianceBoss.getBossAppearanceDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    long daysPassed = ChronoUnit.DAYS.between(appearanceDate, LocalDate.now());
+                    boolean isMissionExpired = daysPassed >= 14;
+
+                    boolean isMissionActive = !allianceBoss.isBossBeaten() && !isMissionExpired;
+
+                    if (isMissionActive) {
+                        Toast.makeText(this, "You cannot perform this action while a special mission is active.", Toast.LENGTH_LONG).show();
+                    } else {
+                        actionToProceed.run();
+                    }
+                });
     }
 
 }

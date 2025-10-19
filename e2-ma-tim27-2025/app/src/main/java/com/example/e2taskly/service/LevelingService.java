@@ -33,12 +33,13 @@ public class LevelingService {
         }
         return TITLES.get(TITLES.size()-1);
     }
-    public int calculateNextXpGain(int baseXp, int level) {
-        double xp = baseXp;
-        for (int i = 1; i < level; i++) {
-            xp = xp + xp / 2.0;
+    public int calculateNextXpGain(int baseXp, int newLevel) {
+        long currentXp = baseXp;
+        for (int level = 2; level <= newLevel; level++) {
+            currentXp = Math.round(currentXp + currentXp / 2.0);
         }
-        return (int) Math.round(xp);
+
+        return (int) currentXp;
     }
     public int getCoinsRewardForLevel(int level) {
         if (level <= 1) {

@@ -51,7 +51,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?attr/textAppearanceHeadline5"
-            tools:text="The Avengers" />
+            tools:text="The Avengers"
+            android:textColor="@color/text_color_on_image"
+            android:shadowColor="#000000"
+            android:shadowDx="1.5"
+            android:shadowDy="1.5"
+            android:shadowRadius="1.6" />
 
 
         <Button
@@ -71,14 +76,24 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textAppearance="?attr/textAppearanceBody2"
-            tools:text="Leader: Tony Stark" />
+            tools:text="Leader: Tony Stark"
+            android:textColor="@color/text_color_on_image"
+            android:shadowColor="#000000"
+            android:shadowDx="1.5"
+            android:shadowDy="1.5"
+            android:shadowRadius="1.6" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/members_label"
-            android:textAppearance="?attr/textAppearanceTitleMedium" />
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="@color/text_color_on_image"
+            android:shadowColor="#000000"
+            android:shadowDx="1.5"
+            android:shadowDy="1.5"
+            android:shadowRadius="1.6" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewMembers"
@@ -110,7 +125,12 @@
             android:layout_height="wrap_content"
             android:text="@string/no_alliance_message"
             android:textAppearance="?attr/textAppearanceBodyLarge"
-            android:textAlignment="center"/>
+            android:textAlignment="center"
+            android:textColor="@color/text_color_on_image"
+            android:shadowColor="#000000"
+            android:shadowDx="1.5"
+            android:shadowDy="1.5"
+            android:shadowRadius="1.6" />
 
         <Button
             android:id="@+id/buttonCreateAlliance"
