@@ -159,22 +159,20 @@ public class AllianceBossActivity extends AppCompatActivity {
     private void updateUiBasedOnState() {
         if (currentBoss == null) {
             setupNoMissionState(true);
-        }else{
+        }else {
+            LocalDate appearanceDate = currentBoss.getBossAppearanceDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            long daysPassed = ChronoUnit.DAYS.between(appearanceDate, LocalDate.now());
+            boolean isMissionExpired = daysPassed >= 14;
 
+            boolean wasMissionSuccessful = currentBoss.isBossBeaten();
 
-        LocalDate appearanceDate = currentBoss.getBossAppearanceDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        long daysPassed = ChronoUnit.DAYS.between(appearanceDate, LocalDate.now());
-        boolean isMissionExpired = daysPassed >= 14;
-
-        boolean wasMissionSuccessful = currentBoss.isBossBeaten();
-
-        if (wasMissionSuccessful) {
-            setupMissionCompleteState();
-        } else if (isMissionExpired) {
-            setupNoMissionState(false);
-        } else {
-            setupMissionActiveState();
-        }
+            if (wasMissionSuccessful) {
+                setupMissionCompleteState();
+            } else if (isMissionExpired) {
+                setupNoMissionState(false);
+            } else {
+                setupMissionActiveState();
+            }
         }
     }
 

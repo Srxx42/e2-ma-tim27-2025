@@ -53,6 +53,7 @@ public class ShopActivity extends AppCompatActivity {
         sharedPreferences = new SharedPreferencesUtil(this);
         missionProgressService = new MissionProgressService(this);
         userService = new UserService(this);
+        sharedPreferences = new SharedPreferencesUtil(this);
         menuButton = findViewById(R.id.menuButton);
         menuButton.setVisibility(View.GONE);
 

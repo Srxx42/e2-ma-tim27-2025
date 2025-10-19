@@ -34,11 +34,12 @@ public class BadgeService {
         });
     }
 
-        public List<UserBadge> getUserBadges(String userId){
-        return badgeRepository.getUserBadges(userId).getResult();
+    public Task<List<UserBadge>> getUserBadges(String userId) {
+        return badgeRepository.getUserBadges(userId);
     }
     public Task<List<UserBadge>> getAsyncUserBadges(String userId){
         return badgeRepository.getUserBadges(userId);
     }
+
 
 }
