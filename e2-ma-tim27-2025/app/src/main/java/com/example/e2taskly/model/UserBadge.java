@@ -7,6 +7,8 @@ public class UserBadge {
     private String userUid;
     private BadgeType badgeType;
 
+    public UserBadge(){}
+
     public UserBadge(String badgeId, String userUid, BadgeType badgeType) {
         this.badgeId = badgeId;
         this.userUid = userUid;

@@ -15,10 +15,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e2taskly.R;
 import com.example.e2taskly.model.User;
+import com.example.e2taskly.model.UserBadge;
 import com.example.e2taskly.presentation.activity.ProfileActivity;
+import com.example.e2taskly.service.BadgeService;
 import com.example.e2taskly.service.UserService;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
@@ -28,6 +31,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private List<String> friendIdList;
     private final OnFriendActionListener listener;
     private final boolean showActionIcon;
+    private final BadgeService badgeService;
 
     public interface OnFriendActionListener {
         void onAddFriend(User userToAdd);
@@ -43,6 +47,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         this.friendIdList = friendIdList;
         this.listener = listener;
         this.showActionIcon = showActionIcon;
+        this.badgeService = new BadgeService(context);
     }
 
     public void updateUsers(List<User> newUsers) {
@@ -76,6 +81,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         ImageView imageViewAvatar, imageViewAction;
         TextView textViewUsername, textViewTitle, textViewLevel;
 
+        List<ImageView> badgeImageViews;
+
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
             imageViewAvatar = itemView.findViewById(R.id.imageViewAvatar);
@@ -83,6 +90,18 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             textViewUsername = itemView.findViewById(R.id.textViewUsername);
             textViewTitle = itemView.findViewById(R.id.textViewTitle);
             textViewLevel = itemView.findViewById(R.id.textViewLevel);
+
+            badgeImageViews = new ArrayList<>();
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge1));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge2));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge3));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge4));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge5));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge6));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge7));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge8));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge9));
+            badgeImageViews.add(itemView.findViewById(R.id.iv_bedge10));
         }
 
         void bind(final User user) {
@@ -112,6 +131,42 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 imageViewAction.setVisibility(View.GONE);
             }
             // ===================================
+            for (ImageView badgeView : badgeImageViews) {
+                badgeView.setVisibility(View.GONE);
+            }
+
+            if(!showActionIcon) {
+                badgeService.getUserBadges(user.getUid())
+                        .addOnSuccessListener(userBadges -> {
+                            if (userBadges != null && !userBadges.isEmpty()) {
+                                // Određujemo koliko bedževa treba prikazati (maksimalno 10)
+                                int badgesToDisplay = Math.min(userBadges.size(), badgeImageViews.size());
+
+                                for (int i = 0; i < badgesToDisplay; i++) {
+                                    UserBadge badge = userBadges.get(i);
+                                    ImageView badgeImageView = badgeImageViews.get(i);
+
+                                    // Postavi odgovarajuću sliku na osnovu tipa bedža
+                                    switch (badge.getBadgeType()) {
+                                        case BRONZE:
+                                            badgeImageView.setImageResource(R.drawable.badge_bronze);
+                                            break;
+                                        case SILVER:
+                                            badgeImageView.setImageResource(R.drawable.badge_silver);
+                                            break;
+                                        case GOLD:
+                                            badgeImageView.setImageResource(R.drawable.badge_gold);
+                                            break;
+                                        case DIAMOND:
+                                            badgeImageView.setImageResource(R.drawable.badge_diamond);
+                                            break;
+                                    }
+                                    // Prikaži ImageView
+                                    badgeImageView.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        });
+            }
 
             itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, ProfileActivity.class);

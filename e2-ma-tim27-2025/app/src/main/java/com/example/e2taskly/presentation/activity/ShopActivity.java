@@ -52,6 +52,7 @@ public class ShopActivity extends AppCompatActivity {
         levelingService = new LevelingService();
         missionProgressService = new MissionProgressService(this);
         userService = new UserService(this);
+        sharedPreferences = new SharedPreferencesUtil(this);
         menuButton = findViewById(R.id.menuButton);
         menuButton.setVisibility(View.GONE);
         loadShopItems();
