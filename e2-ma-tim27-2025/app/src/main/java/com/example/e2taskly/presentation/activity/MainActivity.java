@@ -143,7 +143,7 @@ public class MainActivity extends BaseActivity {
 
     private void scheduleDailyTaskStatusCheck() {
         PeriodicWorkRequest dailyWorkRequest =
-                new PeriodicWorkRequest.Builder(TaskStatusWorker.class, 2, TimeUnit.MINUTES)
+                new PeriodicWorkRequest.Builder(TaskStatusWorker.class, 20, TimeUnit.MINUTES)
                         .build();
 
         WorkManager.getInstance(getApplicationContext()).enqueueUniquePeriodicWork(
