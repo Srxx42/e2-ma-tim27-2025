@@ -55,6 +55,8 @@ public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurre
     private OccurrenceListAdapter occurrencesListAdapter;
     private SharedPreferencesUtil sharedPreferencesUtil;
 
+    private XpCounterManager xpManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +69,9 @@ public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurre
         sharedPreferencesUtil = new SharedPreferencesUtil(this);
 
         initViews();
+
+        String currentUserId = sharedPreferencesUtil.getActiveUserUid();
+        this.xpManager = new XpCounterManager(this, currentUserId);
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("TASK_ID")) {
@@ -233,26 +238,19 @@ public class ShowTaskInfoActivity extends AppCompatActivity implements OnOccurre
             Toast.makeText(this, "Complete clicked", Toast.LENGTH_SHORT).show();
             if(currentTask.getType().equals(TaskType.SINGLE)) {
 
-                String currentUserId = sharedPreferencesUtil.getActiveUserUid();
-                XpCounterManager xpManager = new XpCounterManager(this, currentUserId);
+                Runnable taskCompletionActions = () -> {
+                    currentTask.setStatus(TaskStatus.COMPLETED);
+                    taskService.updateTask(currentTask);
 
-                int xpToAward = xpManager.calculateXpToAward(currentTask);
+                    String currentUserId = sharedPreferencesUtil.getActiveUserUid();
+                    updateProgress(currentTask, currentUserId);
 
-                if (xpToAward > 0) {
-                    userService.setTaskService(taskService);
-                    userService.addXpToUser(currentTask.getCreatorId(), xpToAward);
-                    xpManager.recordXpAward(currentTask); // Zabeleži da je XP dodeljen
-                    Toast.makeText(this, "Dodeljeno " + xpToAward + " XP poena!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Dostignut je limit za XP za ovu vrstu zadatka.", Toast.LENGTH_LONG).show();
-                }
-                currentTask.setStatus(TaskStatus.COMPLETED);
-                taskService.updateTask(currentTask);
+                    updateStatusUI(TaskStatus.COMPLETED);
+                    setupButtonsVisibility();
+                };
 
-                updateProgress(currentTask,currentUserId);
-
-                updateStatusUI(TaskStatus.COMPLETED);
-                setupButtonsVisibility();
+                // Jedan poziv koji rešava sve
+                xpManager.awardXpForTask(currentTask, taskCompletionActions);
             }
         });
 

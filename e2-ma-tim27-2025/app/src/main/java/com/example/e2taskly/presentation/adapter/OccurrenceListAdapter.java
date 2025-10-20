@@ -112,33 +112,27 @@ public class OccurrenceListAdapter extends ArrayAdapter<RepeatingTaskOccurrence>
         }
 
 
-        completeButton.setOnClickListener( v ->{
+        completeButton.setOnClickListener( v -> {
             Task task = taskService.getTaskById(ocr.getRepeatingTaskId());
-            if (task == null) return; // Zaštita
-
+            if (task == null) {
+                Toast.makeText(getContext(), "Pripadajući zadatak nije pronađen.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             String currentUserId = sharedPreferencesUtil.getActiveUserUid();
             XpCounterManager xpManager = new XpCounterManager(getContext(), currentUserId);
 
-            int xpToAward = xpManager.calculateXpToAward(task);
+            Runnable occurrenceCompletionActions = () -> {
+                ocr.setOccurrenceStatus(TaskStatus.COMPLETED);
+                taskService.updateOccurrence(ocr);
+                updateProgress(task, currentUserId);
 
-            if (xpToAward > 0) {
-                userService.setTaskService(taskService);
-                userService.addXpToUser(task.getCreatorId(), xpToAward);
-                xpManager.recordXpAward(task);
-                Toast.makeText(getContext(), "Dodeljeno " + xpToAward + " XP poena!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), "Dostignut je limit za XP za ovu vrstu zadatka.", Toast.LENGTH_LONG).show();
-            }
+                if (updateListener != null) {
+                    updateListener.onOccurrenceUpdated();
+                }
+            };
 
-            ocr.setOccurrenceStatus(TaskStatus.COMPLETED);
-            taskService.updateOccurrence(ocr);
-
-            updateProgress(task,currentUserId);
-
-            if (updateListener != null) {
-                updateListener.onOccurrenceUpdated();
-            }
+            xpManager.awardXpForTask(task, occurrenceCompletionActions);
         });
 
         cancelButton.setOnClickListener( v ->{

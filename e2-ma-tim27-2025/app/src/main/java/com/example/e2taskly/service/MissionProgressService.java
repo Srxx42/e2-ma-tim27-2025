@@ -16,7 +16,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MissionProgressService {
 
@@ -36,26 +38,41 @@ public class MissionProgressService {
                 throw task.getException();
             }
 
-            List<SpecialMissionProgress> existingProgress = task.getResult();
+            List<SpecialMissionProgress> existingProgresses = task.getResult();
             List<Task<Void>> operationTasks = new ArrayList<>();
+            List<Date> emptyMessageCount = new ArrayList<>();
 
-            if (existingProgress == null || existingProgress.isEmpty()) {
-                List<Date> emptyMessageCount = new ArrayList<>();
+            if (existingProgresses == null || existingProgresses.isEmpty()) {
+
                 for (String userId : userIds) {
                     SpecialMissionProgress progress = new SpecialMissionProgress("", userId, allianceId, bossId, 0, 0, 0, 0, false, false, emptyMessageCount);
                     operationTasks.add(missionProgressRepository.createMissionProgress(progress));
                 }
             } else {
-                List<Date> emptyMessageCount = new ArrayList<>();
-                for (SpecialMissionProgress progress : existingProgress) {
-                    progress.setCompletedAll(false);
-                    progress.setEasyTaskCount(0);
-                    progress.setHardTaskCount(0);
-                    progress.setShoppingCount(0);
-                    progress.setSuccessfulBossHitCount(0);
-                    progress.setMessageCount(emptyMessageCount);
-                    progress.setDidUserGetReward(false);
-                    operationTasks.add(updateProgress(progress));
+
+
+                Map<String, SpecialMissionProgress> progressMap = new HashMap<>();
+                for (SpecialMissionProgress progress : existingProgresses) {
+                    progressMap.put(progress.getUserUid(), progress);
+                }
+
+                for (String userId : userIds) {
+                    SpecialMissionProgress userProgress = progressMap.get(userId);
+
+                    if (userProgress != null) {
+                        userProgress.setCompletedAll(false);
+                        userProgress.setEasyTaskCount(0);
+                        userProgress.setHardTaskCount(0);
+                        userProgress.setShoppingCount(0);
+                        userProgress.setSuccessfulBossHitCount(0);
+                        userProgress.setMessageCount(emptyMessageCount);
+                        userProgress.setDidUserGetReward(false);
+                        operationTasks.add(updateProgress(userProgress));
+                    } else {
+
+                        SpecialMissionProgress newProgress = new SpecialMissionProgress("", userId, allianceId, bossId, 0, 0, 0, 0, false, false, emptyMessageCount);
+                        operationTasks.add(missionProgressRepository.createMissionProgress(newProgress));
+                    }
                 }
             }
 

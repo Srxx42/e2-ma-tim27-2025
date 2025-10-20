@@ -3,31 +3,69 @@ package com.example.e2taskly.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.e2taskly.model.Task;
+import com.example.e2taskly.model.User;
 import com.example.e2taskly.model.enums.Difficulty;
 import com.example.e2taskly.model.enums.Importance;
+import com.example.e2taskly.service.LevelingService;
+import com.example.e2taskly.service.UserService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
+import java.util.logging.Level;
 
 public class XpCounterManager {
 
     private static final String PREFS_NAME = "XpCounters";
     private final SharedPreferences sharedPreferences;
+    private final LevelingService levelingService;
+
+    private final UserService userService;
     private final String userId;
+    private final Context context;
+    private User currentUserObject;
 
     public XpCounterManager(Context context, String userId) {
+        this.context = context;
+        this.levelingService = new LevelingService();
+        this.userService = new UserService(context);
         this.sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         this.userId = userId;
     }
 
-    /**
-     * Glavna metoda koja izračunava koliko XP poena treba dodeliti za dati task.
-     * Vraća ukupan zbir XP poena (za Difficulty + za Importance) koji su ispod limita.
-     */
+    public void awardXpForTask(Task task, Runnable onCompletionRunnable) {
+        userService.getUserProfile(userId)
+                .addOnSuccessListener(user -> {
+                    this.currentUserObject = user;
+
+                    int xpToAward = calculateXpToAward(task);
+
+                    if (xpToAward > 0) {
+                        userService.addXpToUser(task.getCreatorId(), xpToAward);
+                        recordXpAward(task);
+                        Toast.makeText(context, "Dodeljeno " + xpToAward + " XP poena!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Dostignut je limit za XP za ovu vrstu zadatka.", Toast.LENGTH_LONG).show();
+                    }
+
+                    if (onCompletionRunnable != null) {
+                        onCompletionRunnable.run();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(context, "Greška pri učitavanju korisničkog profila.", Toast.LENGTH_LONG).show();
+
+                    if (onCompletionRunnable != null) {
+                        onCompletionRunnable.run();
+                    }
+                });
+    }
+
+
     public int calculateXpToAward(Task task) {
         int xpFromDifficulty = 0;
         int xpFromImportance = 0;
@@ -38,7 +76,8 @@ public class XpCounterManager {
         int maxDifficultyCount = getMaxCountForDifficulty(task.getDifficulty());
 
         if (currentDifficultyCount < maxDifficultyCount) {
-            xpFromDifficulty = getXpForDifficulty(task.getDifficulty());
+            int baseDifficulty = task.getDifficulty().getXpValue();
+            xpFromDifficulty = levelingService.calculateNextXpGain(baseDifficulty,currentUserObject.getLevel());
         }
 
         // Provera za Importance
@@ -47,16 +86,13 @@ public class XpCounterManager {
         int maxImportanceCount = getMaxCountForImportance(task.getImportance());
 
         if (currentImportanceCount < maxImportanceCount) {
-            xpFromImportance = getXpForImportance(task.getImportance());
+            int baseImportance = task.getImportance().getXpValue();
+            xpFromImportance = levelingService.calculateNextXpGain(baseImportance,currentUserObject.getLevel());
         }
 
         return xpFromDifficulty + xpFromImportance;
     }
 
-    /**
-     * Beleži da su XP poeni dodeljeni, inkrementirajući odgovarajuće brojače.
-     * Poziva se NAKON što je `addXpToUser` uspešno izvršen.
-     */
     public void recordXpAward(Task task) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
@@ -142,24 +178,4 @@ public class XpCounterManager {
         }
     }
 
-    // Vrednosti XP poena
-    private int getXpForDifficulty(Difficulty difficulty) {
-        switch (difficulty) {
-            case EASY: return 1;
-            case NORMAL: return 3;
-            case HARD: return 7;
-            case EPIC: return 20;
-            default: return 0;
-        }
-    }
-
-    private int getXpForImportance(Importance importance) {
-        switch (importance) {
-            case NORMAL: return 1;
-            case IMPORTANT: return 3;
-            case URGENT: return 10;
-            case SPECIAL: return 100;
-            default: return 0;
-        }
-    }
 }
